@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
-import { mutateStore } from "@/lib/store";
+import { readStoreSnapshot } from "@/lib/store";
 import { STUDIES, kindLabel } from "@/lib/studies-data";
 import { money } from "@/lib/utils";
 import { redirect } from "next/navigation";
@@ -8,7 +8,8 @@ import { redirect } from "next/navigation";
 export default async function DashboardPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const submissions = await mutateStore((data) => data.submissions.filter((s) => s.userId === user.id));
+  const store = await readStoreSnapshot();
+  const submissions = store.submissions.filter((s) => s.userId === user.id);
 
   return (
     <div>

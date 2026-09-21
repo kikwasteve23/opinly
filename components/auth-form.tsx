@@ -1,39 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("United States");
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
-
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setError("");
-    setPending(true);
-    const res = await fetch(mode === "login" ? "/api/auth/login" : "/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(mode === "login" ? { email, password } : { email, password, country }),
-    });
-    const data = await res.json();
-    setPending(false);
-    if (!res.ok) {
-      setError(data.error ?? "Something went wrong.");
-      return;
-    }
-    if (mode === "register") router.push("/onboarding");
-    else if (data.onboardingStep && data.onboardingStep !== "complete") router.push("/onboarding");
-    else router.push("/app");
-    router.refresh();
-  }
+  const action = mode === "login" ? loginAction : registerAction;
+  const [state, formAction, pending] = useActionState<AuthState, FormData>(action, null);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -73,7 +48,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             </div>
           </dl>
           {mode === "register" ? (
-            <p className="mt-8 text-sm text-indigo-100">We are currently welcoming participants in the United States, United Kingdom, Canada, Ireland, and Australia. More countries open as new studies arrive.</p>
+            <p className="mt-8 text-sm text-indigo-100">
+              We are currently welcoming participants in the United States, United Kingdom, Canada, Ireland, and Australia. More countries open as new studies arrive.
+            </p>
           ) : null}
         </div>
       </div>
@@ -86,7 +63,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <ThemeToggle />
           </div>
         </div>
-        <form onSubmit={onSubmit} className="mx-auto my-auto w-full max-w-md py-10">
+        <form action={formAction} className="mx-auto my-auto w-full max-w-md py-10">
           <h2 className="text-2xl font-extrabold">{mode === "login" ? "Log in to Opinly" : "Create your Opinly account"}</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {mode === "login" ? "Welcome back. Pick up where you left off." : "Free to join. No card, no deposit."}
@@ -94,21 +71,23 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <label className="mt-8 block text-sm font-medium">
             Email
             <input
+              name="email"
               type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              defaultValue={mode === "login" ? "demo@opinly.local" : ""}
               className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
             />
           </label>
           <label className="mt-4 block text-sm font-medium">
             Password
             <input
+              name="password"
               type="password"
               required
               minLength={mode === "register" ? 8 : 1}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              defaultValue={mode === "login" ? "demo-dev-only" : ""}
               className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
             />
           </label>
@@ -116,8 +95,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <label className="mt-4 block text-sm font-medium">
               Country
               <select
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                name="country"
+                defaultValue="United States"
                 className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
               >
                 {["United States", "United Kingdom", "Canada", "Ireland", "Australia"].map((c) => (
@@ -126,11 +105,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               </select>
             </label>
           ) : (
-            <p className="mt-3 text-xs text-gray-500">
-              Demo account: <code>demo@opinly.local</code> / <code>demo-dev-only</code>
-            </p>
+            <p className="mt-3 text-xs text-gray-500">Demo details are filled in so you can look around immediately.</p>
           )}
-          {error ? <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{error}</p> : null}
+          {state?.error ? (
+            <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{state.error}</p>
+          ) : null}
           <button
             type="submit"
             disabled={pending}

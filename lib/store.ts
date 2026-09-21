@@ -5,14 +5,14 @@ import type { StoreData, User } from "./types";
 
 const DATA_PATH = path.join(process.cwd(), "data", "store.json");
 
-let writeQueue: Promise<void> = Promise.resolve();
+let queue: Promise<unknown> = Promise.resolve();
 
 function emptyStore(): StoreData {
   return { users: [], submissions: [], withdrawals: [] };
 }
 
-async function seedIfNeeded(data: StoreData): Promise<StoreData> {
-  if (data.users.length > 0) return data;
+async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded: boolean }> {
+  if (data.users.length > 0) return { data, seeded: false };
   const password = process.env.DEMO_USER_PASSWORD ?? "demo-dev-only";
   const demo: User = {
     id: "usr_demo",
@@ -46,7 +46,7 @@ async function seedIfNeeded(data: StoreData): Promise<StoreData> {
     lastWithdrawalAt: null,
   };
   data.users.push(demo);
-  return data;
+  return { data, seeded: true };
 }
 
 async function readStore(): Promise<StoreData> {
@@ -68,19 +68,24 @@ async function writeStore(data: StoreData) {
   await writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
-export async function mutateStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T> {
+async function withStore<T>(fn: (data: StoreData) => Promise<T> | T, write: boolean): Promise<T> {
   let result!: T;
-  writeQueue = writeQueue.then(async () => {
-    const data = await seedIfNeeded(await readStore());
-    result = await fn(data);
-    await writeStore(data);
-  });
-  await writeQueue;
+  const run = async () => {
+    const loaded = await seedIfNeeded(await readStore());
+    result = await fn(loaded.data);
+    if (write || loaded.seeded) await writeStore(loaded.data);
+  };
+  queue = queue.then(run, run);
+  await queue;
   return result;
 }
 
-export async function readFreshStore() {
-  return mutateStore(async (data) => structuredClone(data));
+export async function mutateStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T> {
+  return withStore(fn, true);
+}
+
+export async function readStoreSnapshot(): Promise<StoreData> {
+  return withStore((data) => structuredClone(data), false);
 }
 
 export function newId(prefix: string) {

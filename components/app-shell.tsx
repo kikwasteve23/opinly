@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { logoutAction } from "@/lib/auth-actions";
 
 const nav = [
   { href: "/app", label: "Studies" },
@@ -19,13 +20,6 @@ export function AppShell({
   email: string;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -48,9 +42,11 @@ export function AppShell({
           <div className="flex items-center gap-2">
             <span className="hidden text-xs text-gray-500 sm:inline">{email}</span>
             <ThemeToggle />
-            <button onClick={() => void logout()} className="rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:text-gray-200">
-              Log out
-            </button>
+            <form action={logoutAction}>
+              <button type="submit" className="rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:text-gray-200">
+                Log out
+              </button>
+            </form>
           </div>
         </div>
         <nav className="flex gap-1 border-t border-gray-100 px-2 py-2 sm:hidden dark:border-gray-800">

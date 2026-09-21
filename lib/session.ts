@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { mutateStore } from "./store";
+import { readStoreSnapshot } from "./store";
 import type { User } from "./types";
 
 const COOKIE = "opinly_session";
@@ -41,7 +41,8 @@ export async function getSessionUser(): Promise<User | null> {
     const { payload } = await jwtVerify(token, secret());
     const userId = String(payload.sub ?? "");
     if (!userId) return null;
-    return mutateStore((data) => data.users.find((u) => u.id === userId) ?? null);
+    const data = await readStoreSnapshot();
+    return data.users.find((u) => u.id === userId) ?? null;
   } catch {
     return null;
   }

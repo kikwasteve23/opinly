@@ -1,10 +1,11 @@
-import { redirect } from "next/navigation";
 import { WalletPanel } from "@/components/wallet-panel";
-import { getSessionUser } from "@/lib/session";
+import { requireCompleteUser } from "@/lib/auth-actions";
+import { readStoreSnapshot } from "@/lib/store";
 
 export default async function WalletPage() {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireCompleteUser();
+  const store = await readStoreSnapshot();
+  const withdrawals = store.withdrawals.filter((w) => w.userId === user.id);
   return (
     <WalletPanel
       initialUser={{
@@ -13,6 +14,7 @@ export default async function WalletPage() {
         withdrawn: user.withdrawn,
         payout: user.payout,
       }}
+      initialHistory={withdrawals}
     />
   );
 }

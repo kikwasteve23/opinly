@@ -1,64 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { Question, Study } from "@/lib/types";
 import { money } from "@/lib/utils";
+import { saveStudyAction, submitStudyAction } from "@/lib/wallet-actions";
 
-type Payload = {
+export type StudyPayload = {
   study: Study & { kindLabel: string };
   submission: { id: string; status: string; answers: Record<string, string | string[]> } | null;
   canStart: boolean;
 };
 
-export function StudyRunner({ studyId }: { studyId: string }) {
-  const router = useRouter();
-  const [data, setData] = useState<Payload | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+export function StudyRunner({ studyId, initial }: { studyId: string; initial: StudyPayload }) {
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>(initial.submission?.answers ?? {});
   const [error, setError] = useState("");
   const [saved, setSaved] = useState("");
   const [pending, setPending] = useState(false);
 
-  useEffect(() => {
-    void fetch(`/api/studies/${studyId}`)
-      .then((r) => r.json())
-      .then((payload: Payload) => {
-        setData(payload);
-        setAnswers(payload.submission?.answers ?? {});
-      });
-  }, [studyId]);
-
   async function save() {
-    const res = await fetch(`/api/studies/${studyId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers }),
-    });
-    if (res.ok) setSaved("Progress saved.");
+    await saveStudyAction(studyId, answers);
+    setSaved("Progress saved.");
   }
 
   async function submit() {
     setError("");
     setPending(true);
-    await save();
-    const res = await fetch(`/api/studies/${studyId}/submit`, { method: "POST" });
-    const json = await res.json();
+    const result = await submitStudyAction(studyId, answers);
     setPending(false);
-    if (!res.ok) {
-      setError(json.error ?? "Could not submit.");
-      return;
-    }
-    if (json.submission?.status === "rejected") {
-      setError(json.submission.rejectionReason ?? "Submission rejected.");
-      return;
-    }
-    router.push("/app");
-    router.refresh();
+    if (result?.error) setError(result.error);
   }
 
-  if (!data) return <p className="text-sm text-gray-500">Loading study…</p>;
-  if (!data.canStart) {
+  if (!initial.canStart) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
         <p className="font-semibold">Identity check still in review</p>
@@ -69,10 +42,10 @@ export function StudyRunner({ studyId }: { studyId: string }) {
       </div>
     );
   }
-  if (data.submission && data.submission.status !== "in_progress") {
+  if (initial.submission && initial.submission.status !== "in_progress") {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-        <p className="font-semibold">This study is {data.submission.status.replace("_", " ")}.</p>
+        <p className="font-semibold">This study is {initial.submission.status.replace("_", " ")}.</p>
         <Link href="/app" className="mt-4 inline-block text-sm font-semibold text-indigo-700">
           Back to studies
         </Link>
@@ -80,7 +53,7 @@ export function StudyRunner({ studyId }: { studyId: string }) {
     );
   }
 
-  const study = data.study;
+  const study = initial.study;
 
   return (
     <div>
@@ -113,10 +86,10 @@ export function StudyRunner({ studyId }: { studyId: string }) {
       {saved ? <p className="mt-4 text-sm text-gray-500">{saved}</p> : null}
       {error ? <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <button onClick={() => void save()} className="rounded-xl border border-gray-300 px-5 py-3 font-semibold">
+        <button type="button" onClick={() => void save()} className="rounded-xl border border-gray-300 px-5 py-3 font-semibold">
           Save progress
         </button>
-        <button disabled={pending} onClick={() => void submit()} className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white disabled:opacity-60">
+        <button type="button" disabled={pending} onClick={() => void submit()} className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white disabled:opacity-60">
           Submit for review
         </button>
       </div>
