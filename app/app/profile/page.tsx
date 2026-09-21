@@ -19,6 +19,7 @@ export default async function ProfilePage() {
         <Row label="Occupation" value={profile?.occupation ?? "—"} />
         <Row label="English assessment" value={user.englishPassed ? "Passed" : "Not finished"} />
         <Row label="Identity" value={user.identityStatus.replace("_", " ")} />
+        <Row label="Referral code" value={user.referralCode} />
         <Row label="Identity note" value={user.identityNote || "—"} />
       </dl>
     </div>

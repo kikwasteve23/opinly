@@ -188,7 +188,7 @@ export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
           >
             <h1 className="text-2xl font-extrabold">Identity check</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              One person, one account. In production this would capture a live ID photo and selfie. This demo records the document type and approves you immediately so you can try studies and withdrawals.
+              One person, one account. An Opinly reviewer checks the document type you submit. You can look around while you wait, but studies stay locked until an admin approves you.
             </p>
             <label className="block text-sm font-medium">
               Document type

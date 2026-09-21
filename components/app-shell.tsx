@@ -9,6 +9,7 @@ import { logoutAction } from "@/lib/auth-actions";
 const nav = [
   { href: "/app", label: "Studies" },
   { href: "/app/wallet", label: "Wallet" },
+  { href: "/app/referrals", label: "Referrals" },
   { href: "/app/profile", label: "Profile" },
 ];
 

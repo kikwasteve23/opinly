@@ -225,7 +225,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/15">
           <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
-            One thing to expect: identity documents are reviewed manually. During busy periods that can take up to five working days. You can look around the platform while you wait, but you can&apos;t start a study until the check clears. On this demo, the check is approved as soon as you submit it so you can try the full flow.
+            One thing to expect: identity documents are reviewed by Opinly staff. During busy periods that can take up to five working days. You can look around the platform while you wait, but you can&apos;t start a study until the check clears. You also need 15 identity-verified referrals before a withdrawal will go through.
           </p>
         </div>
       </section>
@@ -324,6 +324,7 @@ export default async function HomePage() {
           <p className="font-semibold">A couple of house rules</p>
           <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400">
             {[
+              "You need 15 people who join with your referral code and pass identity review before you can withdraw.",
               "One withdrawal every 72 hours, so let your balance build up before cashing out.",
               "Both fees come out of the amount you request, so the figure you confirm is the figure that arrives.",
               "Double-check the address and the network. Crypto sent to the wrong chain cannot be recovered.",

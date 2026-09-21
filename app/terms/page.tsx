@@ -20,7 +20,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">3. Taking studies</h2>
           <p>Each study shows pay and length before you start. Answer honestly, in your own words. Studies may include attention checks. Do not share study content.</p>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">4. Getting paid</h2>
-          <p>Payout methods are USDT (TRC20) and Litecoin. Minimum withdrawal $10. Platform fee 5%. Network fees are passed through at cost. One withdrawal every 72 hours. After changing a payout address, withdrawals pause for 24 hours. Crypto sent to an address you supplied cannot be reversed.</p>
+          <p>Payout methods are USDT (TRC20) and Litecoin. Minimum withdrawal $10. You must have 15 identity-verified referrals. Platform fee 5%. Network fees are passed through at cost. One withdrawal every 72 hours. After changing a payout address, withdrawals pause for 24 hours. Crypto sent to an address you supplied cannot be reversed.</p>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">5. What ends an account</h2>
           <p>Duplicate accounts, VPNs used to misrepresent location, bots, selling accounts, or false identity information can lead to suspension. Legitimately earned funds remain yours.</p>
           <p>

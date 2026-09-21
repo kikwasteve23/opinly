@@ -24,11 +24,20 @@ type Withdrawal = {
   createdAt: string;
 };
 
-export function WalletPanel({ initialUser, initialHistory }: { initialUser: UserWallet; initialHistory: Withdrawal[] }) {
+export function WalletPanel({
+  initialUser,
+  initialHistory,
+  referrals,
+}: {
+  initialUser: UserWallet;
+  initialHistory: Withdrawal[];
+  referrals: { qualified: number; required: number; code: string };
+}) {
   const [amount, setAmount] = useState("10");
   const [network, setNetwork] = useState<PayoutNetwork>(initialUser.payout.network || "usdt_trc20");
   const [state, formAction, pending] = useActionState<WalletState, FormData>(withdrawAction, null);
   const quote = useMemo(() => quoteWithdrawal(Number(amount) || 0, network), [amount, network]);
+  const locked = referrals.qualified < referrals.required;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -39,6 +48,11 @@ export function WalletPanel({ initialUser, initialHistory }: { initialUser: User
           <Stat label="Available" value={money(initialUser.available)} />
           <Stat label="Pending" value={money(initialUser.pending)} />
           <Stat label="Withdrawn" value={money(initialUser.withdrawn)} />
+        </div>
+        <div className="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
+          Referrals for withdrawals: <strong>{referrals.qualified}/{referrals.required}</strong> verified. Your code is{" "}
+          <span className="font-mono font-semibold">{referrals.code}</span>.
+          {locked ? " You can earn, but cash-out stays closed until you hit the threshold." : ""}
         </div>
         <form action={formAction} className="mt-8 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="font-semibold">Request a withdrawal</h2>
@@ -93,10 +107,10 @@ export function WalletPanel({ initialUser, initialHistory }: { initialUser: User
           </dl>
           {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
           {state?.ok ? <p className="text-sm text-indigo-700">{state.ok}</p> : null}
-          <button type="submit" disabled={pending} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">
-            {pending ? "Sending…" : "Confirm withdrawal"}
+          <button type="submit" disabled={pending || locked} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">
+            {locked ? `Need ${referrals.required - referrals.qualified} more verified referrals` : pending ? "Sending…" : "Confirm withdrawal"}
           </button>
-          <p className="text-xs text-gray-500">This demo records the request locally. No crypto is sent. Check the address and network before you ever do this with real funds.</p>
+          <p className="text-xs text-gray-500">An admin sends the crypto after review. Check the address and network. Wrong-chain payments cannot be recovered.</p>
         </form>
       </div>
       <div>

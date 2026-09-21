@@ -28,6 +28,12 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {user.identityStatus !== "approved" ? (
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          Identity is {user.identityStatus.replace("_", " ")}. Studies stay closed until an admin approves your check.
+        </div>
+      ) : null}
+
       <div className="mt-10 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-extrabold">Studies for you</h1>
@@ -69,6 +75,8 @@ export default async function DashboardPage() {
                 </span>
                 {locked ? (
                   <span className="text-sm text-gray-500">Done</span>
+                ) : user.identityStatus !== "approved" ? (
+                  <span className="text-sm text-gray-500">Locked</span>
                 ) : (
                   <Link href={`/app/studies/${study.id}`} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
                     {status === "in_progress" ? "Continue" : status === "rejected" ? "Retake" : "Start study"}

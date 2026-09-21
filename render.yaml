@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: opinly
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: APP_SECRET
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: opinly-db
+          property: connectionString
+      - key: DEMO_USER_PASSWORD
+        generateValue: true
+      - key: DEMO_ADMIN_PASSWORD
+        generateValue: true
+
+databases:
+  - name: opinly-db
+    plan: basic_256mb
+    postgresMajorVersion: "16"

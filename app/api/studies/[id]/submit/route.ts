@@ -52,12 +52,6 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     submission.updatedAt = new Date().toISOString();
     user.pending = Math.round((user.pending + study.reward) * 100) / 100;
 
-    // Demo: auto-approve after recording pending, then move to available.
-    submission.status = "approved";
-    submission.reviewedAt = new Date().toISOString();
-    user.pending = Math.round((user.pending - study.reward) * 100) / 100;
-    user.available = Math.round((user.available + study.reward) * 100) / 100;
-
     return { submission, user };
   });
 

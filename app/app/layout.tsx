@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/session";
 export default async function LoggedInLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
+  if (user.role === "admin") redirect("/admin");
   if (user.onboardingStep !== "complete") redirect("/onboarding");
   return <AppShell email={user.email}>{children}</AppShell>;
 }

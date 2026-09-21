@@ -3,6 +3,9 @@ export type IdentityStatus = "not_started" | "pending" | "approved" | "rejected"
 export type StudyKind = "survey" | "usability" | "short_poll" | "multi_day";
 export type SubmissionStatus = "in_progress" | "pending_review" | "approved" | "rejected";
 export type PayoutNetwork = "usdt_trc20" | "ltc";
+export type UserRole = "participant" | "admin";
+export type AccountStatus = "active" | "suspended";
+export type WithdrawalStatus = "processing" | "sent" | "rejected";
 
 export type Profile = {
   legalName: string;
@@ -20,6 +23,10 @@ export type User = {
   id: string;
   email: string;
   passwordHash: string;
+  role: UserRole;
+  accountStatus: AccountStatus;
+  referralCode: string;
+  referredBy: string | null;
   createdAt: string;
   profile: Profile | null;
   englishPassed: boolean;
@@ -81,8 +88,10 @@ export type Withdrawal = {
   platformFee: number;
   networkFee: number;
   arrives: number;
-  status: "processing" | "sent";
+  status: WithdrawalStatus;
   createdAt: string;
+  reviewedAt: string | null;
+  adminNote: string | null;
 };
 
 export type StoreData = {

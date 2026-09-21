@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { mutateStore, newId } from "@/lib/store";
+import { makeReferralCode, mutateStore, newId, normalizeUser } from "@/lib/store";
 import { setSessionCookie } from "@/lib/session";
 import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
 
@@ -9,6 +9,7 @@ const schema = z.object({
   email: z.email(),
   password: z.string().min(8),
   country: z.string().min(1),
+  referralCode: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -28,32 +29,32 @@ export async function POST(request: Request) {
     if (data.users.some((u) => u.email === email)) {
       throw new Error("exists");
     }
-    const created = {
+    const code = parsed.data.referralCode?.trim().toUpperCase();
+    let referredBy: string | null = null;
+    if (code) {
+      const sponsor = data.users.find((u) => u.referralCode === code && u.role === "participant");
+      if (!sponsor) throw new Error("bad_code");
+      referredBy = sponsor.id;
+    }
+    const created = normalizeUser({
       id: newId("usr"),
       email,
       passwordHash: await bcrypt.hash(parsed.data.password, 10),
-      createdAt: new Date().toISOString(),
-      profile: null,
-      englishPassed: false,
-      englishWriting: "",
-      identityStatus: "not_started" as const,
-      identityNote: "",
-      onboardingStep: "profile" as const,
-      available: 0,
-      pending: 0,
-      withdrawn: 0,
-      payout: { network: "usdt_trc20" as const, address: "", addressChangedAt: null },
-      lastWithdrawalAt: null,
-    };
+      referralCode: makeReferralCode(),
+      referredBy,
+    });
     data.users.push(created);
     return created;
   }).catch((err: Error) => {
-    if (err.message === "exists") return null;
+    if (err.message === "exists" || err.message === "bad_code") return err.message;
     throw err;
   });
 
-  if (!user) {
+  if (user === "exists") {
     return NextResponse.json({ error: "An account with that email already exists. Log in instead." }, { status: 409 });
+  }
+  if (user === "bad_code") {
+    return NextResponse.json({ error: "That referral code is not recognised." }, { status: 400 });
   }
 
   await setSessionCookie(user.id);

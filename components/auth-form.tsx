@@ -6,7 +6,7 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, referralCode = "" }: { mode: "login" | "register"; referralCode?: string }) {
   const action = mode === "login" ? loginAction : registerAction;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, null);
 
@@ -92,20 +92,31 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             />
           </label>
           {mode === "register" ? (
-            <label className="mt-4 block text-sm font-medium">
-              Country
-              <select
-                name="country"
-                defaultValue="United States"
-                className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
-              >
-                {["United States", "United Kingdom", "Canada", "Ireland", "Australia"].map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
+            <>
+              <label className="mt-4 block text-sm font-medium">
+                Country
+                <select
+                  name="country"
+                  defaultValue="United States"
+                  className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
+                >
+                  {["United States", "United Kingdom", "Canada", "Ireland", "Australia"].map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="mt-4 block text-sm font-medium">
+                Referral code (required to join someone&apos;s 15)
+                <input
+                  name="referralCode"
+                  defaultValue={referralCode}
+                  className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 uppercase dark:border-gray-700 dark:bg-gray-900"
+                  placeholder="Optional"
+                />
+              </label>
+            </>
           ) : (
-            <p className="mt-3 text-xs text-gray-500">Demo details are filled in so you can look around immediately.</p>
+            <p className="mt-3 text-xs text-gray-500">Demo participant: demo@opinly.local / demo-dev-only. Admin: admin@opinly.local / admin-dev-only.</p>
           )}
           {state?.error ? (
             <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{state.error}</p>

@@ -97,8 +97,8 @@ export async function POST(request: Request) {
     const user = await mutateStore((data) => {
       const current = data.users.find((u) => u.id === auth.user.id);
       if (!current) throw new Error("missing");
-      current.identityStatus = "approved";
-      current.identityNote = `${parsed.data.documentType} · ${parsed.data.issuingCountry}. Demo review auto-approved.`;
+      current.identityStatus = "pending";
+      current.identityNote = `${parsed.data.documentType} · ${parsed.data.issuingCountry}. Waiting for an admin to review.`;
       current.onboardingStep = "complete";
       return current;
     });
