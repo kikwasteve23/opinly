@@ -6,7 +6,15 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 
-export function AuthForm({ mode, referralCode = "" }: { mode: "login" | "register"; referralCode?: string }) {
+export function AuthForm({
+  mode,
+  referralCode = "",
+  staff = false,
+}: {
+  mode: "login" | "register";
+  referralCode?: string;
+  staff?: boolean;
+}) {
   const action = mode === "login" ? loginAction : registerAction;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, null);
 
@@ -64,9 +72,15 @@ export function AuthForm({ mode, referralCode = "" }: { mode: "login" | "registe
           </div>
         </div>
         <form action={formAction} className="mx-auto my-auto w-full max-w-md py-10">
-          <h2 className="text-2xl font-extrabold">{mode === "login" ? "Log in to Opinly" : "Create your Opinly account"}</h2>
+          <h2 className="text-2xl font-extrabold">
+            {mode === "register" ? "Create your Opinly account" : staff ? "Staff login" : "Log in to Opinly"}
+          </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            {mode === "login" ? "Welcome back. Pick up where you left off." : "Free to join. No card, no deposit."}
+            {mode === "register"
+              ? "Free to join. No card, no deposit."
+              : staff
+                ? "This is the operations desk. After login you land on /admin."
+                : "Welcome back. Pick up where you left off."}
           </p>
           <label className="mt-8 block text-sm font-medium">
             Email
@@ -75,7 +89,7 @@ export function AuthForm({ mode, referralCode = "" }: { mode: "login" | "registe
               type="email"
               required
               autoComplete="email"
-              defaultValue={mode === "login" ? "demo@opinly.local" : ""}
+              defaultValue={mode === "login" ? (staff ? "admin@opinly.local" : "demo@opinly.local") : ""}
               className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
             />
           </label>
@@ -87,7 +101,7 @@ export function AuthForm({ mode, referralCode = "" }: { mode: "login" | "registe
               required
               minLength={mode === "register" ? 8 : 1}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-              defaultValue={mode === "login" ? "demo-dev-only" : ""}
+              defaultValue={mode === "login" ? (staff ? "" : "demo-dev-only") : ""}
               className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
             />
           </label>
@@ -116,7 +130,24 @@ export function AuthForm({ mode, referralCode = "" }: { mode: "login" | "registe
               </label>
             </>
           ) : (
-            <p className="mt-3 text-xs text-gray-500">Demo participant: demo@opinly.local / demo-dev-only. Admin: admin@opinly.local / admin-dev-only.</p>
+            <p className="mt-3 text-xs text-gray-500">
+              {staff ? (
+                <>
+                  Default staff email is <code>admin@opinly.local</code>. Use the password in Render → Environment →{" "}
+                  <code>DEMO_ADMIN_PASSWORD</code> (or <code>admin-dev-only</code> if you never set one).{" "}
+                  <Link href="/login" className="font-semibold text-indigo-700">
+                    Participant login
+                  </Link>
+                </>
+              ) : (
+                <>
+                  Participant demo: demo@opinly.local / demo-dev-only.{" "}
+                  <Link href="/login?staff=1" className="font-semibold text-indigo-700">
+                    Staff login
+                  </Link>
+                </>
+              )}
+            </p>
           )}
           {state?.error ? (
             <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{state.error}</p>

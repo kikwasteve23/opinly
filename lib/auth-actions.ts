@@ -88,7 +88,7 @@ export async function requireCompleteUser() {
 
 export async function requireAdmin() {
   const user = await getSessionUser();
-  if (!user) redirect("/login");
-  if (user.role !== "admin") redirect("/app");
+  if (!user) redirect("/login?staff=1");
+  if (user.role !== "admin") redirect("/staff-access");
   return user;
 }

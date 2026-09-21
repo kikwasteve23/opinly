@@ -5,7 +5,12 @@ let pool: Pool | null = null;
 let migrated = false;
 
 export function databaseUrl() {
-  return process.env.DATABASE_URL?.trim() || "";
+  return (
+    process.env.DATABASE_URL?.trim() ||
+    process.env.POSTGRES_URL?.trim() ||
+    process.env.POSTGRES_PRISMA_URL?.trim() ||
+    ""
+  );
 }
 
 function getPool() {

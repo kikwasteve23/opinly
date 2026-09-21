@@ -20,24 +20,48 @@ Open [http://localhost:43173](http://localhost:43173).
 
 Without `DATABASE_URL`, state is stored in `data/store.json`. With Postgres, the same data is written to `app_state` plus `users`, `submissions`, and `withdrawals` tables.
 
-## Render
+## Render + Neon Postgres
 
-1. Create a **PostgreSQL** instance. Copy the **Internal Database URL**.
-2. Web service from this repo:
-   - Build: `npm ci && npm run build`
-   - Start: `npm run start` (binds to Render’s `PORT`)
-   - Health check: `/api/health`
-3. Environment:
+The live site uses **file storage** until `DATABASE_URL` is set. Check `https://YOUR-APP.onrender.com/api/health`. You want `"database": "postgres"`. `"file"` means Neon is not connected.
 
-| Variable | Value |
+### 1. Copy the Neon URL
+
+In [Neon](https://console.neon.tech):
+
+1. Open a project (create **New project** named Opinly, or use an existing one).
+2. Click the project → **Connection details**.
+3. Copy the URI. Prefer **Pooled connection** (host contains `-pooler`).
+4. It looks like:
+   `postgresql://USER:PASSWORD@ep-....neon.tech/neondb?sslmode=require`
+
+You can keep using `aurelia-jewelry-db` if you want; create a database named `opinly` there, or use the default `neondb`.
+
+### 2. Put it on Render
+
+Render dashboard → your **Web Service** → **Environment**:
+
+| Key | Value |
 | --- | --- |
-| `DATABASE_URL` | Render Postgres URL |
+| `DATABASE_URL` | paste the Neon URI (no quotes, no extra spaces) |
 | `APP_SECRET` | long random string |
 | `APP_URL` | `https://your-service.onrender.com` |
-| `DEMO_ADMIN_PASSWORD` | admin password |
-| `DEMO_USER_PASSWORD` | optional demo participant |
+| `DEMO_ADMIN_PASSWORD` | the password you will type for staff |
+| `DEMO_USER_PASSWORD` | optional; defaults to `demo-dev-only` |
 
-On first boot the app creates tables and seeds the demo/admin accounts.
+Save. **Manual Deploy → Deploy latest commit** so the new env vars load.
+
+### 3. Open admin
+
+Admin is **not** in the participant menu.
+
+1. Open `https://your-service.onrender.com/login?staff=1`
+2. Email: `admin@opinly.local`
+3. Password: the `DEMO_ADMIN_PASSWORD` you set **before** the database was first seeded. If you never set it, try `admin-dev-only`.
+4. You should land on `/admin`.
+
+If you were already logged in as a participant, you will see a “Staff only” page — log out first.
+
+If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in Postgres is still the old password. Either use the original password, or delete the `users` / `app_state` rows in Neon and redeploy so the admin account is seeded again.
 
 ## What you can do
 
