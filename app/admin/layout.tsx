@@ -4,8 +4,11 @@ import { Logo } from "@/components/logo";
 
 const links = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/applicants", label: "Applicants" },
   { href: "/admin/people", label: "People" },
-  { href: "/admin/wallets", label: "Wallets" },
+  { href: "/admin/surveys", label: "Surveys" },
+  { href: "/admin/deposits", label: "Deposits" },
+  { href: "/admin/withdrawals", label: "Withdrawals" },
   { href: "/admin/reviews", label: "Study reviews" },
 ];
 
@@ -14,12 +17,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950">
       <header className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-4">
             <Logo />
             <span className="rounded-lg bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700">Admin</span>
           </div>
-          <nav className="hidden gap-1 sm:flex">
+          <nav className="flex max-w-full flex-wrap gap-1">
             {links.map((link) => (
               <Link key={link.href} href={link.href} className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
                 {link.label}

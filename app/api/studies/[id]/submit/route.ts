@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/api";
-import { getStudy } from "@/lib/studies-data";
+import { findStudy } from "@/lib/studies-data";
 import { mutateStore } from "@/lib/store";
 import { publicUser } from "@/lib/session";
 
@@ -11,10 +11,10 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ error: "Identity verification has to clear before you can submit." }, { status: 403 });
   }
   const { id } = await context.params;
-  const study = getStudy(id);
-  if (!study) return NextResponse.json({ error: "Study not found." }, { status: 404 });
 
   const result = await mutateStore((data) => {
+    const study = findStudy(data.studies, id);
+    if (!study) return { error: "Study not found." };
     const user = data.users.find((u) => u.id === auth.user.id);
     const submission = data.submissions.find((s) => s.userId === auth.user.id && s.studyId === id && s.status === "in_progress");
     if (!user || !submission) return { error: "Start the study before submitting." };

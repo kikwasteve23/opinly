@@ -6,6 +6,7 @@ export type PayoutNetwork = "usdt_trc20" | "ltc";
 export type UserRole = "participant" | "admin";
 export type AccountStatus = "active" | "suspended";
 export type WithdrawalStatus = "processing" | "sent" | "rejected";
+export type LedgerType = "deposit" | "adjustment" | "study" | "withdrawal";
 
 export type Profile = {
   legalName: string;
@@ -63,6 +64,7 @@ export type Study = {
   minutes: number;
   format: string;
   device: string;
+  published: boolean;
   questions: Question[];
 };
 
@@ -94,8 +96,20 @@ export type Withdrawal = {
   adminNote: string | null;
 };
 
+export type LedgerEntry = {
+  id: string;
+  userId: string;
+  amount: number;
+  type: LedgerType;
+  note: string;
+  createdAt: string;
+  adminEmail: string | null;
+};
+
 export type StoreData = {
   users: User[];
   submissions: Submission[];
   withdrawals: Withdrawal[];
+  studies: Study[];
+  ledger: LedgerEntry[];
 };

@@ -3,12 +3,13 @@ import path from "node:path";
 import bcrypt from "bcryptjs";
 import { databaseUrl, loadPostgresStore, savePostgresStore } from "./db/postgres";
 import type { StoreData, User } from "./types";
+import { DEFAULT_STUDIES } from "./studies-data";
 
 const DATA_PATH = path.join(process.cwd(), "data", "store.json");
 let queue: Promise<unknown> = Promise.resolve();
 
 function emptyStore(): StoreData {
-  return { users: [], submissions: [], withdrawals: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [] };
 }
 
 export function newId(prefix: string) {
@@ -51,6 +52,8 @@ function normalizeStore(data: StoreData): StoreData {
       reviewedAt: w.reviewedAt ?? null,
       adminNote: w.adminNote ?? null,
     })),
+    studies: (data.studies ?? []).map((study) => ({ ...study, published: study.published ?? true })),
+    ledger: data.ledger ?? [],
   };
 }
 
@@ -67,12 +70,16 @@ async function verifiedShell(overrides: Partial<User> & Pick<User, "id" | "email
 async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded: boolean }> {
   data = normalizeStore(data);
   let seeded = false;
+  if (data.studies.length === 0) {
+    data.studies = DEFAULT_STUDIES.map((study) => ({ ...study, published: true }));
+    seeded = true;
+  }
   const needsAdmin = !data.users.some((u) => u.email === "admin@opinly.local");
   const needsDemo = !data.users.some((u) => u.email === "demo@opinly.local");
   const existingDemo = data.users.find((u) => u.email === "demo@opinly.local");
   const demoReferralCount = existingDemo ? data.users.filter((u) => u.referredBy === existingDemo.id).length : 0;
   const needsReferrals = Boolean(existingDemo) && demoReferralCount < 15;
-  if (!needsAdmin && !needsDemo && !needsReferrals) return { data, seeded: false };
+  if (!needsAdmin && !needsDemo && !needsReferrals && !seeded) return { data, seeded: false };
 
   const participantPassword = await bcrypt.hash(process.env.DEMO_USER_PASSWORD ?? "demo-dev-only", 10);
   const adminPassword = await bcrypt.hash(process.env.DEMO_ADMIN_PASSWORD ?? "admin-dev-only", 10);

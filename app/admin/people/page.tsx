@@ -33,9 +33,17 @@ export default async function AdminPeople({ searchParams }: { searchParams: Prom
               <th className="px-4 py-3">Wallet</th>
               <th className="px-4 py-3">Referrals</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
+            {people.length === 0 ? (
+              <tr>
+                <td className="px-4 py-6 text-gray-500" colSpan={6}>
+                  No matching people.
+                </td>
+              </tr>
+            ) : null}
             {people.map((person) => (
               <tr key={person.id} className="border-t border-gray-100">
                 <td className="px-4 py-3">
@@ -50,6 +58,11 @@ export default async function AdminPeople({ searchParams }: { searchParams: Prom
                   {qualifiedReferralCount(store.users, person.id)}/{REFERRAL_REQUIREMENT}
                 </td>
                 <td className="px-4 py-3 capitalize">{person.accountStatus}</td>
+                <td className="px-4 py-3">
+                  <Link href={`/admin/people/${person.id}`} className="text-sm font-semibold text-indigo-700">
+                    Preview
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

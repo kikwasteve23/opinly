@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
-import { getStudy } from "@/lib/studies-data";
+import { findStudy } from "@/lib/studies-data";
 import { money } from "@/lib/utils";
 import { reviewSubmissionAction } from "@/lib/admin-actions";
 
@@ -18,14 +18,14 @@ export default async function AdminReviews() {
       <div className="mt-6 space-y-4">
         {pending.length === 0 ? <p className="text-sm text-gray-500">Nothing waiting.</p> : null}
         {pending.map((item) => {
-          const study = getStudy(item.studyId);
+          const study = findStudy(store.studies, item.studyId);
           const person = byId[item.userId];
           return (
             <div key={item.id} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
               <p className="font-semibold">{study?.title ?? item.studyId}</p>
               <p className="text-sm text-gray-500">
                 <Link className="text-indigo-700" href={`/admin/people/${item.userId}`}>
-                  {person?.email}
+                  {person?.profile?.legalName || person?.email}
                 </Link>{" "}
                 · {study ? money(study.reward) : ""}
               </p>

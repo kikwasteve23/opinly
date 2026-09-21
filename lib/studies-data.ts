@@ -1,6 +1,6 @@
 import type { Study } from "./types";
 
-export const STUDIES: Study[] = [
+const SEED_STUDIES: Omit<Study, "published">[] = [
   {
     id: "streaming-choice",
     title: "How do you choose a streaming service?",
@@ -201,8 +201,14 @@ export const STUDIES: Study[] = [
   },
 ];
 
+export const DEFAULT_STUDIES: Study[] = SEED_STUDIES.map((study) => ({ ...study, published: true }));
+
+export function findStudy(studies: Study[], id: string) {
+  return studies.find((study) => study.id === id) ?? null;
+}
+
 export function getStudy(id: string) {
-  return STUDIES.find((study) => study.id === id) ?? null;
+  return findStudy(DEFAULT_STUDIES, id);
 }
 
 export function kindLabel(kind: Study["kind"]) {

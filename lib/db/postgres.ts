@@ -60,6 +60,20 @@ CREATE TABLE IF NOT EXISTS withdrawals (
   requested NUMERIC(12,2) NOT NULL,
   body JSONB NOT NULL
 );
+CREATE TABLE IF NOT EXISTS studies (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  published BOOLEAN NOT NULL,
+  reward NUMERIC(12,2) NOT NULL,
+  body JSONB NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ledger (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  type TEXT NOT NULL,
+  body JSONB NOT NULL
+);
 `;
 
 export async function ensureSchema() {
@@ -75,11 +89,13 @@ export async function loadPostgresStore(): Promise<StoreData | null> {
   if (!db) return null;
   const result = await db.query<{ data: StoreData }>("SELECT data FROM app_state WHERE id = $1", ["main"]);
   const row = result.rows[0];
-  if (!row?.data) return { users: [], submissions: [], withdrawals: [] };
+  if (!row?.data) return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [] };
   return {
     users: row.data.users ?? [],
     submissions: row.data.submissions ?? [],
     withdrawals: row.data.withdrawals ?? [],
+    studies: row.data.studies ?? [],
+    ledger: row.data.ledger ?? [],
   };
 }
 
@@ -126,6 +142,20 @@ export async function savePostgresStore(data: StoreData) {
       await client.query(
         `INSERT INTO withdrawals (id, user_id, status, requested, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
         [withdrawal.id, withdrawal.userId, withdrawal.status, withdrawal.requested, JSON.stringify(withdrawal)],
+      );
+    }
+    await client.query("DELETE FROM studies");
+    for (const study of data.studies) {
+      await client.query(
+        `INSERT INTO studies (id, title, published, reward, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
+        [study.id, study.title, study.published, study.reward, JSON.stringify(study)],
+      );
+    }
+    await client.query("DELETE FROM ledger");
+    for (const entry of data.ledger) {
+      await client.query(
+        `INSERT INTO ledger (id, user_id, amount, type, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
+        [entry.id, entry.userId, entry.amount, entry.type, JSON.stringify(entry)],
       );
     }
     await client.query("COMMIT");

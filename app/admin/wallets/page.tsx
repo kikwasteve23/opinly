@@ -1,55 +1,5 @@
-import Link from "next/link";
-import { requireAdmin } from "@/lib/auth-actions";
-import { readStoreSnapshot } from "@/lib/store";
-import { money } from "@/lib/utils";
-import { reviewWithdrawalAction } from "@/lib/admin-actions";
+import { redirect } from "next/navigation";
 
-export default async function AdminWallets() {
-  await requireAdmin();
-  const store = await readStoreSnapshot();
-  const byId = Object.fromEntries(store.users.map((u) => [u.id, u]));
-
-  return (
-    <div>
-      <h1 className="text-2xl font-extrabold">Wallets</h1>
-      <p className="mt-1 text-sm text-gray-600">Mark a payout sent after you have transferred crypto, or reject it to refund the balance.</p>
-      <div className="mt-6 space-y-3">
-        {store.withdrawals.length === 0 ? <p className="text-sm text-gray-500">No withdrawals yet.</p> : null}
-        {store.withdrawals.map((item) => {
-          const person = byId[item.userId];
-          return (
-            <div key={item.id} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <Link href={`/admin/people/${item.userId}`} className="font-semibold text-indigo-700">
-                    {person?.email ?? item.userId}
-                  </Link>
-                  <p className="text-sm text-gray-500">
-                    {money(item.requested)} · {item.network === "ltc" ? "Litecoin" : "USDT TRC20"} · arrives {money(item.arrives)}
-                  </p>
-                  <p className="mt-1 break-all text-xs text-gray-400">{item.address}</p>
-                </div>
-                <span className="rounded-lg bg-gray-100 px-2 py-1 text-xs capitalize">{item.status}</span>
-              </div>
-              {item.status === "processing" ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <form action={reviewWithdrawalAction}>
-                    <input type="hidden" name="withdrawalId" value={item.id} />
-                    <input type="hidden" name="decision" value="sent" />
-                    <button className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white">Mark sent</button>
-                  </form>
-                  <form action={reviewWithdrawalAction} className="flex gap-2">
-                    <input type="hidden" name="withdrawalId" value={item.id} />
-                    <input type="hidden" name="decision" value="rejected" />
-                    <input name="note" placeholder="Reason" className="rounded-lg border px-3 py-2 text-sm" />
-                    <button className="rounded-lg border px-3 py-2 text-sm font-semibold">Reject and refund</button>
-                  </form>
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+export default function AdminWalletsRedirect() {
+  redirect("/admin/withdrawals");
 }

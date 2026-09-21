@@ -47,6 +47,7 @@ Render dashboard → your **Web Service** → **Environment**:
 | `APP_URL` | `https://your-service.onrender.com` |
 | `DEMO_ADMIN_PASSWORD` | the password you will type for staff |
 | `DEMO_USER_PASSWORD` | optional; defaults to `demo-dev-only` |
+| `OPENAI_API_KEY` | optional; admin survey drafts. Without it, a built-in writer is used |
 
 Save. **Manual Deploy → Deploy latest commit** so the new env vars load.
 
@@ -68,4 +69,10 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 - Join with a referral code, finish profile / English / identity
 - Take studies; pay sits in **pending** until an admin approves the submission
 - Withdraw USDT (TRC20) or Litecoin after 15 verified referrals; an admin marks payouts sent
-- Admin: `/admin` — people, identity, wallet adjustments, study review, payouts
+- Admin (`/login?staff=1` → `/admin`):
+  - **Surveys** — write studies by hand or generate a draft with AI, then publish
+  - **Applicants** — review identity applications and approve or reject
+  - **People** — search participants and open a full profile preview
+  - **Deposits** — credit or debit wallets with an audit ledger
+  - **Withdrawals** — mark crypto payouts sent, or reject and refund
+  - **Study reviews** — approve completed work so pay moves to available

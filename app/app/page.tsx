@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
 import { readStoreSnapshot } from "@/lib/store";
-import { STUDIES, kindLabel } from "@/lib/studies-data";
+import { kindLabel } from "@/lib/studies-data";
 import { money } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
@@ -45,7 +45,9 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-6 space-y-3">
-        {STUDIES.map((study) => {
+        {store.studies
+          .filter((study) => study.published)
+          .map((study) => {
           const mine = submissions.filter((s) => s.studyId === study.id).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] as
             | (typeof submissions)[number]
             | undefined;

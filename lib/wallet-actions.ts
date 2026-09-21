@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { requireCompleteUser } from "@/lib/auth-actions";
 import { mutateStore } from "@/lib/store";
 import type { PayoutNetwork } from "@/lib/money";
-import { getStudy } from "@/lib/studies-data";
+import { findStudy } from "@/lib/studies-data";
 import { applyWithdrawal } from "@/lib/withdraw";
 
 export type WalletState = { error?: string; ok?: string } | null;
@@ -44,13 +44,13 @@ export async function saveStudyAction(studyId: string, answers: Record<string, s
 export async function submitStudyAction(studyId: string, answers: Record<string, string | string[]>): Promise<StudySubmitState> {
   const user = await requireCompleteUser();
   await saveStudyAction(studyId, answers);
-  const study = getStudy(studyId);
-  if (!study) return { error: "Study not found." };
   if (user.identityStatus !== "approved") {
     return { error: "Identity verification has to clear before you can submit." };
   }
 
   const result = await mutateStore((data) => {
+    const study = findStudy(data.studies, studyId);
+    if (!study) return { error: "Study not found." };
     const currentUser = data.users.find((u) => u.id === user.id);
     const submission = data.submissions.find((s) => s.userId === user.id && s.studyId === studyId && s.status === "in_progress");
     if (!currentUser || !submission) return { error: "Start the study before submitting." };

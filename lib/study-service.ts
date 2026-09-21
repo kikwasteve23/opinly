@@ -1,10 +1,11 @@
-import { getStudy, kindLabel } from "./studies-data";
-import { mutateStore, newId } from "./store";
+import { findStudy, kindLabel } from "./studies-data";
+import { mutateStore, newId, readStoreSnapshot } from "./store";
 import type { User } from "./types";
 
 export async function loadStudyForUser(user: User, id: string) {
-  const study = getStudy(id);
-  if (!study) return null;
+  const snapshot = await readStoreSnapshot();
+  const study = findStudy(snapshot.studies, id);
+  if (!study || !study.published) return null;
   const submission = await mutateStore((data) => {
     const existing = data.submissions.find(
       (s) =>
@@ -30,7 +31,10 @@ export async function loadStudyForUser(user: User, id: string) {
     return created;
   });
   return {
-    study: { ...study, kindLabel: kindLabel(study.kind) },
+    study: {
+      ...study,
+      kindLabel: kindLabel(study.kind),
+    },
     submission,
     canStart: user.identityStatus === "approved",
   };

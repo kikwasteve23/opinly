@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
 import { qualifiedReferralCount, REFERRAL_REQUIREMENT } from "@/lib/referrals";
 import { money } from "@/lib/utils";
 import { adjustWalletAction, setAccountStatusAction, setIdentityAction } from "@/lib/admin-actions";
-import { getStudy } from "@/lib/studies-data";
+import { findStudy } from "@/lib/studies-data";
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
@@ -15,12 +16,19 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const referrals = store.users.filter((u) => u.referredBy === person.id);
   const submissions = store.submissions.filter((s) => s.userId === person.id);
   const withdrawals = store.withdrawals.filter((w) => w.userId === person.id);
+  const ledger = store.ledger.filter((entry) => entry.userId === person.id);
+  const profile = person.profile;
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold">{person.profile?.legalName || person.email}</h1>
-        <p className="text-sm text-gray-500">{person.email} · code {person.referralCode}</p>
+        <p className="text-sm text-indigo-700">
+          <Link href="/admin/people">← People</Link>
+        </p>
+        <h1 className="mt-2 text-2xl font-extrabold">{profile?.legalName || person.email}</h1>
+        <p className="text-sm text-gray-500">
+          {person.email} · code {person.referralCode} · joined {new Date(person.createdAt).toLocaleDateString()}
+        </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Available" value={money(person.available)} />
@@ -28,6 +36,36 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <Stat label="Withdrawn" value={money(person.withdrawn)} />
         <Stat label="Qualified referrals" value={`${qualifiedReferralCount(store.users, person.id)}/${REFERRAL_REQUIREMENT}`} />
       </div>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+        <h2 className="font-semibold">Profile preview</h2>
+        {profile ? (
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <Field label="Legal name" value={profile.legalName} />
+            <Field label="Date of birth" value={profile.dateOfBirth} />
+            <Field label="Gender" value={profile.gender} />
+            <Field label="Occupation" value={profile.occupation} />
+            <Field label="City" value={profile.city} />
+            <Field label="Region" value={profile.region} />
+            <Field label="Country" value={profile.country} />
+            <Field label="Postal code" value={profile.postalCode} />
+            <Field label="Languages" value={profile.languages.join(", ") || "—"} />
+            <Field label="English check" value={person.englishPassed ? "Passed" : "Not passed"} />
+          </dl>
+        ) : (
+          <p className="mt-2 text-sm text-gray-500">This person has not finished the profile step.</p>
+        )}
+        {person.englishWriting ? (
+          <div className="mt-4">
+            <p className="text-xs uppercase text-gray-500">English writing sample</p>
+            <p className="mt-1 rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-950">{person.englishWriting}</p>
+          </div>
+        ) : null}
+        <p className="mt-4 text-sm text-gray-500">
+          Payout: {person.payout.network === "ltc" ? "Litecoin" : "USDT TRC20"}
+          {person.payout.address ? ` · ${person.payout.address}` : " · no address yet"}
+        </p>
+      </section>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
         <h2 className="font-semibold">Identity</h2>
@@ -60,7 +98,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </label>
           <label className="flex-1 text-sm">
             Reason
-            <input name="reason" required className="mt-1 w-full rounded-lg border px-3 py-2" />
+            <input name="note" required className="mt-1 w-full rounded-lg border px-3 py-2" />
           </label>
           <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Apply</button>
         </form>
@@ -79,7 +117,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           {referrals.length === 0 ? <li className="text-gray-500">None yet.</li> : null}
           {referrals.map((ref) => (
             <li key={ref.id}>
-              {ref.email} · {ref.identityStatus} · {ref.accountStatus}
+              <Link className="text-indigo-700" href={`/admin/people/${ref.id}`}>
+                {ref.email}
+              </Link>{" "}
+              · {ref.identityStatus} · {ref.accountStatus}
             </li>
           ))}
         </ul>
@@ -88,9 +129,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       <section>
         <h2 className="font-semibold">Studies</h2>
         <ul className="mt-3 space-y-2 text-sm">
+          {submissions.length === 0 ? <li className="text-gray-500">No studies yet.</li> : null}
           {submissions.map((s) => (
             <li key={s.id}>
-              {getStudy(s.studyId)?.title ?? s.studyId} · {s.status}
+              {findStudy(store.studies, s.studyId)?.title ?? s.studyId} · {s.status}
             </li>
           ))}
         </ul>
@@ -99,6 +141,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       <section>
         <h2 className="font-semibold">Withdrawals</h2>
         <ul className="mt-3 space-y-2 text-sm">
+          {withdrawals.length === 0 ? <li className="text-gray-500">No withdrawals yet.</li> : null}
           {withdrawals.map((w) => (
             <li key={w.id}>
               {money(w.requested)} · {w.status} · {w.network}
@@ -106,6 +149,28 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           ))}
         </ul>
       </section>
+
+      <section>
+        <h2 className="font-semibold">Ledger</h2>
+        <ul className="mt-3 space-y-2 text-sm">
+          {ledger.length === 0 ? <li className="text-gray-500">No ledger entries.</li> : null}
+          {ledger.map((entry) => (
+            <li key={entry.id}>
+              {entry.amount > 0 ? "+" : ""}
+              {money(entry.amount)} · {entry.type} · {entry.note}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs uppercase text-gray-500">{label}</dt>
+      <dd className="mt-0.5">{value || "—"}</dd>
     </div>
   );
 }
