@@ -1,112 +1,88 @@
-import fs from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { defaultSettings, type StoreShape } from "./types";
+import bcrypt from "bcryptjs";
+import type { StoreData, User } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_PATH = path.join(DATA_DIR, "store.json");
+const DATA_PATH = path.join(process.cwd(), "data", "store.json");
 
-function emptyStore(): StoreShape {
-  return {
-    profiles: [],
-    rooms: [],
-    members: [],
-    messages: [],
-    personaPool: [],
-    aiPersonas: [],
-    assignments: [],
-    documents: [],
-    chunks: [],
-    topics: [],
-    conversation: [],
-    botEvents: [],
-    moderationEvents: [],
-    reports: [],
-    tokenUsage: [],
-    settings: defaultSettings(),
-    personaMemory: [],
-    typing: [],
-    analytics: [],
-    seeded: false,
+let writeQueue: Promise<void> = Promise.resolve();
+
+function emptyStore(): StoreData {
+  return { users: [], submissions: [], withdrawals: [] };
+}
+
+async function seedIfNeeded(data: StoreData): Promise<StoreData> {
+  if (data.users.length > 0) return data;
+  const password = process.env.DEMO_USER_PASSWORD ?? "demo-dev-only";
+  const demo: User = {
+    id: "usr_demo",
+    email: "demo@opinly.local",
+    passwordHash: await bcrypt.hash(password, 10),
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40).toISOString(),
+    profile: {
+      legalName: "Alex Rivera",
+      dateOfBirth: "1994-03-12",
+      gender: "Prefer not to say",
+      country: "United States",
+      city: "Portland",
+      region: "Oregon",
+      postalCode: "97201",
+      languages: ["English"],
+      occupation: "Retail",
+    },
+    englishPassed: true,
+    englishWriting: "I enjoy answering research questions in my spare time.",
+    identityStatus: "approved",
+    identityNote: "Demo account, pre-verified.",
+    onboardingStep: "complete",
+    available: 62.75,
+    pending: 8.25,
+    withdrawn: 140,
+    payout: {
+      network: "usdt_trc20",
+      address: "",
+      addressChangedAt: null,
+    },
+    lastWithdrawalAt: null,
   };
+  data.users.push(demo);
+  return data;
 }
 
-let memory: StoreShape | null = null;
-let writeChain: Promise<void> = Promise.resolve();
-let initPromise: Promise<void> | null = null;
-
-function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  const uploads = path.join(DATA_DIR, "uploads");
-  if (!fs.existsSync(uploads)) fs.mkdirSync(uploads, { recursive: true });
-}
-
-export async function initStore() {
-  if (!initPromise) {
-    initPromise = (async () => {
-      const { usesPostgres, migratePostgres, loadFromPostgres } = await import("./db/postgres");
-      if (usesPostgres()) {
-        await migratePostgres();
-        const fromDb = await loadFromPostgres();
-        memory = fromDb ?? emptyStore();
-        return;
-      }
-      ensureDir();
-      if (fs.existsSync(STORE_PATH)) {
-        try {
-          const parsed = JSON.parse(fs.readFileSync(STORE_PATH, "utf8")) as StoreShape;
-          memory = { ...emptyStore(), ...parsed, settings: { ...defaultSettings(), ...parsed.settings } };
-          return;
-        } catch {
-          memory = emptyStore();
-          return;
-        }
-      }
-      memory = emptyStore();
-    })();
+async function readStore(): Promise<StoreData> {
+  try {
+    const raw = await readFile(DATA_PATH, "utf8");
+    const parsed = JSON.parse(raw) as StoreData;
+    return {
+      users: parsed.users ?? [],
+      submissions: parsed.submissions ?? [],
+      withdrawals: parsed.withdrawals ?? [],
+    };
+  } catch {
+    return emptyStore();
   }
-  await initPromise;
 }
 
-export function loadStore(): StoreShape {
-  if (memory) return memory;
-  ensureDir();
-  if (fs.existsSync(STORE_PATH)) {
-    try {
-      const parsed = JSON.parse(fs.readFileSync(STORE_PATH, "utf8")) as StoreShape;
-      memory = { ...emptyStore(), ...parsed, settings: { ...defaultSettings(), ...parsed.settings } };
-      return memory;
-    } catch {
-      memory = emptyStore();
-      return memory;
-    }
-  }
-  memory = emptyStore();
-  return memory;
+async function writeStore(data: StoreData) {
+  await mkdir(path.dirname(DATA_PATH), { recursive: true });
+  await writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
-export function saveStore(next?: StoreShape) {
-  if (next) memory = next;
-  const snapshot = loadStore();
-  ensureDir();
-  writeChain = writeChain.then(async () => {
-    const { usesPostgres, saveToPostgres } = await import("./db/postgres");
-    if (usesPostgres()) {
-      await saveToPostgres(snapshot);
-      return;
-    }
-    await fs.promises.writeFile(STORE_PATH, JSON.stringify(snapshot, null, 2));
+export async function mutateStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T> {
+  let result!: T;
+  writeQueue = writeQueue.then(async () => {
+    const data = await seedIfNeeded(await readStore());
+    result = await fn(data);
+    await writeStore(data);
   });
-  return writeChain;
-}
-
-export function mutateStore<T>(fn: (store: StoreShape) => T): T {
-  const store = loadStore();
-  const result = fn(store);
-  void saveStore(store);
+  await writeQueue;
   return result;
 }
 
-export function uploadsDir() {
-  ensureDir();
-  return path.join(DATA_DIR, "uploads");
+export async function readFreshStore() {
+  return mutateStore(async (data) => structuredClone(data));
+}
+
+export function newId(prefix: string) {
+  return `${prefix}_${crypto.randomUUID().slice(0, 8)}`;
 }

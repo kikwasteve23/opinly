@@ -1,59 +1,37 @@
-# Harbor Chat
+# Opinly
 
-Realtime group chat for the Harbor community. Rooms stay populated (70+ online), members show as names, and conversation state lives in Postgres when you deploy.
+Opinly is a paid online-research platform: participants complete studies in the browser, see pay and length up front, and withdraw approved earnings to crypto.
 
-## Local development
+This is a working product slice with its own branding (name, indigo palette, and logo). It is **not** affiliated with PaidSay. Identity checks and withdrawals are simulated locally so you can try the full flow without sending documents or funds.
+
+## Run locally
 
 ```bash
 cp .env.example .env.local
 npm install
-npm run seed:excel
 npm test
 npm run dev
 ```
 
-Open [http://localhost:43147](http://localhost:43147).
+Open [http://localhost:43173](http://localhost:43173).
 
-| Role | Email | Password |
+| Account | Email | Password |
 | --- | --- | --- |
-| Member | `demo@harbor.local` | `demo-dev-only` |
-| Admin | `admin@harbor.local` | `admin-dev-only` |
+| Pre-verified demo | `demo@opinly.local` | `demo-dev-only` |
 
-Without `DATABASE_URL`, data is stored in `data/store.json`.
+New accounts go through profile, English, and identity onboarding. In this demo the identity step auto-approves.
 
-## Render + PostgreSQL
+Without extra infrastructure, state is stored in `data/store.json`.
 
-1. Push this repo to GitHub (`kikwasteve23/harbor-chat`).
-2. In [Render](https://dashboard.render.com): **New → PostgreSQL**. Copy the **Internal Database URL**.
-3. **New → Web Service** from this repo (or apply `render.yaml`).
-   - Build: `npm ci && npm run build`
-   - Start: `npm start`
-   - Instance: Node 22
-4. Set environment variables:
+## What you can do
 
-| Variable | Value |
-| --- | --- |
-| `DATABASE_URL` | Render Postgres URL |
-| `DATA_BACKEND` | `postgres` |
-| `APP_SECRET` | long random string |
-| `APP_URL` | `https://your-service.onrender.com` |
-| `AI_PROVIDER` | `mock` (or `openai` + `AI_API_KEY`) |
-| `DEMO_ADMIN_PASSWORD` | your admin password |
-| `DEMO_USER_PASSWORD` | optional demo user |
-
-On boot the app runs `db/schema.sql`, then seeds rooms and the persona pool if the database is empty. Health check: `/api/health`.
-
-Postgres holds:
-
-- `app_state` — full application state (source of truth)
-- `profiles`, `rooms`, `messages`, `room_conversation_state`, and related tables — queryable copies
+- Marketing site with how-it-works, studies, payouts, and FAQ
+- Register / log in
+- Onboarding (profile, English assessment, identity)
+- Dashboard of matched studies
+- Take a study with saved progress, attention checks, and approval into the wallet
+- Withdraw to USDT (TRC20) or Litecoin with the 5% platform fee and network fee shown before confirm
 
 ## Environment
 
 See `.env.example`. Never commit real credentials.
-
-## Tests
-
-```bash
-npm test
-```

@@ -1,17 +1,24 @@
 import { NextResponse } from "next/server";
-import { createSessionToken, publicProfile, setSessionCookie } from "@/lib/auth";
-import { bootstrapIfNeeded } from "@/lib/bootstrap";
-import { loginUser } from "@/lib/platform";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { mutateStore } from "@/lib/store";
+import { setSessionCookie } from "@/lib/session";
 
-export async function POST(req: Request) {
-  await bootstrapIfNeeded();
-  try {
-    const body = await req.json();
-    const profile = await loginUser(String(body.email ?? ""), String(body.password ?? ""));
-    const token = await createSessionToken(profile);
-    await setSessionCookie(token);
-    return NextResponse.json({ user: publicProfile(profile) });
-  } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Login failed" }, { status: 400 });
+const schema = z.object({
+  email: z.email(),
+  password: z.string().min(1),
+});
+
+export async function POST(request: Request) {
+  const parsed = schema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Enter your email and password." }, { status: 400 });
   }
+  const email = parsed.data.email.trim().toLowerCase();
+  const user = await mutateStore((data) => data.users.find((u) => u.email === email) ?? null);
+  if (!user || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
+    return NextResponse.json({ error: "Those details do not match an account." }, { status: 401 });
+  }
+  await setSessionCookie(user.id);
+  return NextResponse.json({ ok: true, onboardingStep: user.onboardingStep });
 }

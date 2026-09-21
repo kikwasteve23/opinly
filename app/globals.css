@@ -1,62 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e8eef4;
-  --foreground: #0f1720;
+  --background: #ffffff;
+  --foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #4b5563;
+  --border: #e5e7eb;
   --card: #ffffff;
-  --card-foreground: #0f1720;
-  --muted: #d7e0ea;
-  --muted-foreground: #5b6b7c;
-  --border: #c9d4e0;
-  --primary: #2a6fdb;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
   --primary-foreground: #ffffff;
-  --accent: #1d9bf0;
-  --sidebar: #f4f7fb;
-  --chat: #dbe6f0;
-  --mine: #d0e6c8;
-  --theirs: #ffffff;
-  --ring: #2a6fdb;
-  --danger: #c23b3b;
+  --accent: #eef2ff;
+  --accent-foreground: #3730a3;
 }
 
 .dark {
-  --background: #0e1621;
-  --foreground: #e8eef4;
-  --card: #17212b;
-  --card-foreground: #e8eef4;
-  --muted: #242f3d;
-  --muted-foreground: #8b9aab;
-  --border: #242f3d;
-  --primary: #2b5278;
-  --primary-foreground: #ffffff;
-  --accent: #64a9e8;
-  --sidebar: #17212b;
-  --chat: #0e1621;
-  --mine: #2b5278;
-  --theirs: #182533;
-  --ring: #64a9e8;
-  --danger: #e57373;
+  --background: #030712;
+  --foreground: #f3f4f6;
+  --muted: #111827;
+  --muted-foreground: #9ca3af;
+  --border: #1f2937;
+  --card: #0b1220;
+  --primary: #818cf8;
+  --primary-hover: #a5b4fc;
+  --primary-foreground: #111827;
+  --accent: #1e1b4b;
+  --accent-foreground: #c7d2fe;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-card: var(--card);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
-  --color-sidebar: var(--sidebar);
-  --color-chat: var(--chat);
-  --color-mine: var(--mine);
-  --color-theirs: var(--theirs);
-  --color-ring: var(--ring);
-  --color-danger: var(--danger);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent-foreground: var(--accent-foreground);
+  --font-sans: var(--font-figtree);
 }
 
 * {
@@ -65,19 +49,72 @@
 
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 8px;
+@keyframes opinly-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
-  border-radius: 999px;
+
+@keyframes opinly-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
+  }
+}
+
+.op-up {
+  animation: opinly-fade-up 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.op-up-1 {
+  animation-delay: 0.08s;
+}
+.op-up-2 {
+  animation-delay: 0.16s;
+}
+.op-up-3 {
+  animation-delay: 0.24s;
+}
+.op-up-4 {
+  animation-delay: 0.32s;
+}
+.op-drift {
+  animation: opinly-drift 7s ease-in-out infinite;
+}
+.op-drift-2 {
+  animation: opinly-drift 9s ease-in-out infinite reverse;
+}
+
+.op-grid {
+  background-image:
+    linear-gradient(to right, rgba(79, 70, 229, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(79, 70, 229, 0.09) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .op-up,
+  .op-drift,
+  .op-drift-2 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

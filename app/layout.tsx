@@ -1,27 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "Harbor Chat",
-  description: "Harbor community messenger.",
+  title: "Opinly: Get paid for an honest take",
+  description: "Join paid online studies with Opinly. Studies run inside the platform, you are paid in crypto, and joining is always free.",
+  icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-      <body className="min-h-full bg-background text-foreground antialiased">
+    <html lang="en" suppressHydrationWarning className={`${figtree.variable} scroll-smooth`}>
+      <body className="min-h-full bg-white font-sans text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
         <Providers>{children}</Providers>
       </body>
     </html>
