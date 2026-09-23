@@ -25,6 +25,7 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const nav = [
     { href: "/app", label: "Studies" },
+    { href: "/app/history", label: "History" },
     { href: "/app/wallet", label: "Wallet" },
     ...(showReferralTools
       ? [

@@ -480,3 +480,16 @@ export function tierLabel(tier: Study["tier"]) {
 export function questionCountLabel(count: number) {
   return count === 1 ? "1 question" : `${count} questions`;
 }
+
+export function isFinishedStudy(status: string | undefined) {
+  return status === "approved" || status === "pending_review";
+}
+
+export function latestUserSubmission<T extends { studyId: string; updatedAt: string }>(
+  submissions: T[],
+  studyId: string,
+): T | undefined {
+  return submissions
+    .filter((item) => item.studyId === studyId)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+}

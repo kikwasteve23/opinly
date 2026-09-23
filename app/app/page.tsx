@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
 import { readStoreSnapshot } from "@/lib/store";
-import { kindLabel, questionCountLabel, tierLabel } from "@/lib/studies-data";
 import { money } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import {
@@ -18,6 +17,8 @@ import {
 } from "@/lib/referrals";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { formatMoney } from "@/lib/geo";
+import { isFinishedStudy, latestUserSubmission } from "@/lib/studies-data";
+import { StudyCard } from "@/components/study-card";
 
 export default async function DashboardPage() {
   const user = await getSessionUser();
@@ -29,6 +30,14 @@ export default async function DashboardPage() {
   const country = await resolveCountry(user);
   const starterLocked = starterSurveysLocked(earnings, level);
   const showReferralTrack = hitStudyEarningsCap(earnings);
+
+  const openStudies = store.studies
+    .filter((study) => study.published)
+    .filter((study) => {
+      const mine = latestUserSubmission(submissions, study.id);
+      if (isFinishedStudy(mine?.status)) return false;
+      return studyVisibleOnDashboard(earnings, study.tier, Boolean(mine));
+    });
 
   return (
     <div>
@@ -83,72 +92,45 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="mt-10 flex items-end justify-between">
+      <div className="mt-10 flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold">Studies for you</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             {showReferralTrack ? `${levelName(level)} is your current track.` : "Beginner studies are open."} Location{" "}
-            {country.name} · pay shown in USD and {country.currency}.
+            {country.name} · pay shown in USD and {country.currency}. Finished work is in{" "}
+            <Link href="/app/history" className="font-semibold text-indigo-700">
+              History
+            </Link>
+            .
           </p>
         </div>
-        <Link href="/app/wallet" className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
-          Wallet
+        <Link href="/app/history" className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+          History
         </Link>
       </div>
 
       <div className="mt-6 space-y-3">
-        {store.studies
-          .filter((study) => study.published)
-          .filter((study) => {
-            const mine = submissions.some((s) => s.studyId === study.id);
-            return studyVisibleOnDashboard(earnings, study.tier, mine);
-          })
-          .map((study) => {
-            const mine = submissions.filter((s) => s.studyId === study.id).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] as
-              | (typeof submissions)[number]
-              | undefined;
-            const status = mine?.status ?? "available";
-            const done = status === "approved" || status === "pending_review";
-            const open = canAccessStudyTier(user, study.tier, level, earnings);
-            const reason = open ? null : studyLockReason(user, study.tier, level, earnings);
-            return (
-              <div key={study.id} className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 sm:flex-row sm:items-center dark:border-gray-800 dark:bg-gray-900">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold">{study.title}</h2>
-                    <span className="rounded-lg bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">{kindLabel(study.kind)}</span>
-                    <span className="rounded-lg bg-violet-50 px-2 py-0.5 text-xs text-violet-800">{tierLabel(study.tier)}</span>
-                    {status !== "available" ? (
-                      <span className="rounded-lg bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        {status.replace("_", " ")}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{study.summary}</p>
-                  <p className="mt-2 text-xs text-gray-500">
-                    {questionCountLabel(study.questions.length)} · About {study.minutes} minutes · {study.format} ·{" "}
-                    {formatMoney(study.reward, country)}
-                  </p>
-                  {mine?.rejectionReason ? <p className="mt-2 text-sm text-red-600">{mine.rejectionReason}</p> : null}
-                  {reason ? <p className="mt-2 text-sm text-amber-800">{reason}</p> : null}
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-bold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
-                    {money(study.reward)}
-                  </span>
-                  {done ? (
-                    <span className="text-sm text-gray-500">Done</span>
-                  ) : !open ? (
-                    <span className="text-sm text-gray-500">Locked</span>
-                  ) : (
-                    <Link href={`/app/studies/${study.id}`} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
-                      {status === "in_progress" ? "Continue" : status === "rejected" ? "Retake" : "Start study"}
-                    </Link>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        {openStudies.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-500">
+            No open studies right now. Anything you have already submitted lives in History.
+          </p>
+        ) : null}
+        {openStudies.map((study) => {
+          const mine = latestUserSubmission(submissions, study.id);
+          const status = mine?.status ?? "available";
+          const open = canAccessStudyTier(user, study.tier, level, earnings);
+          const reason = open ? null : studyLockReason(user, study.tier, level, earnings);
+          return (
+            <StudyCard
+              key={study.id}
+              study={study}
+              status={status}
+              localPay={formatMoney(study.reward, country)}
+              reason={reason}
+              rejectionReason={mine?.rejectionReason}
+            />
+          );
+        })}
       </div>
     </div>
   );

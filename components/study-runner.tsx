@@ -47,8 +47,8 @@ export function StudyRunner({ studyId, initial }: { studyId: string; initial: St
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
         <p className="font-semibold">This study is {initial.submission.status.replace("_", " ")}.</p>
-        <Link href="/app" className="mt-4 inline-block text-sm font-semibold text-indigo-700">
-          Back to studies
+        <Link href="/app/history" className="mt-4 inline-block text-sm font-semibold text-indigo-700">
+          View history
         </Link>
       </div>
     );
