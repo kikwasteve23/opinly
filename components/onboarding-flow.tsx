@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
-import { ENGLISH_QUESTIONS } from "@/lib/onboarding-data";
+import { ENGLISH_QUESTIONS, OPEN_COUNTRIES } from "@/lib/onboarding-data";
 import type { User } from "@/lib/types";
 
 export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
@@ -128,6 +128,19 @@ export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
                 <option>Man</option>
                 <option>Non-binary</option>
                 <option>Prefer not to say</option>
+              </select>
+            </label>
+            <label className="block text-sm font-medium">
+              Country
+              <select
+                required
+                value={profile.country}
+                onChange={(e) => setProfile((p) => ({ ...p, country: e.target.value }))}
+                className="mt-1.5 w-full rounded-xl border border-gray-300 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-950"
+              >
+                {OPEN_COUNTRIES.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
               </select>
             </label>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}

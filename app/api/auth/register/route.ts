@@ -4,6 +4,7 @@ import { z } from "zod";
 import { makeReferralCode, mutateStore, newId, normalizeUser } from "@/lib/store";
 import { setSessionCookie } from "@/lib/session";
 import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
+import { countryFromName } from "@/lib/geo";
 
 const schema = z.object({
   email: z.email(),
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
       passwordHash: await bcrypt.hash(parsed.data.password, 10),
       referralCode: makeReferralCode(),
       referredBy,
+      detectedCountry: countryFromName(parsed.data.country).code,
     });
     data.users.push(created);
     return created;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/api";
 import { ENGLISH_QUESTIONS } from "@/lib/onboarding-data";
+import { countryFromName } from "@/lib/geo";
 import { mutateStore } from "@/lib/store";
 import { publicUser } from "@/lib/session";
 
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
         languages: parsed.data.languages,
         occupation: parsed.data.occupation,
       };
+      current.detectedCountry = countryFromName(parsed.data.country).code;
       current.onboardingStep = current.englishPassed ? current.onboardingStep : "english";
       return current;
     });

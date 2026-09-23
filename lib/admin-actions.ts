@@ -87,6 +87,7 @@ export async function reviewSubmissionAction(formData: FormData) {
     const study = findStudy(data.studies, submission.studyId);
     if (!user || !study) return;
     submission.reviewedAt = new Date().toISOString();
+    submission.autoApproveAt = null;
     user.pending = Math.max(0, Math.round((user.pending - study.reward) * 100) / 100);
     if (decision === "approve") {
       submission.status = "approved";
@@ -157,7 +158,7 @@ export async function saveSurveyAction(_prev: AdminFormState, formData: FormData
   if (!Number.isFinite(reward) || reward <= 0) return { error: "Set a positive reward." };
   if (!questions) return { error: "Questions must be a JSON array with at least one question." };
 
-  const study: Study = {
+    const study: Study = {
     id: id || newId("std"),
     title,
     summary,
@@ -167,6 +168,7 @@ export async function saveSurveyAction(_prev: AdminFormState, formData: FormData
     format,
     device,
     published,
+    tier: ([1, 2, 3].includes(Number(formData.get("tier"))) ? Number(formData.get("tier")) : reward >= 20 ? 3 : reward >= 8 ? 2 : 1) as Study["tier"],
     questions,
   };
 

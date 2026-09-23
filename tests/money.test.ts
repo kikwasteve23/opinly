@@ -1,21 +1,22 @@
-import { quoteWithdrawal } from "../lib/money";
+import { MIN_WITHDRAWAL, quoteWithdrawal } from "../lib/money";
 import { describe, expect, it } from "vitest";
 
 describe("quoteWithdrawal", () => {
   it("subtracts platform and network fees from the requested amount", () => {
-    const usdt = quoteWithdrawal(20, "usdt_trc20");
-    expect(usdt.platformFee).toBe(1);
+    const usdt = quoteWithdrawal(500, "usdt_trc20");
+    expect(usdt.platformFee).toBe(25);
     expect(usdt.networkFee).toBe(1);
-    expect(usdt.arrives).toBe(18);
+    expect(usdt.arrives).toBe(474);
     expect(usdt.valid).toBe(true);
 
-    const ltc = quoteWithdrawal(10, "ltc");
-    expect(ltc.platformFee).toBe(0.5);
+    const ltc = quoteWithdrawal(500, "ltc");
+    expect(ltc.platformFee).toBe(25);
     expect(ltc.networkFee).toBe(0.1);
-    expect(ltc.arrives).toBe(9.4);
+    expect(ltc.arrives).toBe(474.9);
   });
 
-  it("rejects amounts under the $10 minimum", () => {
-    expect(quoteWithdrawal(9.99, "ltc").valid).toBe(false);
+  it("rejects amounts under the $500 minimum", () => {
+    expect(MIN_WITHDRAWAL).toBe(500);
+    expect(quoteWithdrawal(499.99, "ltc").valid).toBe(false);
   });
 });

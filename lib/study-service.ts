@@ -1,11 +1,14 @@
 import { findStudy, kindLabel } from "./studies-data";
 import { mutateStore, newId, readStoreSnapshot } from "./store";
+import { canAccessStudyTier, countsFromStore, studyLockReason } from "./referrals";
 import type { User } from "./types";
 
 export async function loadStudyForUser(user: User, id: string) {
   const snapshot = await readStoreSnapshot();
   const study = findStudy(snapshot.studies, id);
   if (!study || !study.published) return null;
+  const { level } = countsFromStore(snapshot, user.id);
+  const allowed = canAccessStudyTier(user, study.tier, level);
   const submission = await mutateStore((data) => {
     const existing = data.submissions.find(
       (s) =>
@@ -14,7 +17,7 @@ export async function loadStudyForUser(user: User, id: string) {
         (s.status === "in_progress" || s.status === "pending_review" || s.status === "approved"),
     );
     if (existing) return existing;
-    if (user.identityStatus !== "approved") return null;
+    if (!allowed) return null;
     const created = {
       id: newId("sub"),
       userId: user.id,
@@ -26,6 +29,7 @@ export async function loadStudyForUser(user: User, id: string) {
       submittedAt: null,
       reviewedAt: null,
       rejectionReason: null,
+      autoApproveAt: null,
     };
     data.submissions.push(created);
     return created;
@@ -36,6 +40,7 @@ export async function loadStudyForUser(user: User, id: string) {
       kindLabel: kindLabel(study.kind),
     },
     submission,
-    canStart: user.identityStatus === "approved",
+    canStart: allowed,
+    lockReason: allowed ? null : studyLockReason(user, study.tier, level),
   };
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
-import { qualifiedReferralCount, REFERRAL_REQUIREMENT } from "@/lib/referrals";
+import { countsFromStore, LEVEL_2_REFERRALS } from "@/lib/referrals";
 import { money } from "@/lib/utils";
 
 export default async function AdminPeople({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -55,7 +55,7 @@ export default async function AdminPeople({ searchParams }: { searchParams: Prom
                 <td className="px-4 py-3 capitalize">{person.identityStatus.replace("_", " ")}</td>
                 <td className="px-4 py-3">{money(person.available)}</td>
                 <td className="px-4 py-3">
-                  {qualifiedReferralCount(store.users, person.id)}/{REFERRAL_REQUIREMENT}
+                  {countsFromStore(store, person.id).qualified}/{LEVEL_2_REFERRALS}
                 </td>
                 <td className="px-4 py-3 capitalize">{person.accountStatus}</td>
                 <td className="px-4 py-3">

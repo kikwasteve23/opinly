@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
-import { qualifiedReferralCount, REFERRAL_REQUIREMENT } from "@/lib/referrals";
+import { countsFromStore, LEVEL_2_REFERRALS } from "@/lib/referrals";
 import { money } from "@/lib/utils";
 import { adjustWalletAction, setAccountStatusAction, setIdentityAction } from "@/lib/admin-actions";
 import { findStudy } from "@/lib/studies-data";
@@ -34,7 +34,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <Stat label="Available" value={money(person.available)} />
         <Stat label="Pending" value={money(person.pending)} />
         <Stat label="Withdrawn" value={money(person.withdrawn)} />
-        <Stat label="Qualified referrals" value={`${qualifiedReferralCount(store.users, person.id)}/${REFERRAL_REQUIREMENT}`} />
+        <Stat label="Qualified referrals" value={`${countsFromStore(store, person.id).qualified}/${LEVEL_2_REFERRALS}`} />
       </div>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">

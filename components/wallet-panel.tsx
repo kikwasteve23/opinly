@@ -1,14 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
-import { quoteWithdrawal, type PayoutNetwork } from "@/lib/money";
+import { MIN_WITHDRAWAL, quoteWithdrawal, type PayoutNetwork } from "@/lib/money";
 import { money } from "@/lib/utils";
 import { withdrawAction, type WalletState } from "@/lib/wallet-actions";
+import { LEVEL_2_REFERRALS } from "@/lib/referrals";
 
 type UserWallet = {
   available: number;
   pending: number;
   withdrawn: number;
+  walletActivated: boolean;
   payout: { network: PayoutNetwork; address: string };
 };
 
@@ -28,32 +31,59 @@ export function WalletPanel({
   initialUser,
   initialHistory,
   referrals,
+  localLabel,
+  localMethods,
 }: {
   initialUser: UserWallet;
   initialHistory: Withdrawal[];
-  referrals: { qualified: number; required: number; code: string };
+  referrals: { qualified: number; level: number; code: string };
+  localLabel: string;
+  localMethods: string;
 }) {
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState(String(MIN_WITHDRAWAL));
   const [network, setNetwork] = useState<PayoutNetwork>(initialUser.payout.network || "usdt_trc20");
   const [state, formAction, pending] = useActionState<WalletState, FormData>(withdrawAction, null);
   const quote = useMemo(() => quoteWithdrawal(Number(amount) || 0, network), [amount, network]);
-  const locked = referrals.qualified < referrals.required;
+  const needRefs = referrals.qualified < LEVEL_2_REFERRALS;
+  const needBalance = initialUser.available < MIN_WITHDRAWAL;
+  const needActivation = !initialUser.walletActivated;
+  const canRequest = !needRefs && !needBalance && !needActivation;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <div>
         <h1 className="text-2xl font-extrabold">Wallet</h1>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Rewards sit in US dollars until you withdraw to a wallet you control.</p>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          We store your balance in US dollars. Based on {localLabel}, amounts also show in local terms and payouts prefer{" "}
+          {localMethods}.
+        </p>
         <div className="mt-6 grid grid-cols-3 gap-3">
           <Stat label="Available" value={money(initialUser.available)} />
           <Stat label="Pending" value={money(initialUser.pending)} />
           <Stat label="Withdrawn" value={money(initialUser.withdrawn)} />
         </div>
-        <div className="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
-          Referrals for withdrawals: <strong>{referrals.qualified}/{referrals.required}</strong> verified. Your code is{" "}
-          <span className="font-mono font-semibold">{referrals.code}</span>.
-          {locked ? " You can earn, but cash-out stays closed until you hit the threshold." : ""}
+        <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
+          <p>
+            Level {referrals.level} · {referrals.qualified}/{LEVEL_2_REFERRALS} active referrals for cash-out. Code{" "}
+            <span className="font-mono font-semibold">{referrals.code}</span>.
+          </p>
+          <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A ${50} activation deposit is added to this balance, not taken as a fee.</p>
         </div>
+        {needBalance || needRefs || needActivation ? (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            {needRefs ? <p>Reach level 2 with {LEVEL_2_REFERRALS} active referrals (approved people who finished a survey).</p> : null}
+            {needBalance ? <p className="mt-1">Build available balance to {money(MIN_WITHDRAWAL)} with level 2 studies.</p> : null}
+            {!needRefs && !needBalance && needActivation ? (
+              <p className="mt-1">
+                Activate your wallet on the{" "}
+                <Link className="font-semibold underline" href="/app/deposit">
+                  deposit funds
+                </Link>{" "}
+                page, then come back to withdraw.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <form action={formAction} className="mt-8 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="font-semibold">Request a withdrawal</h2>
           <label className="block text-sm font-medium">
@@ -61,7 +91,7 @@ export function WalletPanel({
             <input
               name="amount"
               type="number"
-              min={10}
+              min={MIN_WITHDRAWAL}
               step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -107,16 +137,15 @@ export function WalletPanel({
           </dl>
           {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
           {state?.ok ? <p className="text-sm text-indigo-700">{state.ok}</p> : null}
-          <button type="submit" disabled={pending || locked} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">
-            {locked ? `Need ${referrals.required - referrals.qualified} more verified referrals` : pending ? "Sending…" : "Confirm withdrawal"}
+          <button type="submit" disabled={pending || !canRequest} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">
+            {pending ? "Sending…" : "Confirm withdrawal"}
           </button>
-          <p className="text-xs text-gray-500">An admin sends the crypto after review. Check the address and network. Wrong-chain payments cannot be recovered.</p>
         </form>
       </div>
       <div>
         <h2 className="font-semibold">Recent withdrawals</h2>
         <div className="mt-4 space-y-3">
-          {initialHistory.length === 0 && !state?.ok ? <p className="text-sm text-gray-500">None yet. Let your balance build, then cash out.</p> : null}
+          {initialHistory.length === 0 && !state?.ok ? <p className="text-sm text-gray-500">None yet.</p> : null}
           {initialHistory.map((item) => (
             <div key={item.id} className="rounded-xl border border-gray-200 bg-white p-4 text-sm dark:border-gray-800 dark:bg-gray-900">
               <div className="flex justify-between">
@@ -126,7 +155,6 @@ export function WalletPanel({
               <p className="mt-1 text-gray-500">
                 {item.network === "ltc" ? "Litecoin" : "USDT TRC20"} · arrives {money(item.arrives)}
               </p>
-              <p className="mt-1 truncate text-xs text-gray-400">{item.address}</p>
             </div>
           ))}
         </div>

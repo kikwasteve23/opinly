@@ -1,9 +1,14 @@
 export type PayoutNetwork = "usdt_trc20" | "ltc";
 
 export const PLATFORM_FEE_RATE = 0.05;
-export const MIN_WITHDRAWAL = 10;
+export const MIN_WITHDRAWAL = 500;
+export const ACTIVATION_DEPOSIT = 50;
 export const WITHDRAWAL_COOLDOWN_MS = 72 * 60 * 60 * 1000;
 export const ADDRESS_CHANGE_HOLD_MS = 24 * 60 * 60 * 1000;
+export const INACTIVITY_MS = 25 * 60 * 1000;
+export const TEXT_MIN_CHARS = 8;
+export const AUTO_APPROVE_MIN_MS = 30 * 60 * 1000;
+export const AUTO_APPROVE_MAX_MS = 60 * 60 * 1000;
 
 export const NETWORK_FEES: Record<PayoutNetwork, number> = {
   usdt_trc20: 1,
@@ -26,4 +31,12 @@ export function quoteWithdrawal(amount: number, network: PayoutNetwork) {
     arrives,
     valid: requested >= MIN_WITHDRAWAL && arrives > 0,
   };
+}
+
+export function randomDelay(minMs: number, maxMs: number) {
+  return minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
+}
+
+export function autoApproveAt(from = Date.now()) {
+  return new Date(from + randomDelay(AUTO_APPROVE_MIN_MS, AUTO_APPROVE_MAX_MS)).toISOString();
 }

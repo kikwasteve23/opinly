@@ -30,11 +30,6 @@ export function SiteFooter() {
                   Log in
                 </Link>
               </li>
-              <li>
-                <Link href="/login?staff=1" className="hover:text-indigo-700 dark:hover:text-indigo-400">
-                  Staff login
-                </Link>
-              </li>
             </ul>
           </div>
           <div>

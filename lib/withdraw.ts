@@ -1,6 +1,6 @@
-import { ADDRESS_CHANGE_HOLD_MS, MIN_WITHDRAWAL, WITHDRAWAL_COOLDOWN_MS, quoteWithdrawal } from "./money";
-import { canWithdrawByReferrals, REFERRAL_REQUIREMENT } from "./referrals";
-import { newId } from "./store";
+import { ADDRESS_CHANGE_HOLD_MS, ACTIVATION_DEPOSIT, MIN_WITHDRAWAL, WITHDRAWAL_COOLDOWN_MS, quoteWithdrawal } from "./money";
+import { canWithdrawByReferrals, LEVEL_2_REFERRALS } from "./referrals";
+import { newId } from "./ids";
 import type { PayoutNetwork, StoreData, User, Withdrawal } from "./types";
 
 export function applyWithdrawal(
@@ -12,14 +12,19 @@ export function applyWithdrawal(
   if (user.identityStatus !== "approved") {
     return { error: "Withdrawals open after identity verification is approved." };
   }
-  if (!canWithdrawByReferrals(data.users, user.id)) {
+  if (!canWithdrawByReferrals(data.users, data.submissions, user.id)) {
     return {
-      error: `You need ${REFERRAL_REQUIREMENT} verified referrals before you can withdraw. Share your referral code from the Referrals page.`,
+      error: `You need ${LEVEL_2_REFERRALS} active referrals (approved and finished at least one survey) before you can withdraw.`,
+    };
+  }
+  if (!user.walletActivated) {
+    return {
+      error: `Activate your wallet with a $${ACTIVATION_DEPOSIT.toFixed(0)} deposit first. That money is added to your available balance, not charged as a fee.`,
     };
   }
   const quote = quoteWithdrawal(input.amount, input.network);
   if (!quote.valid) {
-    return { error: `The minimum withdrawal is $${MIN_WITHDRAWAL.toFixed(2)} after you cover fees.` };
+    return { error: `The minimum withdrawal is $${MIN_WITHDRAWAL.toFixed(0)}.` };
   }
   if (quote.requested > user.available) return { error: "That is more than your available balance." };
   const now = Date.now();
@@ -57,5 +62,14 @@ export function applyWithdrawal(
     adminNote: null,
   };
   data.withdrawals.unshift(withdrawal);
+  data.ledger.unshift({
+    id: newId("led"),
+    userId: user.id,
+    amount: -quote.requested,
+    type: "withdrawal",
+    note: `Withdrawal ${withdrawal.id}`,
+    createdAt: new Date().toISOString(),
+    adminEmail: null,
+  });
   return { ok: `Withdrawal queued. $${quote.arrives.toFixed(2)} will arrive after an admin marks it sent.`, withdrawal };
 }

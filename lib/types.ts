@@ -6,7 +6,9 @@ export type PayoutNetwork = "usdt_trc20" | "ltc";
 export type UserRole = "participant" | "admin";
 export type AccountStatus = "active" | "suspended";
 export type WithdrawalStatus = "processing" | "sent" | "rejected";
-export type LedgerType = "deposit" | "adjustment" | "study" | "withdrawal";
+export type LedgerType = "deposit" | "adjustment" | "study" | "withdrawal" | "marketer";
+export type StudyTier = 1 | 2 | 3;
+export type MarketerJobStatus = "processing" | "complete" | "failed";
 
 export type Profile = {
   legalName: string;
@@ -44,6 +46,8 @@ export type User = {
     addressChangedAt: string | null;
   };
   lastWithdrawalAt: string | null;
+  walletActivated: boolean;
+  detectedCountry: string | null;
 };
 
 export type Question = {
@@ -65,6 +69,7 @@ export type Study = {
   format: string;
   device: string;
   published: boolean;
+  tier: StudyTier;
   questions: Question[];
 };
 
@@ -79,6 +84,7 @@ export type Submission = {
   submittedAt: string | null;
   reviewedAt: string | null;
   rejectionReason: string | null;
+  autoApproveAt: string | null;
 };
 
 export type Withdrawal = {
@@ -106,10 +112,33 @@ export type LedgerEntry = {
   adminEmail: string | null;
 };
 
+export type MarketerJob = {
+  id: string;
+  userId: string;
+  marketerId: string;
+  quantity: number;
+  priceEach: number;
+  hiredAt: string;
+  completeAt: string;
+  completedAt: string | null;
+  status: MarketerJobStatus;
+  addedUserIds: string[];
+};
+
+export type ChatMessage = {
+  id: string;
+  userId: string;
+  from: "user" | "support";
+  body: string;
+  createdAt: string;
+};
+
 export type StoreData = {
   users: User[];
   submissions: Submission[];
   withdrawals: Withdrawal[];
   studies: Study[];
   ledger: LedgerEntry[];
+  marketerJobs: MarketerJob[];
+  chat: ChatMessage[];
 };

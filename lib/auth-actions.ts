@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
+import { countryFromName } from "@/lib/geo";
 import { setSessionCookie, clearSessionCookie, getSessionUser } from "@/lib/session";
 import { makeReferralCode, mutateStore, newId, normalizeUser, readStoreSnapshot } from "@/lib/store";
 
@@ -60,6 +61,7 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
       referralCode: makeReferralCode(),
       referredBy,
       onboardingStep: "profile",
+      detectedCountry: countryFromName(country).code,
     });
     data.users.push(user);
     return { user };

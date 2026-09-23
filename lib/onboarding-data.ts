@@ -27,4 +27,6 @@ export const ENGLISH_QUESTIONS = [
   },
 ];
 
-export const OPEN_COUNTRIES = ["United States", "United Kingdom", "Canada", "Ireland", "Australia"];
+import { OPEN_COUNTRY_NAMES } from "./geo";
+
+export const OPEN_COUNTRIES = OPEN_COUNTRY_NAMES;

@@ -10,6 +10,7 @@ const SEED_STUDIES: Omit<Study, "published">[] = [
     minutes: 9,
     format: "Multiple choice",
     device: "Desktop or phone",
+    tier: 1,
     questions: [
       {
         id: "q1",
@@ -57,6 +58,7 @@ const SEED_STUDIES: Omit<Study, "published">[] = [
     minutes: 12,
     format: "Survey",
     device: "Desktop or phone",
+    tier: 1,
     questions: [
       {
         id: "q1",
@@ -97,6 +99,7 @@ const SEED_STUDIES: Omit<Study, "published">[] = [
     minutes: 18,
     format: "Usability",
     device: "Desktop preferred",
+    tier: 2,
     questions: [
       {
         id: "q1",
@@ -144,6 +147,7 @@ const SEED_STUDIES: Omit<Study, "published">[] = [
     minutes: 4,
     format: "Short poll",
     device: "Desktop or phone",
+    tier: 1,
     questions: [
       {
         id: "q1",
@@ -176,6 +180,7 @@ const SEED_STUDIES: Omit<Study, "published">[] = [
     minutes: 5,
     format: "Multi-day · 5 × 5 min",
     device: "Phone preferred",
+    tier: 3,
     questions: [
       {
         id: "q1",
@@ -199,9 +204,80 @@ const SEED_STUDIES: Omit<Study, "published">[] = [
       },
     ],
   },
+  {
+    id: "brand-loyalty",
+    title: "What keeps you loyal to a brand?",
+    summary: "A higher-paying survey about switching costs, trust, and why you stay with a product.",
+    kind: "survey",
+    reward: 18,
+    minutes: 14,
+    format: "Survey",
+    device: "Desktop or phone",
+    tier: 2,
+    questions: [
+      {
+        id: "q1",
+        type: "single",
+        prompt: "When did you last switch away from a brand you used every week?",
+        options: ["This month", "This year", "More than a year ago", "I rarely switch"],
+        required: true,
+      },
+      {
+        id: "q2",
+        type: "text",
+        prompt: "Describe a brand you stuck with even after a price rise, and why.",
+        required: true,
+      },
+      {
+        id: "attn1",
+        type: "attention",
+        prompt: "Select “I am paying attention”.",
+        options: ["Skip", "I am paying attention"],
+        correct: "I am paying attention",
+        required: true,
+      },
+    ],
+  },
+  {
+    id: "household-finance",
+    title: "Household money decisions this quarter",
+    summary: "A premium study on how you plan spending, debt, and savings when prices move.",
+    kind: "survey",
+    reward: 42,
+    minutes: 20,
+    format: "Survey",
+    device: "Desktop preferred",
+    tier: 3,
+    questions: [
+      {
+        id: "q1",
+        type: "single",
+        prompt: "Who has the final say on a large household purchase?",
+        options: ["Me", "A partner", "We decide together", "Someone else"],
+        required: true,
+      },
+      {
+        id: "q2",
+        type: "text",
+        prompt: "Walk us through the last time you delayed a purchase to protect savings.",
+        required: true,
+      },
+      {
+        id: "attn1",
+        type: "attention",
+        prompt: "Type “budget” below.",
+        required: true,
+        correct: "budget",
+      },
+    ],
+  },
 ];
 
-export const DEFAULT_STUDIES: Study[] = SEED_STUDIES.map((study) => ({ ...study, published: true }));
+export const DEFAULT_STUDIES: Study[] = SEED_STUDIES.map((study) => ({
+  ...study,
+  published: true,
+  tier: study.tier ?? (study.reward >= 20 ? 3 : study.reward >= 8 ? 2 : 1),
+}));
 
 export function findStudy(studies: Study[], id: string) {
   return studies.find((study) => study.id === id) ?? null;
@@ -222,4 +298,10 @@ export function kindLabel(kind: Study["kind"]) {
     case "multi_day":
       return "Multi-day";
   }
+}
+
+export function tierLabel(tier: Study["tier"]) {
+  if (tier === 3) return "Level 3";
+  if (tier === 2) return "Level 2";
+  return "Level 1";
 }

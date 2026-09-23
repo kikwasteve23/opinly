@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
-import { qualifiedReferralCount, REFERRAL_REQUIREMENT } from "@/lib/referrals";
+import { countsFromStore, LEVEL_2_REFERRALS } from "@/lib/referrals";
 import { money } from "@/lib/utils";
 
 export default async function AdminHome() {
@@ -18,7 +18,7 @@ export default async function AdminHome() {
     <div>
       <h1 className="text-2xl font-extrabold">Operations</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Create surveys, review applicants, credit wallets, and send withdrawals. Payouts still need {REFERRAL_REQUIREMENT} verified
+        Create surveys, review applicants, credit wallets, and send withdrawals. Payouts still need {LEVEL_2_REFERRALS} active
         referrals.
       </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,7 +41,7 @@ export default async function AdminHome() {
                 <Link className="text-indigo-700" href={`/admin/people/${u.id}`}>
                   {u.profile?.legalName || u.email}
                 </Link>{" "}
-                · identity pending · {qualifiedReferralCount(store.users, u.id)}/{REFERRAL_REQUIREMENT} referrals
+                · identity pending · {countsFromStore(store, u.id).qualified}/{LEVEL_2_REFERRALS} referrals
               </li>
             ))}
           {pendingId === 0 ? <li className="text-gray-500">No identity checks waiting.</li> : null}

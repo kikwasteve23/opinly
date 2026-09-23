@@ -10,6 +10,7 @@ export type StudyPayload = {
   study: Study & { kindLabel: string };
   submission: { id: string; status: string; answers: Record<string, string | string[]> } | null;
   canStart: boolean;
+  lockReason?: string | null;
 };
 
 export function StudyRunner({ studyId, initial }: { studyId: string; initial: StudyPayload }) {
@@ -34,8 +35,8 @@ export function StudyRunner({ studyId, initial }: { studyId: string; initial: St
   if (!initial.canStart) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-        <p className="font-semibold">Identity check still in review</p>
-        <p className="mt-2 text-sm">You can look around, but you cannot start a study until verification clears.</p>
+        <p className="font-semibold">This study is locked</p>
+        <p className="mt-2 text-sm">{initial.lockReason ?? "You can look around, but you cannot start this study yet."}</p>
         <Link href="/onboarding" className="mt-4 inline-block text-sm font-semibold text-indigo-700">
           Finish onboarding
         </Link>

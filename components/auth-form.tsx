@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
 import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 
 export function AuthForm({
@@ -44,7 +45,7 @@ export function AuthForm({
           <dl className="mt-10 grid grid-cols-3 gap-3 text-sm">
             <div className="rounded-xl bg-white/10 p-3">
               <dt className="text-indigo-100">Minimum cashout</dt>
-              <dd className="text-lg font-bold">$10</dd>
+              <dd className="text-lg font-bold">$500</dd>
             </div>
             <div className="rounded-xl bg-white/10 p-3">
               <dt className="text-indigo-100">Every member</dt>
@@ -114,13 +115,13 @@ export function AuthForm({
                   defaultValue="United States"
                   className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
                 >
-                  {["United States", "United Kingdom", "Canada", "Ireland", "Australia"].map((c) => (
+                  {OPEN_COUNTRIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
               </label>
               <label className="mt-4 block text-sm font-medium">
-                Referral code (required to join someone&apos;s 15)
+                Referral code
                 <input
                   name="referralCode"
                   defaultValue={referralCode}
@@ -140,12 +141,7 @@ export function AuthForm({
                   </Link>
                 </>
               ) : (
-                <>
-                  Participant demo: demo@opinly.local / demo-dev-only.{" "}
-                  <Link href="/login?staff=1" className="font-semibold text-indigo-700">
-                    Staff login
-                  </Link>
-                </>
+                <>Participant demo: demo@opinly.local / demo-dev-only.</>
               )}
             </p>
           )}

@@ -1,6 +1,6 @@
 # Opinly
 
-Opinly is a paid online-research platform: participants complete studies in the browser, see pay up front, and withdraw approved earnings to crypto after they have **15 identity-verified referrals**.
+Opinly is a paid online-research platform: participants complete studies in the browser, see pay up front, and withdraw after they have **20 active referrals**, a **$500** available balance, and a **$50** wallet-activation deposit (credited to the balance).
 
 ## Run locally
 
@@ -15,7 +15,7 @@ Open [http://localhost:43173](http://localhost:43173).
 
 | Account | Email | Password |
 | --- | --- | --- |
-| Participant (15 seeded referrals) | `demo@opinly.local` | `demo-dev-only` |
+| Participant (20 seeded active referrals, $512 available) | `demo@opinly.local` | `demo-dev-only` |
 | Admin | `admin@opinly.local` | `admin-dev-only` |
 
 Without `DATABASE_URL`, state is stored in `data/store.json`. With Postgres, the same data is written to `app_state` plus `users`, `submissions`, and `withdrawals` tables.
@@ -67,9 +67,12 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 ## What you can do
 
 - Join with a referral code, finish profile / English / identity
-- Take studies; pay sits in **pending** until an admin approves the submission
-- Withdraw USDT (TRC20) or Litecoin after 15 verified referrals; an admin marks payouts sent
-- Admin (`/login?staff=1` → `/admin`):
+- Take starter studies until $400, then unlock higher-paying work with 20 active referrals (approved + finished a survey)
+- Submissions auto-approve in 30–60 minutes when written answers are long enough
+- Withdraw from $500 after a $50 activation deposit (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
+- Hire marketers ($5–$10 per referral) to fill slots in 1–2 hours
+- Idle sessions sign out after 25 minutes
+- Admin (`/login?staff=1` — not linked from the public site) → `/admin`:
   - **Surveys** — write studies by hand or generate a draft with AI, then publish
   - **Applicants** — review identity applications and approve or reject
   - **People** — search participants and open a full profile preview

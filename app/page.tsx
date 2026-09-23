@@ -64,7 +64,7 @@ const examples = [
 const faqs = [
   {
     q: "Is it really free to join?",
-    a: "Yes. Creating an account costs nothing, and we will never ask you for a payment, a deposit, or your card details. If anyone claiming to be from Opinly asks you for money, it is not us.",
+    a: "Yes. Creating an account costs nothing. When you later reach the $500 withdrawal floor, you activate the wallet with a $50 deposit. That $50 is added to your available balance and can be withdrawn with your earnings.",
   },
   {
     q: "Why do you need my ID?",
@@ -76,7 +76,7 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "Your rewards build up as a balance in US dollars. When you reach the minimum, you withdraw to a USDT (TRC20) or Litecoin address that you control. You will need a crypto wallet.",
+    a: "Your rewards build up in US dollars and also display in your local currency. When you reach $500 available and level 2 referrals, you activate with $50 (credited to you) and withdraw by crypto. Local deposit methods plus NOWPayments are listed on the deposit page.",
   },
   {
     q: "Why was my submission rejected?",
@@ -225,7 +225,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/15">
           <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
-            One thing to expect: identity documents are reviewed by Opinly staff. During busy periods that can take up to five working days. You can look around the platform while you wait, but you can&apos;t start a study until the check clears. You also need 15 identity-verified referrals before a withdrawal will go through.
+            You also need 20 active referrals (approved people who have finished a survey) before higher-paying studies and withdrawals open. Starter surveys pause at $400. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
           </p>
         </div>
       </section>
@@ -242,7 +242,7 @@ export default async function HomePage() {
                 ["Your answers save as you go", "Close the tab, lose your connection, come back tomorrow, and your progress is still there."],
                 ["Only studies you qualify for", "Matching happens before you see the study, not after you have spent ten minutes on it."],
                 ["Attention checks, both ways", "Some studies include simple checks. They keep results honest, which keeps researchers paying fairly."],
-                ["Reviewed, then paid", "Completed work goes to review. Once approved, the reward moves from pending into your balance."],
+                ["Reviewed, then paid", "Completed work sits in pending, then auto-approves in 30–60 minutes when written answers are long enough."],
               ].map(([title, body]) => (
                 <li key={title} className="flex gap-3">
                   <FileCheck className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
@@ -285,7 +285,7 @@ export default async function HomePage() {
             <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
               <div>
                 <dt className="text-gray-500">Minimum</dt>
-                <dd className="font-semibold">$10.00</dd>
+                <dd className="font-semibold">$500.00</dd>
               </div>
               <div>
                 <dt className="text-gray-500">Network fee</dt>
@@ -306,7 +306,7 @@ export default async function HomePage() {
             <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
               <div>
                 <dt className="text-gray-500">Minimum</dt>
-                <dd className="font-semibold">$10.00</dd>
+                <dd className="font-semibold">$500.00</dd>
               </div>
               <div>
                 <dt className="text-gray-500">Network fee</dt>
@@ -324,11 +324,11 @@ export default async function HomePage() {
           <p className="font-semibold">A couple of house rules</p>
           <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400">
             {[
-              "You need 15 people who join with your referral code and pass identity review before you can withdraw.",
+              "You need 20 active referrals (approved, and they must complete a survey) and a $500 available balance. A $50 activation deposit is then added to that balance so you can withdraw.",
               "One withdrawal every 72 hours, so let your balance build up before cashing out.",
               "Both fees come out of the amount you request, so the figure you confirm is the figure that arrives.",
               "Double-check the address and the network. Crypto sent to the wrong chain cannot be recovered.",
-              "Rewards for completed studies move into your balance once a reviewer approves the work.",
+              "Completed work is auto-approved in 30–60 minutes when written answers have enough detail.",
             ].map((rule) => (
               <li key={rule} className="flex gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />

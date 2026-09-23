@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
+import { InactivityGuard } from "@/components/inactivity-guard";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -19,7 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={`${figtree.variable} scroll-smooth`}>
       <body className="min-h-full bg-white font-sans text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
-        <Providers>{children}</Providers>
+        <Providers>
+          <InactivityGuard />
+          {children}
+        </Providers>
       </body>
     </html>
   );

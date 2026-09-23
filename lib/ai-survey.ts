@@ -1,5 +1,5 @@
 import type { Question, Study, StudyKind } from "./types";
-import { newId } from "./store";
+import { newId } from "./ids";
 
 type Draft = Omit<Study, "id" | "published"> & { id?: string };
 
@@ -54,6 +54,7 @@ function mockSurvey(topic: string, count: number, reward: number, minutes: numbe
     format: "Survey",
     device: "Desktop or phone",
     published: true,
+    tier: reward >= 20 ? 3 : reward >= 8 ? 2 : 1,
     questions,
   };
 }
@@ -123,6 +124,7 @@ export async function generateSurveyDraft(input: {
       format: parsed.format || "Survey",
       device: parsed.device || "Desktop or phone",
       published: true,
+      tier: input.reward >= 20 ? 3 : input.reward >= 8 ? 2 : 1,
       questions: parsed.questions,
     },
   };

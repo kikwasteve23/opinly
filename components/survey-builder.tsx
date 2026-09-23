@@ -115,6 +115,16 @@ export function SurveyBuilder({ initial }: { initial?: Study }) {
             </select>
           </label>
           <label>
+            Unlock level
+            <select name="tier" defaultValue={String(draft?.tier ?? initial?.tier ?? 1)} className="mt-1 w-full rounded-lg border px-3 py-2">
+              <option value="1">Level 1 starter</option>
+              <option value="2">Level 2 · 20 referrals</option>
+              <option value="3">Level 3 · 50 referrals</option>
+            </select>
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <label>
             Format
             <input name="format" defaultValue={draft?.format ?? initial?.format ?? "Survey"} className="mt-1 w-full rounded-lg border px-3 py-2" />
           </label>
