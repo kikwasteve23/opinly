@@ -16,7 +16,7 @@ const DATA_PATH = path.join(process.cwd(), "data", "store.json");
 let queue: Promise<unknown> = Promise.resolve();
 
 function emptyStore(): StoreData {
-  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [] };
 }
 
 function inferTier(study: Study): StudyTier {
@@ -46,6 +46,7 @@ function normalizeStore(data: StoreData): StoreData {
     ledger: data.ledger ?? [],
     marketerJobs: data.marketerJobs ?? [],
     chat: data.chat ?? [],
+    deposits: data.deposits ?? [],
   };
 }
 

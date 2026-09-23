@@ -5,11 +5,11 @@ import { revalidatePath } from "next/cache";
 import { requireCompleteUser } from "@/lib/auth-actions";
 import { mutateStore, newId } from "@/lib/store";
 import type { PayoutNetwork } from "@/lib/money";
-import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL, randomDelay } from "@/lib/money";
+import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL } from "@/lib/money";
 import { applyWithdrawal } from "@/lib/withdraw";
 import { submitStudyInStore } from "@/lib/submit-study";
 import { findMarketer } from "@/lib/marketers";
-import { NOWPAYMENTS } from "@/lib/geo";
+import { paymentMethodLabel } from "@/lib/deposit-requests";
 
 export type WalletState = { error?: string; ok?: string } | null;
 
@@ -53,89 +53,52 @@ export async function submitStudyAction(studyId: string, answers: Record<string,
   redirect("/app");
 }
 
-export async function hireMarketerAction(_prev: WalletState, formData: FormData): Promise<WalletState> {
+export async function submitDepositRequestAction(_prev: WalletState, formData: FormData): Promise<WalletState> {
   const user = await requireCompleteUser();
-  const marketerId = String(formData.get("marketerId") ?? "");
-  const quantity = Number(formData.get("quantity"));
-  const marketer = findMarketer(marketerId);
-  if (!marketer) return { error: "That marketer is not available." };
-  if (!Number.isInteger(quantity) || quantity < marketer.minOrder || quantity > marketer.maxOrder) {
-    return { error: `Order between ${marketer.minOrder} and ${marketer.maxOrder} referrals.` };
-  }
-  const cost = Math.round(quantity * marketer.priceEach * 100) / 100;
-  const viaDeposit = String(formData.get("viaDeposit") ?? "") === "1";
   const method = String(formData.get("method") ?? "").trim();
-  const result = await mutateStore((data) => {
-    const current = data.users.find((u) => u.id === user.id);
-    if (!current) return { error: "Account missing." };
-    if (!viaDeposit) {
-      if (current.available < cost) return { error: `You need ${cost.toFixed(2)} USD available to hire ${marketer.name}.` };
-      current.available = Math.round((current.available - cost) * 100) / 100;
-    }
-    data.marketerJobs.unshift({
-      id: newId("job"),
-      userId: current.id,
-      marketerId: marketer.id,
-      quantity,
-      priceEach: marketer.priceEach,
-      hiredAt: new Date().toISOString(),
-      completeAt: new Date(Date.now() + randomDelay(60 * 60 * 1000, 2 * 60 * 60 * 1000)).toISOString(),
-      completedAt: null,
-      status: "processing",
-      addedUserIds: [],
-    });
-    data.ledger.unshift({
-      id: newId("led"),
-      userId: current.id,
-      amount: viaDeposit ? cost : -cost,
-      type: viaDeposit ? "deposit" : "marketer",
-      note: viaDeposit
-        ? `Marketer deposit (${method || "deposit"}) · ${marketer.name} × ${quantity}`
-        : `Hired ${marketer.name} for ${quantity} referrals`,
-      createdAt: new Date().toISOString(),
-      adminEmail: null,
-    });
-    return {
-      ok: viaDeposit
-        ? `Payment recorded. ${marketer.name} is filling ${quantity} referral slots within 1–2 hours.`
-        : `${marketer.name} is filling ${quantity} referral slots.`,
-    };
-  });
-  revalidatePath("/app/marketers");
-  revalidatePath("/app/referrals");
-  revalidatePath("/app/deposit");
-  return result;
-}
-
-export async function confirmActivationDepositAction(_prev: WalletState, formData: FormData): Promise<WalletState> {
-  const user = await requireCompleteUser();
-  const method = String(formData.get("method") ?? "");
   if (!method) return { error: "Choose a payment method." };
+  const marketerId = String(formData.get("marketerId") ?? "").trim();
+  const quantity = Number(formData.get("quantity"));
+  const hire = marketerId ? findMarketer(marketerId) : null;
+  if (marketerId && !hire) return { error: "That marketer is not available." };
+  if (hire && (!Number.isInteger(quantity) || quantity < hire.minOrder || quantity > hire.maxOrder)) {
+    return { error: `Order between ${hire.minOrder} and ${hire.maxOrder} referrals.` };
+  }
+  const amount = hire ? Math.round(quantity * hire.priceEach * 100) / 100 : ACTIVATION_DEPOSIT;
   const result = await mutateStore((data) => {
     const current = data.users.find((u) => u.id === user.id);
     if (!current) return { error: "Account missing." };
-    if (current.available < MIN_WITHDRAWAL) {
-      return { error: `Activation opens once your available balance reaches $${MIN_WITHDRAWAL}.` };
+    if (!hire) {
+      if (current.available < MIN_WITHDRAWAL) {
+        return { error: `Activation opens once your available balance reaches $${MIN_WITHDRAWAL}.` };
+      }
+      if (current.walletActivated) return { error: "This wallet is already activated." };
     }
-    if (current.walletActivated) return { error: "This wallet is already activated." };
-    current.walletActivated = true;
-    current.available = Math.round((current.available + ACTIVATION_DEPOSIT) * 100) / 100;
-    const label = method === NOWPAYMENTS.id ? NOWPAYMENTS.name : method;
-    data.ledger.unshift({
-      id: newId("led"),
+    const pendingSame = data.deposits.some(
+      (d) => d.userId === current.id && d.status === "pending" && d.purpose === (hire ? "marketer" : "activation"),
+    );
+    if (pendingSame) return { error: "You already have a payment waiting for admin approval." };
+    data.deposits.unshift({
+      id: newId("dep"),
       userId: current.id,
-      amount: ACTIVATION_DEPOSIT,
-      type: "deposit",
-      note: `Wallet activation via ${label}`,
+      amount,
+      method,
+      methodLabel: paymentMethodLabel(method),
+      purpose: hire ? "marketer" : "activation",
+      marketerId: hire?.id ?? null,
+      quantity: hire ? quantity : null,
+      status: "pending",
       createdAt: new Date().toISOString(),
+      reviewedAt: null,
+      adminNote: null,
       adminEmail: null,
     });
     return {
-      ok: `$${ACTIVATION_DEPOSIT.toFixed(0)} is now in your available balance. You can withdraw earnings plus this activation amount.`,
+      ok: `Payment submitted. An admin will match ${hire ? paymentMethodLabel(method) : "your transfer"} and approve it before funds or referrals are released.`,
     };
   });
   revalidatePath("/app/deposit");
-  revalidatePath("/app/wallet");
+  revalidatePath("/admin/deposits");
   return result;
 }
 
@@ -154,13 +117,13 @@ export async function sendDepositChatAction(_prev: WalletState, formData: FormDa
       createdAt: new Date().toISOString(),
     });
     let reply =
-      "Use the local method for your country if you can; otherwise NOWPayments works everywhere. After you pay, confirm on this page.";
+      "Use the local method for your country if you can; otherwise NOWPayments works everywhere. After you pay, tap “I have sent the payment”. An admin has to approve it before anything is credited.";
     if (za) {
       reply =
-        "For South Africa, use Capitec. Capitec app → Pay → Capitec account 1480054321, branch 470010, reference = your Opinly email, exact ZAR amount. Then tap “I have sent the payment”. NOWPayments (USDT TRC20) is the fallback.";
+        "For South Africa, use Capitec. Capitec app → Pay → Capitec account 1480054321, branch 470010, reference = your Opinly email, exact ZAR amount. Then tap “I have sent the payment”. An admin will match it before funds or referrals are released.";
     } else if (body.toLowerCase().includes("now") || body.toLowerCase().includes("crypto")) {
       reply =
-        "NOWPayments is available in every country. Send the exact USD amount as USDT TRC20 to the invoice address on this page, then tap “I have sent the payment”.";
+        "NOWPayments is available in every country. Send the exact USD amount as USDT TRC20 to the invoice address, then tap “I have sent the payment”. An admin approves the match.";
     }
     data.chat.push({
       id: newId("msg"),

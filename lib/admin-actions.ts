@@ -6,6 +6,7 @@ import { mutateStore, newId } from "@/lib/store";
 import { findStudy } from "@/lib/studies-data";
 import type { IdentityStatus, Question, Study, StudyKind, WithdrawalStatus } from "@/lib/types";
 import { generateSurveyDraft } from "@/lib/ai-survey";
+import { startMarketerJob } from "@/lib/deposit-requests";
 
 export type AdminFormState = { error?: string; ok?: string } | null;
 
@@ -54,6 +55,56 @@ export async function recordDepositAction(_prev: AdminFormState, formData: FormD
   revalidatePath("/admin/deposits");
   revalidatePath("/admin/people");
   return result;
+}
+
+export async function reviewDepositAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const depositId = String(formData.get("depositId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  await mutateStore((data) => {
+    const deposit = data.deposits.find((d) => d.id === depositId);
+    if (!deposit || deposit.status !== "pending") return;
+    const user = data.users.find((u) => u.id === deposit.userId);
+    if (!user) return;
+    deposit.reviewedAt = new Date().toISOString();
+    deposit.adminEmail = admin.email;
+    deposit.adminNote = note || null;
+    if (decision !== "approve") {
+      deposit.status = "rejected";
+      return;
+    }
+    deposit.status = "approved";
+    if (deposit.purpose === "activation") {
+      user.walletActivated = true;
+      user.available = Math.round((user.available + deposit.amount) * 100) / 100;
+      data.ledger.unshift({
+        id: newId("led"),
+        userId: user.id,
+        amount: deposit.amount,
+        type: "deposit",
+        note: `Approved ${deposit.methodLabel} activation`,
+        createdAt: new Date().toISOString(),
+        adminEmail: admin.email,
+      });
+    } else if (deposit.marketerId && deposit.quantity) {
+      startMarketerJob(data, user.id, deposit.marketerId, deposit.quantity);
+      data.ledger.unshift({
+        id: newId("led"),
+        userId: user.id,
+        amount: deposit.amount,
+        type: "deposit",
+        note: `Approved ${deposit.methodLabel} marketer hire × ${deposit.quantity}`,
+        createdAt: new Date().toISOString(),
+        adminEmail: admin.email,
+      });
+    }
+  });
+  revalidatePath("/admin");
+  revalidatePath("/admin/deposits");
+  revalidatePath("/app/deposit");
+  revalidatePath("/app/wallet");
+  revalidatePath("/app/marketers");
 }
 
 export async function adjustWalletAction(formData: FormData) {

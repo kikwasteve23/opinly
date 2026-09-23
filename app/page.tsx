@@ -242,7 +242,7 @@ export default async function HomePage() {
                 ["Your answers save as you go", "Close the tab, lose your connection, come back tomorrow, and your progress is still there."],
                 ["Only studies you qualify for", "Matching happens before you see the study, not after you have spent ten minutes on it."],
                 ["Attention checks, both ways", "Some studies include simple checks. They keep results honest, which keeps researchers paying fairly."],
-                ["Reviewed, then paid", "Completed work sits in pending, then auto-approves in 30–60 minutes when written answers are long enough."],
+                ["Reviewed, then paid", "Completed work sits in pending while we review your responses. Pay moves to available once a submission is approved."],
               ].map(([title, body]) => (
                 <li key={title} className="flex gap-3">
                   <FileCheck className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
@@ -328,7 +328,7 @@ export default async function HomePage() {
               "One withdrawal every 72 hours, so let your balance build up before cashing out.",
               "Both fees come out of the amount you request, so the figure you confirm is the figure that arrives.",
               "Double-check the address and the network. Crypto sent to the wrong chain cannot be recovered.",
-              "Completed work is auto-approved in 30–60 minutes when written answers have enough detail.",
+              "Completed work sits in pending while we review your responses.",
             ].map((rule) => (
               <li key={rule} className="flex gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />

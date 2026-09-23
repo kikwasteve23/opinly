@@ -23,6 +23,7 @@ export default async function DepositPage({
   const country = await resolveCountry(user);
   const store = await readStoreSnapshot();
   const messages = store.chat.filter((m) => m.userId === user.id);
+  const pending = store.deposits.find((d) => d.userId === user.id && d.status === "pending") ?? null;
   return (
     <DepositDesk
       country={country}
@@ -30,6 +31,7 @@ export default async function DepositPage({
       availableUsd={user.available}
       messages={messages}
       hire={hire}
+      pending={pending ? { amount: pending.amount, methodLabel: pending.methodLabel, purpose: pending.purpose } : null}
     />
   );
 }

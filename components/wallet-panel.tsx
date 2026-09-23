@@ -62,7 +62,7 @@ export function WalletPanel({
         </p>
         <div className="mt-6 grid grid-cols-3 gap-3">
           <Stat label="Available" value={money(initialUser.available)} />
-          <Stat label="Pending" value={money(initialUser.pending)} />
+          <Stat label="Pending" value={money(initialUser.pending)} hint="We are reviewing your responses." />
           <Stat label="Withdrawn" value={money(initialUser.withdrawn)} />
         </div>
         <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
@@ -174,11 +174,12 @@ export function WalletPanel({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
       <p className="text-xs text-gray-500">{label}</p>
       <p className="mt-1 text-lg font-bold">{value}</p>
+      {hint ? <p className="mt-1 text-[11px] leading-snug text-gray-500">{hint}</p> : null}
     </div>
   );
 }

@@ -17,7 +17,7 @@ const study: Study = {
 };
 
 function empty(): StoreData {
-  return { users: [], submissions: [], withdrawals: [], studies: [study], ledger: [], marketerJobs: [], chat: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [study], ledger: [], marketerJobs: [], chat: [], deposits: [] };
 }
 
 describe("auto-approve", () => {

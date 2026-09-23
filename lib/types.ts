@@ -9,6 +9,8 @@ export type WithdrawalStatus = "processing" | "sent" | "rejected";
 export type LedgerType = "deposit" | "adjustment" | "study" | "withdrawal" | "marketer";
 export type StudyTier = 1 | 2 | 3;
 export type MarketerJobStatus = "processing" | "complete" | "failed";
+export type DepositRequestStatus = "pending" | "approved" | "rejected";
+export type DepositPurpose = "activation" | "marketer";
 
 export type Profile = {
   legalName: string;
@@ -133,6 +135,22 @@ export type ChatMessage = {
   createdAt: string;
 };
 
+export type DepositRequest = {
+  id: string;
+  userId: string;
+  amount: number;
+  method: string;
+  methodLabel: string;
+  purpose: DepositPurpose;
+  marketerId: string | null;
+  quantity: number | null;
+  status: DepositRequestStatus;
+  createdAt: string;
+  reviewedAt: string | null;
+  adminNote: string | null;
+  adminEmail: string | null;
+};
+
 export type StoreData = {
   users: User[];
   submissions: Submission[];
@@ -141,4 +159,5 @@ export type StoreData = {
   ledger: LedgerEntry[];
   marketerJobs: MarketerJob[];
   chat: ChatMessage[];
+  deposits: DepositRequest[];
 };

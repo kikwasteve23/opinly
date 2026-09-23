@@ -25,7 +25,7 @@ export default async function AdminHome() {
         <Card label="Applicants waiting" value={String(pendingId)} href="/admin/applicants" />
         <Card label="People" value={String(people.length)} href="/admin/people" />
         <Card label="Live surveys" value={String(liveSurveys)} href="/admin/surveys" />
-        <Card label="Deposits / ledger" value={String(store.ledger.length)} href="/admin/deposits" />
+        <Card label="Deposits waiting" value={String(store.deposits.filter((d) => d.status === "pending").length)} href="/admin/deposits" />
         <Card label="Payouts in queue" value={String(pendingPayouts.length)} href="/admin/withdrawals" />
         <Card label="Studies to review" value={String(pendingStudies)} href="/admin/reviews" />
       </div>

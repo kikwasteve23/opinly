@@ -50,7 +50,7 @@ export const NOWPAYMENTS: LocalPayment = {
     "Choose NOWPayments if your local rails are slow or unavailable.",
     "Send USDT (TRC20) or the listed coin to the invoice address. Send the exact USD amount.",
     "Wait for the network to confirm (usually a few minutes).",
-    "Return here and tap “I have sent the payment”. The $50 is added to your available balance, not taken as a fee.",
+    "Return here and tap “I have sent the payment”. An admin matches the transfer before anything is credited.",
   ],
 };
 

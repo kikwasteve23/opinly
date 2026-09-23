@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { confirmActivationDepositAction, hireMarketerAction, sendDepositChatAction, type WalletState } from "@/lib/wallet-actions";
+import { submitDepositRequestAction, sendDepositChatAction, type WalletState } from "@/lib/wallet-actions";
 import { ACTIVATION_DEPOSIT } from "@/lib/money";
 import { formatMoney, type CountryProfile, type LocalPayment, NOWPAYMENTS } from "@/lib/geo";
 import { money } from "@/lib/utils";
@@ -15,19 +15,18 @@ export function DepositDesk({
   availableUsd,
   messages,
   hire,
+  pending,
 }: {
   country: CountryProfile;
   activated: boolean;
   availableUsd: number;
   messages: ChatItem[];
   hire: HireInfo | null;
+  pending: { amount: number; methodLabel: string; purpose: string } | null;
 }) {
   const defaultMethod = country.code === "ZA" ? country.local.id : country.local.id;
   const [method, setMethod] = useState(defaultMethod);
-  const [payState, payAction, paying] = useActionState<WalletState, FormData>(
-    hire ? hireMarketerAction : confirmActivationDepositAction,
-    null,
-  );
+  const [payState, payAction, paying] = useActionState<WalletState, FormData>(submitDepositRequestAction, null);
   const [chatState, chatAction, chatting] = useActionState<WalletState, FormData>(sendDepositChatAction, null);
   const selected: LocalPayment = method === NOWPAYMENTS.id ? NOWPAYMENTS : country.local;
   const usdAmount = hire ? hire.cost : ACTIVATION_DEPOSIT;
@@ -40,14 +39,14 @@ export function DepositDesk({
         <h1 className="text-2xl font-extrabold">Deposit funds</h1>
         {hire ? (
           <p className="mt-2 text-sm text-gray-600">
-            Pay <strong>{money(hire.cost)}</strong> to hire {hire.name} for {hire.quantity} active referrals. They usually
-            land within 1–2 hours. Detected location: <strong>{country.name}</strong>.
+            Pay <strong>{money(hire.cost)}</strong> to hire {hire.name} for {hire.quantity} active referrals. An admin
+            must approve the payment before they start. Detected location: <strong>{country.name}</strong>.
           </p>
         ) : (
           <p className="mt-2 text-sm text-gray-600">
             You have reached the $500 withdrawal floor. Activate the wallet with ${ACTIVATION_DEPOSIT}. That amount is
-            credited to your available balance ({formatMoney(availableUsd, country)} now) and can be withdrawn with your
-            earnings. Detected location: <strong>{country.name}</strong>.
+            added to your available balance after an admin approves the payment ({formatMoney(availableUsd, country)} now).
+            Detected location: <strong>{country.name}</strong>.
           </p>
         )}
         {za ? (
@@ -59,7 +58,13 @@ export function DepositDesk({
             </p>
           </div>
         ) : null}
-        {!hire && activated ? (
+        {pending ? (
+          <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            Your {money(pending.amount)} {pending.methodLabel} payment is waiting for admin approval
+            {pending.purpose === "marketer" ? " (marketer hire)" : " (wallet activation)"}.
+          </p>
+        ) : null}
+        {!hire && activated && !pending ? (
           <p className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm">This wallet is already activated. You can request a crypto withdrawal from the wallet page.</p>
         ) : (
           <form action={payAction} className="mt-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">

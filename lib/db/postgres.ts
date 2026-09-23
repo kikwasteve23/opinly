@@ -89,7 +89,7 @@ export async function loadPostgresStore(): Promise<StoreData | null> {
   if (!db) return null;
   const result = await db.query<{ data: StoreData }>("SELECT data FROM app_state WHERE id = $1", ["main"]);
   const row = result.rows[0];
-  if (!row?.data) return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [] };
+  if (!row?.data) return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [] };
   return {
     users: row.data.users ?? [],
     submissions: row.data.submissions ?? [],
@@ -98,6 +98,7 @@ export async function loadPostgresStore(): Promise<StoreData | null> {
     ledger: row.data.ledger ?? [],
     marketerJobs: row.data.marketerJobs ?? [],
     chat: row.data.chat ?? [],
+    deposits: row.data.deposits ?? [],
   };
 }
 

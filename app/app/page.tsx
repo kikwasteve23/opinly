@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <p className="text-sm text-gray-500">Pending review</p>
           <p className="mt-1 text-3xl font-bold">{money(user.pending)}</p>
-          <p className="mt-1 text-xs text-gray-500">Auto-approves in 30–60 minutes if written answers are long enough.</p>
+          <p className="mt-1 text-xs text-gray-500">We are reviewing your responses.</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <p className="text-sm text-gray-500">Referral level</p>
