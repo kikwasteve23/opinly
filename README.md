@@ -76,6 +76,6 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
   - **Surveys** — write studies by hand or generate a draft with AI, then publish
   - **Applicants** — review identity applications and approve or reject
   - **People** — search participants and open a full profile preview
-  - **Deposits** — people who paid via a local method or NOWPayments wait here for approval; you can also adjust a ledger by hand
+  - **Deposits** — only people who submitted a payment-method deposit to activate a wallet or hire a marketer; study pay is not listed here
   - **Withdrawals** — mark crypto payouts sent, or reject and refund
   - **Study reviews** — approve completed work so pay moves to available
