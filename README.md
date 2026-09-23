@@ -18,7 +18,7 @@ Open [http://localhost:43173](http://localhost:43173).
 | Participant (20 seeded active referrals, $512 available) | `demo@opinly.local` | `demo-dev-only` |
 | Admin | `admin@opinly.local` | `admin-dev-only` |
 
-Without `DATABASE_URL`, state is stored in `data/store.json`. With Postgres, the same data is written to `app_state` plus `users`, `submissions`, and `withdrawals` tables.
+Without `DATABASE_URL`, state is stored in `data/store.json`. With Postgres, live state is the `app_state` JSON document.
 
 ## Render + Neon Postgres
 

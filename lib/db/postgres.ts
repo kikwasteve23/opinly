@@ -105,69 +105,11 @@ export async function loadPostgresStore(): Promise<StoreData | null> {
 export async function savePostgresStore(data: StoreData) {
   const db = await ensureSchema();
   if (!db) return;
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
-    await client.query(
-      `INSERT INTO app_state (id, data, updated_at) VALUES ('main', $1::jsonb, now())
-       ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
-      [JSON.stringify(data)],
-    );
-    await client.query("DELETE FROM users");
-    for (const user of data.users) {
-      await client.query(
-        `INSERT INTO users (id, email, role, referral_code, referred_by, identity_status, account_status, available, pending, withdrawn, body)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb)`,
-        [
-          user.id,
-          user.email,
-          user.role,
-          user.referralCode,
-          user.referredBy,
-          user.identityStatus,
-          user.accountStatus,
-          user.available,
-          user.pending,
-          user.withdrawn,
-          JSON.stringify(user),
-        ],
-      );
-    }
-    await client.query("DELETE FROM submissions");
-    for (const submission of data.submissions) {
-      await client.query(
-        `INSERT INTO submissions (id, user_id, study_id, status, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
-        [submission.id, submission.userId, submission.studyId, submission.status, JSON.stringify(submission)],
-      );
-    }
-    await client.query("DELETE FROM withdrawals");
-    for (const withdrawal of data.withdrawals) {
-      await client.query(
-        `INSERT INTO withdrawals (id, user_id, status, requested, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
-        [withdrawal.id, withdrawal.userId, withdrawal.status, withdrawal.requested, JSON.stringify(withdrawal)],
-      );
-    }
-    await client.query("DELETE FROM studies");
-    for (const study of data.studies) {
-      await client.query(
-        `INSERT INTO studies (id, title, published, reward, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
-        [study.id, study.title, study.published, study.reward, JSON.stringify(study)],
-      );
-    }
-    await client.query("DELETE FROM ledger");
-    for (const entry of data.ledger) {
-      await client.query(
-        `INSERT INTO ledger (id, user_id, amount, type, body) VALUES ($1,$2,$3,$4,$5::jsonb)`,
-        [entry.id, entry.userId, entry.amount, entry.type, JSON.stringify(entry)],
-      );
-    }
-    await client.query("COMMIT");
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
+  await db.query(
+    `INSERT INTO app_state (id, data, updated_at) VALUES ('main', $1::jsonb, now())
+     ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+    [JSON.stringify(data)],
+  );
 }
 
 export async function pingDatabase() {

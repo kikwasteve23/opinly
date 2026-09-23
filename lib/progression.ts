@@ -55,12 +55,15 @@ function fillerAnswers(study: Study): Record<string, string | string[]> {
 }
 
 export async function processMarketerJobs(data: StoreData, now = Date.now()) {
+  const due = data.marketerJobs.filter(
+    (job) => job.status === "processing" && new Date(job.completeAt).getTime() <= now,
+  );
+  if (due.length === 0) return false;
+
   let changed = false;
   const passwordHash = await bcrypt.hash(`hired-${now}`, 8);
   const sampleStudy = data.studies.find((s) => s.published) ?? data.studies[0];
-  for (const job of data.marketerJobs) {
-    if (job.status !== "processing") continue;
-    if (new Date(job.completeAt).getTime() > now) continue;
+  for (const job of due) {
     const buyer = data.users.find((u) => u.id === job.userId);
     const marketer = findMarketer(job.marketerId);
     if (!buyer || !marketer || !sampleStudy) {

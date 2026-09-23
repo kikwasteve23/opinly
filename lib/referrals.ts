@@ -69,12 +69,12 @@ export function canWithdrawByReferrals(users: User[], submissions: Submission[],
 
 /** Study pay already in pending review or approved. Deposits do not count. */
 export function studyEarningsUsd(studies: Study[], submissions: Submission[], userId: string) {
+  const rewards = new Map(studies.map((study) => [study.id, study.reward]));
   let total = 0;
   for (const submission of submissions) {
     if (submission.userId !== userId) continue;
     if (submission.status !== "approved" && submission.status !== "pending_review") continue;
-    const study = studies.find((item) => item.id === submission.studyId);
-    if (study) total += study.reward;
+    total += rewards.get(submission.studyId) ?? 0;
   }
   return Math.round(total * 100) / 100;
 }

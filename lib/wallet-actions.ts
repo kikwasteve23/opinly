@@ -48,8 +48,14 @@ export async function saveStudyAction(studyId: string, answers: Record<string, s
 
 export async function submitStudyAction(studyId: string, answers: Record<string, string | string[]>): Promise<StudySubmitState> {
   const user = await requireCompleteUser();
-  await saveStudyAction(studyId, answers);
-  const result = await mutateStore((data) => submitStudyInStore(data, user.id, studyId));
+  const result = await mutateStore((data) => {
+    const current = data.submissions.find((s) => s.userId === user.id && s.studyId === studyId && s.status === "in_progress");
+    if (current) {
+      current.answers = { ...current.answers, ...answers };
+      current.updatedAt = new Date().toISOString();
+    }
+    return submitStudyInStore(data, user.id, studyId);
+  });
   if (result && "error" in result && result.error) return { error: result.error };
   redirect("/app");
 }

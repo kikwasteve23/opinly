@@ -15,6 +15,7 @@ export { makeReferralCode } from "./ids";
 
 const DATA_PATH = path.join(process.cwd(), "data", "store.json");
 let queue: Promise<unknown> = Promise.resolve();
+let catalogReady = false;
 
 function emptyStore(): StoreData {
   return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [] };
@@ -80,15 +81,18 @@ function seedReferralSubmission(userId: string, studyId: string): Submission {
 }
 
 async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded: boolean }> {
+  if (catalogReady) return { data, seeded: false };
   data = normalizeStore(data);
   let seeded = false;
   if (data.studies.length === 0) {
     data.studies = DEFAULT_STUDIES.map((study) => ({ ...study }));
     seeded = true;
   } else {
+    const have = new Set(data.studies.map((study) => study.id));
     for (const extra of DEFAULT_STUDIES) {
-      if (!data.studies.some((s) => s.id === extra.id)) {
+      if (!have.has(extra.id)) {
         data.studies.push({ ...extra });
+        have.add(extra.id);
         seeded = true;
       }
     }
@@ -101,7 +105,10 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
   const needsDemoCap = existingDemo
     ? studyEarningsUsd(data.studies, data.submissions, existingDemo.id) < STARTER_EARNINGS_CAP
     : false;
-  if (!needsAdmin && !needsDemo && !needsReferrals && !needsDemoCap && !seeded) return { data, seeded: false };
+  if (!needsAdmin && !needsDemo && !needsReferrals && !needsDemoCap && !seeded) {
+    catalogReady = true;
+    return { data, seeded: false };
+  }
 
   const participantPassword = await bcrypt.hash(process.env.DEMO_USER_PASSWORD ?? "demo-dev-only", 10);
   const adminPassword = await bcrypt.hash(process.env.DEMO_ADMIN_PASSWORD ?? "admin-dev-only", 10);
@@ -202,6 +209,7 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
     }
   }
 
+  catalogReady = true;
   return { data, seeded };
 }
 
@@ -216,17 +224,23 @@ async function readFileStore(): Promise<StoreData> {
 
 async function writeFileStore(data: StoreData) {
   await mkdir(path.dirname(DATA_PATH), { recursive: true });
-  await writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf8");
+  await writeFile(DATA_PATH, JSON.stringify(data), "utf8");
 }
 
+let memory: StoreData | null = null;
+
 async function readStore(): Promise<StoreData> {
+  if (memory) return memory;
   if (databaseUrl()) {
-    return normalizeStore((await loadPostgresStore()) ?? emptyStore());
+    memory = normalizeStore((await loadPostgresStore()) ?? emptyStore());
+  } else {
+    memory = await readFileStore();
   }
-  return readFileStore();
+  return memory;
 }
 
 async function persistStore(data: StoreData) {
+  memory = data;
   if (databaseUrl()) {
     await savePostgresStore(data);
     return;
@@ -234,23 +248,32 @@ async function persistStore(data: StoreData) {
   await writeFileStore(data);
 }
 
-async function withStore<T>(fn: (data: StoreData) => Promise<T> | T, write: boolean): Promise<T> {
+async function withStore<T>(fn: (data: StoreData, markDirty: () => void) => Promise<T> | T, write: boolean): Promise<T> {
   let result!: T;
   const run = async () => {
     const loaded = await seedIfNeeded(await readStore());
+    memory = loaded.data;
     const due = await processDueWork(loaded.data);
-    result = await fn(loaded.data);
-    if (write || loaded.seeded || due) await persistStore(loaded.data);
+    let dirty = write;
+    const markDirty = () => {
+      dirty = true;
+    };
+    result = await fn(loaded.data, markDirty);
+    if (dirty || loaded.seeded || due) await persistStore(loaded.data);
+    else memory = loaded.data;
   };
   queue = queue.then(run, run);
   await queue;
   return result;
 }
 
-export async function mutateStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T> {
-  return withStore(fn, true);
+export async function mutateStore<T>(
+  fn: (data: StoreData, markDirty: () => void) => Promise<T> | T,
+  persist = true,
+): Promise<T> {
+  return withStore(fn, persist);
 }
 
 export async function readStoreSnapshot(): Promise<StoreData> {
-  return withStore((data) => structuredClone(data), false);
+  return withStore((data) => data, false);
 }
