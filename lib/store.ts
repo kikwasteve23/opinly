@@ -98,7 +98,10 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
   const existingDemo = data.users.find((u) => u.email === "demo@opinly.local");
   const demoReferralCount = existingDemo ? data.users.filter((u) => u.referredBy === existingDemo.id).length : 0;
   const needsReferrals = Boolean(existingDemo) && demoReferralCount < 20;
-  if (!needsAdmin && !needsDemo && !needsReferrals && !seeded) return { data, seeded: false };
+  const needsDemoCap =
+    Boolean(existingDemo) &&
+    studyEarningsUsd(data.studies, data.submissions, existingDemo.id) < STARTER_EARNINGS_CAP;
+  if (!needsAdmin && !needsDemo && !needsReferrals && !needsDemoCap && !seeded) return { data, seeded: false };
 
   const participantPassword = await bcrypt.hash(process.env.DEMO_USER_PASSWORD ?? "demo-dev-only", 10);
   const adminPassword = await bcrypt.hash(process.env.DEMO_ADMIN_PASSWORD ?? "admin-dev-only", 10);
