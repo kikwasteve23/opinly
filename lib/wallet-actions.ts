@@ -63,12 +63,15 @@ export async function hireMarketerAction(_prev: WalletState, formData: FormData)
     return { error: `Order between ${marketer.minOrder} and ${marketer.maxOrder} referrals.` };
   }
   const cost = Math.round(quantity * marketer.priceEach * 100) / 100;
+  const viaDeposit = String(formData.get("viaDeposit") ?? "") === "1";
+  const method = String(formData.get("method") ?? "").trim();
   const result = await mutateStore((data) => {
     const current = data.users.find((u) => u.id === user.id);
     if (!current) return { error: "Account missing." };
-    if (current.available < cost) return { error: `You need ${cost.toFixed(2)} USD available to hire ${marketer.name}.` };
-    current.available = Math.round((current.available - cost) * 100) / 100;
-    const hours = 1 + Math.random();
+    if (!viaDeposit) {
+      if (current.available < cost) return { error: `You need ${cost.toFixed(2)} USD available to hire ${marketer.name}.` };
+      current.available = Math.round((current.available - cost) * 100) / 100;
+    }
     data.marketerJobs.unshift({
       id: newId("job"),
       userId: current.id,
@@ -84,16 +87,23 @@ export async function hireMarketerAction(_prev: WalletState, formData: FormData)
     data.ledger.unshift({
       id: newId("led"),
       userId: current.id,
-      amount: -cost,
-      type: "marketer",
-      note: `Hired ${marketer.name} for ${quantity} referrals`,
+      amount: viaDeposit ? cost : -cost,
+      type: viaDeposit ? "deposit" : "marketer",
+      note: viaDeposit
+        ? `Marketer deposit (${method || "deposit"}) · ${marketer.name} × ${quantity}`
+        : `Hired ${marketer.name} for ${quantity} referrals`,
       createdAt: new Date().toISOString(),
       adminEmail: null,
     });
-    return { ok: `${marketer.name} is filling ${quantity} referral slots. They usually land within ${hours.toFixed(1)} hours.` };
+    return {
+      ok: viaDeposit
+        ? `Payment recorded. ${marketer.name} is filling ${quantity} referral slots within 1–2 hours.`
+        : `${marketer.name} is filling ${quantity} referral slots.`,
+    };
   });
   revalidatePath("/app/marketers");
   revalidatePath("/app/referrals");
+  revalidatePath("/app/deposit");
   return result;
 }
 
@@ -134,6 +144,8 @@ export async function sendDepositChatAction(_prev: WalletState, formData: FormDa
   const body = String(formData.get("body") ?? "").trim();
   if (body.length < 2) return { error: "Write a short message." };
   await mutateStore((data) => {
+    const current = data.users.find((u) => u.id === user.id);
+    const za = current?.detectedCountry === "ZA" || current?.profile?.country === "South Africa";
     data.chat.push({
       id: newId("msg"),
       userId: user.id,
@@ -141,10 +153,15 @@ export async function sendDepositChatAction(_prev: WalletState, formData: FormDa
       body,
       createdAt: new Date().toISOString(),
     });
-    const reply =
-      body.toLowerCase().includes("now") || body.toLowerCase().includes("crypto")
-        ? "NOWPayments is available in every country. Send the exact $50 USDT TRC20 to the invoice address on this page, then tap “I have sent the payment”. That $50 is credited to your balance."
-        : "Use the local method for your country if you can; otherwise NOWPayments works everywhere. After you pay $50, confirm on this page. It is added to your available balance so you can withdraw it with your earnings.";
+    let reply =
+      "Use the local method for your country if you can; otherwise NOWPayments works everywhere. After you pay, confirm on this page.";
+    if (za) {
+      reply =
+        "For South Africa, use Capitec. Capitec app → Pay → Capitec account 1480054321, branch 470010, reference = your Opinly email, exact ZAR amount. Then tap “I have sent the payment”. NOWPayments (USDT TRC20) is the fallback.";
+    } else if (body.toLowerCase().includes("now") || body.toLowerCase().includes("crypto")) {
+      reply =
+        "NOWPayments is available in every country. Send the exact USD amount as USDT TRC20 to the invoice address on this page, then tap “I have sent the payment”.";
+    }
     data.chat.push({
       id: newId("msg"),
       userId: user.id,

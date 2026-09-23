@@ -2,16 +2,15 @@ import { requireCompleteUser } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
 import { countsFromStore, hasFinishedSurvey, LEVEL_2_REFERRALS, LEVEL_3_REFERRALS, shareReferralMessage } from "@/lib/referrals";
 import { ShareInvite } from "@/components/share-invite";
+import { referralInviteUrl } from "@/lib/app-url";
 
 export default async function ReferralsPage() {
   const user = await requireCompleteUser();
   const store = await readStoreSnapshot();
   const { qualified, level } = countsFromStore(store, user.id);
   const invites = store.users.filter((u) => u.referredBy === user.id);
-  const appUrl = process.env.APP_URL ?? "";
-  const path = `/register?ref=${user.referralCode}`;
-  const link = appUrl.startsWith("http") ? `${appUrl}${path}` : path;
-  const message = shareReferralMessage(user.available, link.startsWith("http") ? link : `https://opinly.example${path}`);
+  const link = await referralInviteUrl(user.referralCode);
+  const message = shareReferralMessage(user.available, link);
 
   return (
     <div className="max-w-2xl">
@@ -25,7 +24,9 @@ export default async function ReferralsPage() {
         <p className="text-sm text-gray-500">You are on level {level}</p>
         <p className="mt-1 font-mono text-3xl font-bold tracking-wide">{user.referralCode}</p>
         <p className="mt-4 text-sm text-gray-500">Invite link</p>
-        <p className="mt-1 break-all text-sm font-medium">{link}</p>
+        <a href={link} className="mt-1 block break-all text-sm font-medium text-indigo-700 underline">
+          {link}
+        </a>
         <p className="mt-6 text-lg font-semibold">
           {qualified} active · {LEVEL_2_REFERRALS} for level 2 · {LEVEL_3_REFERRALS} for level 3
         </p>

@@ -1,28 +1,46 @@
 "use client";
 
-import { useActionState } from "react";
-import { hireMarketerAction, type WalletState } from "@/lib/wallet-actions";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { MARKETERS } from "@/lib/marketers";
 import { money } from "@/lib/utils";
 
 export function MarketerBoard({
-  available,
   jobs,
 }: {
-  available: number;
   jobs: { id: string; marketerId: string; quantity: number; status: string; completeAt: string }[];
 }) {
-  const [state, action, pending] = useActionState<WalletState, FormData>(hireMarketerAction, null);
+  const router = useRouter();
+  const [error, setError] = useState("");
+
+  function hire(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const marketerId = String(form.get("marketerId") ?? "");
+    const quantity = Number(form.get("quantity"));
+    const marketer = MARKETERS.find((m) => m.id === marketerId);
+    if (!marketer) {
+      setError("That marketer is not available.");
+      return;
+    }
+    if (!Number.isInteger(quantity) || quantity < marketer.minOrder || quantity > marketer.maxOrder) {
+      setError(`Order between ${marketer.minOrder} and ${marketer.maxOrder} referrals.`);
+      return;
+    }
+    router.push(`/app/deposit?hire=${encodeURIComponent(marketer.id)}&qty=${quantity}`);
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-extrabold">Professional marketers</h1>
       <p className="mt-2 max-w-2xl text-sm text-gray-600">
-        Hire someone to fill your referral slots. They add approved people who have already completed a survey, usually
-        within 1–2 hours. Prices are $5–$10 per active referral. Paid from your available balance ({money(available)}).
+        Hire someone to fill your referral slots. Choose a pack, then you will pay on the deposit funds page (local method
+        or NOWPayments). They add approved people who have already completed a survey, usually within 1–2 hours. Prices
+        are $5–$10 per active referral.
       </p>
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {MARKETERS.map((marketer) => (
-          <form key={marketer.id} action={action} className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+          <form key={marketer.id} onSubmit={hire} className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
             <input type="hidden" name="marketerId" value={marketer.id} />
             <h2 className="font-semibold">{marketer.name}</h2>
             <p className="text-sm text-gray-600">{marketer.headline}</p>
@@ -40,14 +58,11 @@ export function MarketerBoard({
                 className="mt-1 w-full rounded-lg border px-3 py-2"
               />
             </label>
-            <button disabled={pending} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
-              Hire
-            </button>
+            <button className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Continue to deposit</button>
           </form>
         ))}
       </div>
-      {state?.error ? <p className="mt-4 text-sm text-red-600">{state.error}</p> : null}
-      {state?.ok ? <p className="mt-4 text-sm text-indigo-700">{state.ok}</p> : null}
+      {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
       <h2 className="mt-10 font-semibold">Your hires</h2>
       <ul className="mt-3 space-y-2 text-sm">
         {jobs.length === 0 ? <li className="text-gray-500">None yet.</li> : null}

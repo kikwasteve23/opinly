@@ -6,5 +6,5 @@ export default async function MarketersPage() {
   const user = await requireCompleteUser();
   const store = await readStoreSnapshot();
   const jobs = store.marketerJobs.filter((j) => j.userId === user.id);
-  return <MarketerBoard available={user.available} jobs={jobs} />;
+  return <MarketerBoard jobs={jobs} />;
 }

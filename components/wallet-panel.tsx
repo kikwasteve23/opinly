@@ -27,18 +27,22 @@ type Withdrawal = {
   createdAt: string;
 };
 
+const CRYPTO_STEPS = [
+  "Payouts are crypto only. We send USDT on TRON (TRC20) or Litecoin. Bank apps and Capitec are for deposits, not withdrawals.",
+  "Install a wallet that supports the network you pick (for USDT use a TRC20 address that starts with T; for Litecoin an address that starts with L or M or ltc1).",
+  "Copy your receive address from that wallet. Double-check the network. The wrong chain cannot be recovered.",
+  "Enter at least $500 USD, paste the address, and confirm. A 5% platform fee and the network fee come off the amount you request.",
+  "An admin sends the crypto after review. Track status in Recent withdrawals on this page.",
+];
+
 export function WalletPanel({
   initialUser,
   initialHistory,
   referrals,
-  localLabel,
-  localMethods,
 }: {
   initialUser: UserWallet;
   initialHistory: Withdrawal[];
   referrals: { qualified: number; level: number; code: string };
-  localLabel: string;
-  localMethods: string;
 }) {
   const [amount, setAmount] = useState(String(MIN_WITHDRAWAL));
   const [network, setNetwork] = useState<PayoutNetwork>(initialUser.payout.network || "usdt_trc20");
@@ -54,8 +58,7 @@ export function WalletPanel({
       <div>
         <h1 className="text-2xl font-extrabold">Wallet</h1>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          We store your balance in US dollars. Based on {localLabel}, amounts also show in local terms and payouts prefer{" "}
-          {localMethods}.
+          Earnings sit in US dollars. When you cash out, the money is sent as crypto to a wallet you control.
         </p>
         <div className="mt-6 grid grid-cols-3 gap-3">
           <Stat label="Available" value={money(initialUser.available)} />
@@ -67,7 +70,15 @@ export function WalletPanel({
             Level {referrals.level} · {referrals.qualified}/{LEVEL_2_REFERRALS} active referrals for cash-out. Code{" "}
             <span className="font-mono font-semibold">{referrals.code}</span>.
           </p>
-          <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A ${50} activation deposit is added to this balance, not taken as a fee.</p>
+          <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A $50 activation deposit is added to this balance, not taken as a fee.</p>
+        </div>
+        <div className="mt-4 rounded-2xl border-2 border-indigo-600 bg-white p-5 dark:bg-gray-900">
+          <h2 className="font-bold">How crypto withdrawal works</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
+            {CRYPTO_STEPS.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
         </div>
         {needBalance || needRefs || needActivation ? (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
@@ -79,13 +90,13 @@ export function WalletPanel({
                 <Link className="font-semibold underline" href="/app/deposit">
                   deposit funds
                 </Link>{" "}
-                page, then come back to withdraw.
+                page, then come back to withdraw crypto.
               </p>
             ) : null}
           </div>
         ) : null}
         <form action={formAction} className="mt-8 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-          <h2 className="font-semibold">Request a withdrawal</h2>
+          <h2 className="font-semibold">Request a crypto withdrawal</h2>
           <label className="block text-sm font-medium">
             Amount (USD)
             <input
@@ -99,25 +110,25 @@ export function WalletPanel({
             />
           </label>
           <label className="block text-sm font-medium">
-            Network
+            Crypto network
             <select
               name="network"
               value={network}
               onChange={(e) => setNetwork(e.target.value as PayoutNetwork)}
               className="mt-1.5 w-full rounded-xl border border-gray-300 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-950"
             >
-              <option value="usdt_trc20">USDT (TRC20) · $1.00 network fee</option>
+              <option value="usdt_trc20">USDT on TRON (TRC20) · $1.00 network fee</option>
               <option value="ltc">Litecoin (LTC) · $0.10 network fee</option>
             </select>
           </label>
           <label className="block text-sm font-medium">
-            Payout address
+            Your wallet address
             <input
               name="address"
               required
               minLength={8}
               defaultValue={initialUser.payout.address}
-              placeholder={network === "ltc" ? "L..." : "T..."}
+              placeholder={network === "ltc" ? "L... or ltc1..." : "T... (TRC20 only)"}
               className="mt-1.5 w-full rounded-xl border border-gray-300 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-950"
             />
           </label>
@@ -138,7 +149,7 @@ export function WalletPanel({
           {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
           {state?.ok ? <p className="text-sm text-indigo-700">{state.ok}</p> : null}
           <button type="submit" disabled={pending || !canRequest} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">
-            {pending ? "Sending…" : "Confirm withdrawal"}
+            {pending ? "Sending…" : "Send crypto payout request"}
           </button>
         </form>
       </div>

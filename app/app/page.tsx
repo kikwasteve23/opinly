@@ -11,8 +11,8 @@ import {
   starterSurveysLocked,
   STARTER_EARNINGS_CAP,
   studyLockReason,
+  studyVisibleOnDashboard,
 } from "@/lib/referrals";
-import { MIN_WITHDRAWAL } from "@/lib/money";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { formatMoney } from "@/lib/geo";
 
@@ -55,9 +55,15 @@ export default async function DashboardPage() {
 
       {starterLocked ? (
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          Starter surveys pause at {money(STARTER_EARNINGS_CAP)}. Share your link or hire a marketer until you have{" "}
-          {LEVEL_2_REFERRALS} active referrals, then higher-paying studies open so you can reach the {money(MIN_WITHDRAWAL)}{" "}
-          withdrawal floor.
+          Starter surveys pause at {money(STARTER_EARNINGS_CAP)}. Share your{" "}
+          <Link className="font-semibold underline" href="/app/referrals">
+            referral link
+          </Link>{" "}
+          or{" "}
+          <Link className="font-semibold underline" href="/app/marketers">
+            hire a marketer
+          </Link>{" "}
+          until you have {LEVEL_2_REFERRALS} active referrals. Higher-paying studies stay locked until then.
         </div>
       ) : null}
 
@@ -76,6 +82,10 @@ export default async function DashboardPage() {
       <div className="mt-6 space-y-3">
         {store.studies
           .filter((study) => study.published)
+          .filter((study) => {
+            const mine = submissions.some((s) => s.studyId === study.id);
+            return studyVisibleOnDashboard(user, study.tier, level, mine);
+          })
           .map((study) => {
             const mine = submissions.filter((s) => s.studyId === study.id).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] as
               | (typeof submissions)[number]

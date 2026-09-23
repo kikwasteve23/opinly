@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/api";
 import { kindLabel, tierLabel } from "@/lib/studies-data";
 import { readStoreSnapshot } from "@/lib/store";
-import { canAccessStudyTier, countsFromStore } from "@/lib/referrals";
+import { canAccessStudyTier, countsFromStore, studyVisibleOnDashboard } from "@/lib/referrals";
 
 export async function GET() {
   const auth = await requireUser();
@@ -12,6 +12,10 @@ export async function GET() {
   const { level } = countsFromStore(data, auth.user.id);
   const studies = data.studies
     .filter((study) => study.published)
+    .filter((study) => {
+      const started = submissions.some((s) => s.studyId === study.id);
+      return studyVisibleOnDashboard(auth.user, study.tier, level, started);
+    })
     .map((study) => {
       const mine = submissions.filter((s) => s.studyId === study.id);
       const latest = mine.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];

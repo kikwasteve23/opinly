@@ -48,6 +48,14 @@ export function starterSurveysLocked(user: User, level: number) {
   return level < 2 && user.available + user.pending >= STARTER_EARNINGS_CAP;
 }
 
+/** Hide higher-tier studies until the $400 starter cap, then show them locked with a referral CTA. */
+export function studyVisibleOnDashboard(user: User, studyTier: number, level: number, alreadyStarted: boolean) {
+  if (alreadyStarted) return true;
+  if (canAccessStudyTier(user, studyTier, level)) return true;
+  if (studyTier <= 1) return true;
+  return starterSurveysLocked(user, level) || level >= 2;
+}
+
 export function canAccessStudyTier(user: User, studyTier: number, level: number) {
   if (user.identityStatus !== "approved") return false;
   if (level < studyTier) return false;

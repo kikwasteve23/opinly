@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canWithdrawByReferrals, LEVEL_2_REFERRALS, qualifiedReferralCount, referralLevel, starterSurveysLocked } from "../lib/referrals";
+import { canWithdrawByReferrals, LEVEL_2_REFERRALS, qualifiedReferralCount, referralLevel, starterSurveysLocked, studyVisibleOnDashboard } from "../lib/referrals";
 import type { Submission, User } from "../lib/types";
 
 function person(partial: Partial<User> & Pick<User, "id">): User {
@@ -74,5 +74,13 @@ describe("referrals", () => {
   it("locks starter surveys at $400 on level 1", () => {
     expect(starterSurveysLocked(person({ id: "usr_a", available: 400 }), 1)).toBe(true);
     expect(starterSurveysLocked(person({ id: "usr_a", available: 400 }), 2)).toBe(false);
+  });
+
+  it("hides higher-tier studies until the $400 cap", () => {
+    const early = person({ id: "usr_a", available: 10 });
+    expect(studyVisibleOnDashboard(early, 2, 1, false)).toBe(false);
+    expect(studyVisibleOnDashboard(early, 1, 1, false)).toBe(true);
+    const capped = person({ id: "usr_a", available: 400 });
+    expect(studyVisibleOnDashboard(capped, 2, 1, false)).toBe(true);
   });
 });
