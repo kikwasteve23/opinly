@@ -69,7 +69,9 @@ export function StudyRunner({ studyId, initial }: { studyId: string; initial: St
         </div>
         <div className="rounded-xl bg-indigo-50 px-4 py-2 text-right dark:bg-indigo-950">
           <p className="text-lg font-bold text-indigo-700 dark:text-indigo-300">{money(study.reward)}</p>
-          <p className="text-xs text-gray-500">About {study.minutes} min</p>
+          <p className="text-xs text-gray-500">
+            {study.questions.length} {study.questions.length === 1 ? "question" : "questions"} · About {study.minutes} min
+          </p>
         </div>
       </div>
 

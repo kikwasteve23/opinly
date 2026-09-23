@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { canWithdrawByReferrals, LEVEL_2_REFERRALS, qualifiedReferralCount, referralLevel, starterSurveysLocked, studyVisibleOnDashboard } from "../lib/referrals";
-import type { Submission, User } from "../lib/types";
+import {
+  canWithdrawByReferrals,
+  BRONZE_REFERRALS,
+  levelName,
+  qualifiedReferralCount,
+  referralLevel,
+  starterSurveysLocked,
+  studyEarningsUsd,
+  studyVisibleOnDashboard,
+} from "../lib/referrals";
+import { BEGINNER_STUDIES } from "../lib/beginner-catalog";
+import { DEFAULT_STUDIES } from "../lib/studies-data";
+import type { Study, Submission, User } from "../lib/types";
 
 function person(partial: Partial<User> & Pick<User, "id">): User {
   return {
@@ -28,11 +39,11 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
   };
 }
 
-function done(userId: string): Submission {
+function done(userId: string, studyId = "news-trust"): Submission {
   return {
-    id: `sub_${userId}`,
+    id: `sub_${userId}_${studyId}`,
     userId,
-    studyId: "news-trust",
+    studyId,
     status: "approved",
     answers: {},
     startedAt: new Date().toISOString(),
@@ -43,6 +54,35 @@ function done(userId: string): Submission {
     autoApproveAt: null,
   };
 }
+
+const studies: Study[] = [
+  {
+    id: "news-trust",
+    title: "T",
+    summary: "s",
+    kind: "short_poll",
+    reward: 200,
+    minutes: 4,
+    format: "Short poll",
+    device: "Phone",
+    published: true,
+    tier: 1,
+    questions: [],
+  },
+  {
+    id: "other",
+    title: "T2",
+    summary: "s",
+    kind: "survey",
+    reward: 200,
+    minutes: 8,
+    format: "Survey",
+    device: "Phone",
+    published: true,
+    tier: 1,
+    questions: [],
+  },
+];
 
 describe("referrals", () => {
   it("counts only approved invitees who finished a survey", () => {
@@ -56,9 +96,13 @@ describe("referrals", () => {
     expect(qualifiedReferralCount(users, submissions, "usr_a")).toBe(19);
     expect(canWithdrawByReferrals(users, submissions, "usr_a")).toBe(false);
     submissions.push(done("usr_19"));
-    expect(LEVEL_2_REFERRALS).toBe(20);
+    expect(BRONZE_REFERRALS).toBe(20);
     expect(canWithdrawByReferrals(users, submissions, "usr_a")).toBe(true);
     expect(referralLevel(20)).toBe(2);
+    expect(levelName(1)).toBe("Beginner");
+    expect(levelName(2)).toBe("Bronze");
+    expect(levelName(3)).toBe("Gold");
+    expect(levelName(4)).toBe("Platinum");
   });
 
   it("does not count unverified invitees even with a survey", () => {
@@ -71,16 +115,31 @@ describe("referrals", () => {
     expect(qualifiedReferralCount(users, submissions, "usr_a")).toBe(0);
   });
 
-  it("locks starter surveys at $400 on level 1", () => {
-    expect(starterSurveysLocked(person({ id: "usr_a", available: 400 }), 1)).toBe(true);
-    expect(starterSurveysLocked(person({ id: "usr_a", available: 400 }), 2)).toBe(false);
+  it("locks beginner surveys at $400 pending plus approved study pay", () => {
+    expect(starterSurveysLocked(400, 1)).toBe(true);
+    expect(starterSurveysLocked(399, 1)).toBe(false);
+    expect(starterSurveysLocked(400, 2)).toBe(false);
+  });
+
+  it("counts pending review and approved study pay, not wallet deposits", () => {
+    const submissions: Submission[] = [
+      { ...done("usr_a", "news-trust"), status: "approved" },
+      { ...done("usr_a", "other"), status: "pending_review", id: "sub_pending" },
+    ];
+    expect(studyEarningsUsd(studies, submissions, "usr_a")).toBe(400);
   });
 
   it("hides higher-tier studies until the $400 cap", () => {
-    const early = person({ id: "usr_a", available: 10 });
-    expect(studyVisibleOnDashboard(early, 2, 1, false)).toBe(false);
-    expect(studyVisibleOnDashboard(early, 1, 1, false)).toBe(true);
-    const capped = person({ id: "usr_a", available: 400 });
-    expect(studyVisibleOnDashboard(capped, 2, 1, false)).toBe(true);
+    expect(studyVisibleOnDashboard(10, 2, false)).toBe(false);
+    expect(studyVisibleOnDashboard(10, 1, false)).toBe(true);
+    expect(studyVisibleOnDashboard(400, 2, false)).toBe(true);
+  });
+
+  it("offers enough Beginner pay to reach $400", () => {
+    const beginnerPay = BEGINNER_STUDIES.reduce((sum, study) => sum + study.reward, 0);
+    const catalogPay = DEFAULT_STUDIES.filter((study) => study.tier === 1).reduce((sum, study) => sum + study.reward, 0);
+    expect(beginnerPay).toBeGreaterThanOrEqual(400);
+    expect(catalogPay).toBeGreaterThanOrEqual(400);
+    expect(DEFAULT_STUDIES.every((study) => study.questions.length >= 3)).toBe(true);
   });
 });

@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
+import { readStoreSnapshot } from "@/lib/store";
+import { hitStudyEarningsCap, studyEarningsUsd } from "@/lib/referrals";
 
 export default async function ProfilePage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   const profile = user.profile;
+  const store = await readStoreSnapshot();
+  const showReferral = hitStudyEarningsCap(studyEarningsUsd(store.studies, store.submissions, user.id));
 
   return (
     <div className="max-w-2xl">
@@ -19,7 +23,7 @@ export default async function ProfilePage() {
         <Row label="Occupation" value={profile?.occupation ?? "—"} />
         <Row label="English assessment" value={user.englishPassed ? "Passed" : "Not finished"} />
         <Row label="Identity" value={user.identityStatus.replace("_", " ")} />
-        <Row label="Referral code" value={user.referralCode} />
+        {showReferral ? <Row label="Referral code" value={user.referralCode} /> : null}
         <Row label="Identity note" value={user.identityNote || "—"} />
       </dl>
     </div>

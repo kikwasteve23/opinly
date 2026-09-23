@@ -219,7 +219,7 @@ export async function saveSurveyAction(_prev: AdminFormState, formData: FormData
     format,
     device,
     published,
-    tier: ([1, 2, 3].includes(Number(formData.get("tier"))) ? Number(formData.get("tier")) : reward >= 20 ? 3 : reward >= 8 ? 2 : 1) as Study["tier"],
+    tier: ([1, 2, 3, 4].includes(Number(formData.get("tier"))) ? Number(formData.get("tier")) : reward >= 50 ? 4 : reward >= 20 ? 3 : reward >= 8 ? 2 : 1) as Study["tier"],
     questions,
   };
 

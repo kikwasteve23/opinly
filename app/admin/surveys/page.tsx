@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
 import { money } from "@/lib/utils";
 import { deleteSurveyAction, toggleSurveyAction } from "@/lib/admin-actions";
+import { questionCountLabel, tierLabel } from "@/lib/studies-data";
 
 export default async function AdminSurveysPage() {
   await requireAdmin();
@@ -26,7 +27,7 @@ export default async function AdminSurveysPage() {
             <div className="flex-1">
               <p className="font-semibold">{study.title}</p>
               <p className="text-sm text-gray-500">
-                {study.published ? "Live" : "Draft"} · {money(study.reward)} · {study.questions.length} questions
+                {study.published ? "Live" : "Draft"} · {tierLabel(study.tier)} · {money(study.reward)} · {questionCountLabel(study.questions.length)}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

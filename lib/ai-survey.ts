@@ -54,7 +54,7 @@ function mockSurvey(topic: string, count: number, reward: number, minutes: numbe
     format: "Survey",
     device: "Desktop or phone",
     published: true,
-    tier: reward >= 20 ? 3 : reward >= 8 ? 2 : 1,
+    tier: reward >= 50 ? 4 : reward >= 20 ? 3 : reward >= 8 ? 2 : 1,
     questions,
   };
 }

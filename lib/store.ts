@@ -7,6 +7,7 @@ import { DEFAULT_STUDIES } from "./studies-data";
 import { newId } from "./ids";
 import { normalizeUser } from "./normalize-user";
 import { processDueWork } from "./progression";
+import { STARTER_EARNINGS_CAP, studyEarningsUsd } from "./referrals";
 
 export { newId } from "./ids";
 export { normalizeUser } from "./normalize-user";
@@ -20,7 +21,8 @@ function emptyStore(): StoreData {
 }
 
 function inferTier(study: Study): StudyTier {
-  if (study.tier === 1 || study.tier === 2 || study.tier === 3) return study.tier;
+  if (study.tier === 1 || study.tier === 2 || study.tier === 3 || study.tier === 4) return study.tier;
+  if (study.reward >= 50) return 4;
   if (study.reward >= 20) return 3;
   if (study.reward >= 8) return 2;
   return 1;
@@ -182,6 +184,16 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
     for (const referral of data.users.filter((u) => u.referredBy === demo.id)) {
       if (!data.submissions.some((s) => s.userId === referral.id && s.status === "approved")) {
         data.submissions.push(seedReferralSubmission(referral.id, sampleId));
+        seeded = true;
+      }
+    }
+    if (studyEarningsUsd(data.studies, data.submissions, demo.id) < STARTER_EARNINGS_CAP) {
+      for (const study of data.studies.filter((s) => s.published && s.tier === 1)) {
+        if (studyEarningsUsd(data.studies, data.submissions, demo.id) >= STARTER_EARNINGS_CAP) break;
+        if (data.submissions.some((s) => s.userId === demo.id && s.studyId === study.id && (s.status === "approved" || s.status === "pending_review"))) {
+          continue;
+        }
+        data.submissions.push(seedReferralSubmission(demo.id, study.id));
         seeded = true;
       }
     }

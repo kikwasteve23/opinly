@@ -1,0 +1,148 @@
+import type { Question, Study, StudyKind } from "./types";
+
+function questionsFor(topic: string): Question[] {
+  return [
+    {
+      id: "q1",
+      type: "single",
+      prompt: `How often do you think about ${topic}?`,
+      options: ["Daily", "A few times a week", "Monthly", "Rarely", "Never"],
+      required: true,
+    },
+    {
+      id: "q2",
+      type: "multi",
+      prompt: `What shapes your choices around ${topic}? Select all that apply.`,
+      options: ["Price", "Quality", "Convenience", "What friends say", "Ads or reviews", "Habits"],
+      required: true,
+    },
+    {
+      id: "attn1",
+      type: "attention",
+      prompt: "To confirm you are reading, select “I am paying attention”.",
+      options: ["Skip this", "I am paying attention", "Not sure"],
+      correct: "I am paying attention",
+      required: true,
+    },
+    {
+      id: "q3",
+      type: "scale",
+      prompt: `How satisfied are you with ${topic} right now?`,
+      options: ["1 — Not at all", "2", "3", "4", "5 — Completely"],
+      required: true,
+    },
+    {
+      id: "q4",
+      type: "single",
+      prompt: `Compared with last year, has ${topic} gotten easier or harder?`,
+      options: ["Easier", "About the same", "Harder", "I cannot tell"],
+      required: true,
+    },
+    {
+      id: "q5",
+      type: "text",
+      prompt: `In your own words, describe a recent experience with ${topic}.`,
+      required: true,
+    },
+  ];
+}
+
+type Spec = {
+  id: string;
+  title: string;
+  summary: string;
+  topic: string;
+  reward: number;
+  minutes: number;
+  kind?: StudyKind;
+};
+
+const SPECS: Spec[] = [
+  { id: "weekday-meals", title: "Weeknight dinners at home", summary: "How you decide what to eat when the day has already been long.", topic: "weeknight dinners", reward: 5.5, minutes: 8 },
+  { id: "grocery-apps", title: "Grocery apps versus the store", summary: "When you order food in, walk in, or skip the trip altogether.", topic: "grocery shopping", reward: 6, minutes: 9 },
+  { id: "coffee-routine", title: "Your coffee or tea routine", summary: "A short survey on cafés, pods, and brewing at home.", topic: "coffee or tea", reward: 4.5, minutes: 7 },
+  { id: "phone-battery", title: "Phone battery anxiety", summary: "How you manage charge, chargers, and dying phones away from home.", topic: "phone battery life", reward: 5, minutes: 8 },
+  { id: "commute-modes", title: "How you get to work or school", summary: "Walking, buses, cars, and what would make you switch.", topic: "your daily commute", reward: 6.5, minutes: 10 },
+  { id: "sleep-habits", title: "Sleep on a work night", summary: "Screens, alarms, and what actually gets you to bed.", topic: "sleep on work nights", reward: 5.75, minutes: 8 },
+  { id: "bank-apps", title: "Banking on your phone", summary: "What you trust a banking app to do, and what you still do in a branch.", topic: "mobile banking", reward: 7, minutes: 10 },
+  { id: "password-habits", title: "Passwords and logins", summary: "Managers, reuse, and the last time a login failed you.", topic: "passwords and logins", reward: 6.25, minutes: 9 },
+  { id: "delivery-tips", title: "Tipping food delivery", summary: "When you tip, how much, and what would change that.", topic: "food delivery tipping", reward: 5.25, minutes: 8 },
+  { id: "laundry-day", title: "Laundry day decisions", summary: "Detergent, dryers, and putting it off until the weekend.", topic: "doing laundry", reward: 4.75, minutes: 7 },
+  { id: "weather-apps", title: "Checking the weather", summary: "Which forecast you believe and when you stop looking.", topic: "weather apps", reward: 4.25, minutes: 6, kind: "short_poll" },
+  { id: "secondhand-buys", title: "Buying second-hand", summary: "Thrift, marketplace apps, and what still has to be new.", topic: "second-hand shopping", reward: 6.75, minutes: 10 },
+  { id: "family-calls", title: "Keeping in touch with family", summary: "Calls, group chats, and who actually starts the conversation.", topic: "family communication", reward: 5.5, minutes: 8 },
+  { id: "weekend-plans", title: "How weekends actually go", summary: "Plans you make Friday night versus what happens on Sunday.", topic: "weekend plans", reward: 5, minutes: 8 },
+  { id: "home-wifi", title: "Home internet frustrations", summary: "Speeds, outages, and whether you would switch providers.", topic: "home internet", reward: 6.5, minutes: 9 },
+  { id: "smart-speakers", title: "Voice assistants at home", summary: "What you ask out loud, and what you would never say to a speaker.", topic: "voice assistants", reward: 5.75, minutes: 8 },
+  { id: "ride-hailing", title: "Ride-hailing versus transit", summary: "When a car is worth it and when you wait for the bus.", topic: "ride-hailing", reward: 6, minutes: 9 },
+  { id: "online-returns", title: "Sending online orders back", summary: "The last return you made and why you almost did not bother.", topic: "online returns", reward: 6.25, minutes: 9 },
+  { id: "snack-aisle", title: "Snacks you actually buy", summary: "What ends up in the cart when you told yourself you would not.", topic: "snack shopping", reward: 4.5, minutes: 7 },
+  { id: "work-from-home", title: "Working from the kitchen table", summary: "Desks, background noise, and the apps that keep you on task.", topic: "working from home", reward: 7, minutes: 11 },
+  { id: "kids-screens", title: "Screens in a household with kids", summary: "Rules you set, rules that last, and rules that do not.", topic: "children and screens", reward: 6.5, minutes: 10 },
+  { id: "pet-care", title: "Looking after a pet", summary: "Food, vets, and the products you keep buying.", topic: "pet care", reward: 5.5, minutes: 8 },
+  { id: "fitness-apps", title: "Fitness apps you still open", summary: "Streaks, subscriptions, and the ones you silently cancelled.", topic: "fitness apps", reward: 6, minutes: 9 },
+  { id: "local-news", title: "Local news you still notice", summary: "What reaches you about your town, and from where.", topic: "local news", reward: 5.25, minutes: 8 },
+  { id: "job-search", title: "Looking for work online", summary: "Listings, ghosting, and the last application you sent.", topic: "job searching", reward: 7.25, minutes: 11 },
+  { id: "rent-or-buy", title: "Renting versus buying a home", summary: "What would have to change before you would move.", topic: "housing choices", reward: 7.5, minutes: 12 },
+  { id: "energy-bills", title: "Keeping energy bills down", summary: "Thermostats, lights, and the last bill that surprised you.", topic: "home energy bills", reward: 6.75, minutes: 10 },
+  { id: "public-wifi", title: "Using public Wi-Fi", summary: "Cafés, airports, and whether you still log in at all.", topic: "public Wi-Fi", reward: 5, minutes: 7 },
+  { id: "music-apps", title: "How you pick what to listen to", summary: "Playlists, radio, and paying for music in 2026.", topic: "music streaming", reward: 5.5, minutes: 8 },
+  { id: "podcasts-habit", title: "Podcasts in the background", summary: "When you press play, and when an episode is too long.", topic: "podcasts", reward: 5, minutes: 8 },
+  { id: "email-inbox", title: "Your email inbox on a Monday", summary: "Unread piles, filters, and the messages you actually open.", topic: "email overload", reward: 6, minutes: 9 },
+  { id: "calendar-apps", title: "Calendars and reminders", summary: "Who puts events on your calendar, and who you still text.", topic: "calendars and reminders", reward: 5.25, minutes: 8 },
+  { id: "photo-backup", title: "Photos on your phone", summary: "Albums, cloud storage, and the pictures you never delete.", topic: "phone photos", reward: 5.75, minutes: 8 },
+  { id: "maps-navigation", title: "Following maps in a new city", summary: "Trust, wrong turns, and when you ask a person instead.", topic: "map apps", reward: 5.5, minutes: 8 },
+  { id: "online-reviews", title: "Reading reviews before you buy", summary: "Stars you believe, photos you skip, and fake-looking comments.", topic: "online reviews", reward: 6.25, minutes: 9 },
+  { id: "pharmacy-runs", title: "Pharmacy and drugstore trips", summary: "Prescriptions, extras in the basket, and waiting in line.", topic: "pharmacy visits", reward: 5.75, minutes: 8 },
+  { id: "haircuts", title: "Getting a haircut", summary: "Who you trust with scissors and how you find them.", topic: "haircuts", reward: 4.75, minutes: 7 },
+  { id: "shoes-wear", title: "The shoes you actually wear", summary: "Comfort, price, and the pair that never leaves the box.", topic: "everyday shoes", reward: 5, minutes: 8 },
+  { id: "water-bottles", title: "Reusable bottles and cups", summary: "What you carry, lose, and replace in a year.", topic: "reusable bottles", reward: 4.5, minutes: 6, kind: "short_poll" },
+  { id: "public-transit-card", title: "Paying for public transit", summary: "Cards, apps, and the last time a reader failed you.", topic: "transit payments", reward: 5.5, minutes: 8 },
+  { id: "home-cleaning", title: "Keeping a home clean enough", summary: "Routines, products, and the jobs you pay someone else to do.", topic: "home cleaning", reward: 6, minutes: 9 },
+  { id: "birthday-gifts", title: "Buying a birthday gift", summary: "Last-minute, handmade, or a voucher you hope they like.", topic: "buying gifts", reward: 5.75, minutes: 8 },
+  { id: "holiday-travel", title: "Holiday travel decisions", summary: "Flights, buses, staying put, and who you visit.", topic: "holiday travel", reward: 7, minutes: 11 },
+  { id: "insurance-shop", title: "Shopping for insurance", summary: "What you compare, what you ignore, and who you call.", topic: "personal insurance", reward: 7.25, minutes: 11 },
+  { id: "school-supplies", title: "School or study supplies", summary: "What you buy at the start of term and what sits unused.", topic: "school supplies", reward: 5.25, minutes: 8 },
+  { id: "fast-fashion", title: "Cheap clothes that do not last", summary: "When a low price is worth it and when it is not.", topic: "fast fashion", reward: 6.5, minutes: 10 },
+  { id: "repair-or-replace", title: "Repair or replace a broken thing", summary: "The last appliance or phone that quit on you.", topic: "repairing broken items", reward: 6.75, minutes: 10 },
+  { id: "neighborhood-walk", title: "Walking in your neighborhood", summary: "Safety, errands, and whether you would walk after dark.", topic: "walking nearby", reward: 5, minutes: 8 },
+  { id: "community-groups", title: "Community groups and clubs", summary: "WhatsApp groups, churches, sports, and who you actually meet.", topic: "local community groups", reward: 5.5, minutes: 8 },
+  { id: "library-use", title: "Using a library in 2026", summary: "Books, wifi, printers, and whether you still have a card.", topic: "public libraries", reward: 4.75, minutes: 7 },
+  { id: "streaming-ads", title: "Ads on streaming video", summary: "How many you will sit through before you pay or leave.", topic: "video ads", reward: 5.25, minutes: 8 },
+  { id: "cloud-storage", title: "Running out of cloud storage", summary: "The last time a “storage full” message made you pay.", topic: "cloud storage", reward: 5.75, minutes: 8 },
+  { id: "customer-support", title: "Waiting on customer support", summary: "Chatbots, hold music, and the last issue that got fixed.", topic: "customer support", reward: 6.25, minutes: 9 },
+  { id: "utility-outage", title: "When the power or water goes out", summary: "How long you wait, who you tell, and what you do next.", topic: "utility outages", reward: 5.5, minutes: 8 },
+  { id: "online-classes", title: "Learning something online", summary: "Courses you finished, and the ones you never opened again.", topic: "online courses", reward: 6, minutes: 9 },
+  { id: "side-hustle", title: "Extra work on the side", summary: "Gigs, overtime, and whether the extra hours are worth it.", topic: "side work", reward: 7, minutes: 11 },
+  { id: "cash-versus-card", title: "Cash versus tap to pay", summary: "When you still carry notes, and when the card is enough.", topic: "paying with cash", reward: 5, minutes: 7 },
+  { id: "home-cooking-time", title: "How long cooking actually takes", summary: "Recipes you follow versus what you throw together.", topic: "home cooking time", reward: 5.75, minutes: 8 },
+  { id: "plant-care", title: "Keeping plants alive", summary: "Windowsills, watering apps, and the ones that did not make it.", topic: "houseplants", reward: 4.5, minutes: 7 },
+  { id: "noise-neighbors", title: "Noise from next door", summary: "What you put up with, and what made you knock.", topic: "neighbor noise", reward: 5.25, minutes: 8 },
+  { id: "recycling-bins", title: "What actually goes in the recycling", summary: "Rules you know, rules you guess, and bags that get rejected.", topic: "household recycling", reward: 5.5, minutes: 8 },
+  { id: "first-aid", title: "What you keep for first aid", summary: "The kit in a drawer and the last time you used it.", topic: "home first aid", reward: 5, minutes: 7 },
+  { id: "birthday-parties", title: "Kids’ or family parties", summary: "Venues, cake, and the guest list that got too long.", topic: "family parties", reward: 5.75, minutes: 8 },
+  { id: "language-apps", title: "Trying to learn a language", summary: "Streaks, tutors, and why most people stop in month two.", topic: "language learning apps", reward: 6, minutes: 9 },
+  { id: "smartwatch-use", title: "Wearing a smartwatch", summary: "Health rings, notifications, and days you leave it on the charger.", topic: "smartwatches", reward: 5.5, minutes: 8 },
+  { id: "ev-or-petrol", title: "Electric cars versus petrol", summary: "What would have to be true before you would switch.", topic: "electric cars", reward: 7, minutes: 11 },
+  { id: "airline-delays", title: "Flight delays and missed connections", summary: "The last trip that did not go to plan.", topic: "airline delays", reward: 6.5, minutes: 10 },
+  { id: "hotel-versus-home", title: "Hotels versus a spare room", summary: "Where you sleep when you are not at home.", topic: "hotels and homestays", reward: 6.25, minutes: 9 },
+  { id: "concert-tickets", title: "Buying concert or match tickets", summary: "Fees, resale, and the seats you will still pay for.", topic: "event tickets", reward: 6, minutes: 9 },
+  { id: "breakfast-habits", title: "What breakfast actually looks like", summary: "Skipped, cereal, or something you cook.", topic: "breakfast", reward: 4.5, minutes: 6, kind: "short_poll" },
+  { id: "dentist-visits", title: "Going to the dentist", summary: "How often you go, and what makes you book at last.", topic: "dentist visits", reward: 5.25, minutes: 8 },
+  { id: "glasses-or-contacts", title: "Glasses, contacts, or neither", summary: "What you wear to see, and how you chose it.", topic: "glasses and contacts", reward: 5, minutes: 8 },
+  { id: "spam-calls", title: "Spam calls and scam texts", summary: "What you ignore, block, or almost fell for.", topic: "spam calls", reward: 5.75, minutes: 8 },
+  { id: "group-chats", title: "Group chats that never end", summary: "Mutes, leaving, and the one chat you still read.", topic: "group chats", reward: 5, minutes: 8 },
+];
+
+export const BEGINNER_STUDIES: Omit<Study, "published">[] = SPECS.map((spec) => ({
+  id: spec.id,
+  title: spec.title,
+  summary: spec.summary,
+  kind: spec.kind ?? "survey",
+  reward: spec.reward,
+  minutes: spec.minutes,
+  format: spec.kind === "short_poll" ? "Short poll" : "Survey",
+  device: "Desktop or phone",
+  tier: 1,
+  questions: questionsFor(spec.topic),
+}));

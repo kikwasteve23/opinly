@@ -55,10 +55,10 @@ const steps = [
 ];
 
 const examples = [
-  { title: "Shopping habits after a price rise", meta: "Survey · About 12 min", pay: 6 },
-  { title: "Rate three app onboarding flows", meta: "Usability · About 18 min", pay: 9.25 },
-  { title: "Quick poll: news and trust", meta: "Short poll · About 4 min", pay: 1.75 },
-  { title: "Diary study: one entry a day, 5 days", meta: "Multi-day · 5 × 5 min", pay: 22 },
+  { title: "Shopping habits after a price rise", meta: "Survey · 4 questions · About 12 min", pay: 6 },
+  { title: "Rate three app onboarding flows", meta: "Usability · 5 questions · About 18 min", pay: 9.25 },
+  { title: "Quick poll: news and trust", meta: "Short poll · 3 questions · About 4 min", pay: 1.75 },
+  { title: "Diary study: one entry a day, 5 days", meta: "Multi-day · 3 questions · 5 × 5 min", pay: 22 },
 ];
 
 const faqs = [
@@ -76,7 +76,7 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "Your rewards build up in US dollars and also display in your local currency. When you reach $500 available and level 2 referrals, you activate with $50 (credited to you) and withdraw by crypto. Local deposit methods plus NOWPayments are listed on the deposit page.",
+    a: "Your rewards build up in US dollars and also display in your local currency. When you reach $500 available and Bronze (20 active referrals), you activate with $50 (credited to you) and withdraw by crypto. Local deposit methods plus NOWPayments are listed on the deposit page.",
   },
   {
     q: "Why was my submission rejected?",
@@ -225,7 +225,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/15">
           <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
-            You also need 20 active referrals (approved people who have finished a survey) before higher-paying studies and withdrawals open. Starter surveys pause at $400. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
+            You also need 20 active referrals (approved people who have finished a survey) before Bronze studies and withdrawals open. Beginner surveys pause at $400 in pending plus approved study pay. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
           </p>
         </div>
       </section>
@@ -324,7 +324,7 @@ export default async function HomePage() {
           <p className="font-semibold">A couple of house rules</p>
           <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400">
             {[
-              "You need 20 active referrals (approved, and they must complete a survey) and a $500 available balance. A $50 activation deposit is then added to that balance so you can withdraw.",
+              "You need Bronze (20 active referrals: approved, and they must complete a survey) and a $500 available balance. A $50 activation deposit is then added to that balance so you can withdraw.",
               "One withdrawal every 72 hours, so let your balance build up before cashing out.",
               "Both fees come out of the amount you request, so the figure you confirm is the figure that arrives.",
               "Double-check the address and the network. Crypto sent to the wrong chain cannot be recovered.",

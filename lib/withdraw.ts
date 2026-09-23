@@ -14,7 +14,7 @@ export function applyWithdrawal(
   }
   if (!canWithdrawByReferrals(data.users, data.submissions, user.id)) {
     return {
-      error: `You need ${LEVEL_2_REFERRALS} active referrals (approved and finished at least one survey) before you can withdraw.`,
+      error: `You need ${LEVEL_2_REFERRALS} active referrals (Bronze: approved people who finished at least one survey) before you can withdraw.`,
     };
   }
   if (!user.walletActivated) {

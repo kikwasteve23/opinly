@@ -1,5 +1,5 @@
 import { autoApproveAt, TEXT_MIN_CHARS } from "./money";
-import { canAccessStudyTier, countsFromStore, studyLockReason } from "./referrals";
+import { canAccessStudyTier, countsFromStore, studyEarningsUsd, studyLockReason } from "./referrals";
 import { textAnswersPass } from "./progression";
 import { findStudy } from "./studies-data";
 import type { StoreData } from "./types";
@@ -14,8 +14,9 @@ export function submitStudyInStore(data: StoreData, userId: string, studyId: str
     return { error: "Identity verification has to clear before you can submit." };
   }
   const { level } = countsFromStore(data, currentUser.id);
-  if (!canAccessStudyTier(currentUser, study.tier, level)) {
-    return { error: studyLockReason(currentUser, study.tier, level) ?? "This study is locked." };
+  const earnings = studyEarningsUsd(data.studies, data.submissions, currentUser.id);
+  if (!canAccessStudyTier(currentUser, study.tier, level, earnings)) {
+    return { error: studyLockReason(currentUser, study.tier, level, earnings) ?? "This study is locked." };
   }
 
   for (const question of study.questions) {

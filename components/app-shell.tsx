@@ -12,11 +12,13 @@ export function AppShell({
   children,
   email,
   showDeposit,
+  showReferralTools,
   locationLabel,
 }: {
   children: React.ReactNode;
   email: string;
   showDeposit: boolean;
+  showReferralTools: boolean;
   locationLabel: string;
 }) {
   const pathname = usePathname();
@@ -24,8 +26,12 @@ export function AppShell({
   const nav = [
     { href: "/app", label: "Studies" },
     { href: "/app/wallet", label: "Wallet" },
-    { href: "/app/referrals", label: "Referrals" },
-    { href: "/app/marketers", label: "Marketers" },
+    ...(showReferralTools
+      ? [
+          { href: "/app/referrals", label: "Referrals" },
+          { href: "/app/marketers", label: "Marketers" },
+        ]
+      : []),
     { href: "/app/profile", label: "Profile" },
     ...(showDeposit ? [{ href: "/app/deposit", label: "Deposit funds" }] : []),
   ];

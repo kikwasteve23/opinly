@@ -5,7 +5,7 @@ import { useActionState, useMemo, useState } from "react";
 import { MIN_WITHDRAWAL, quoteWithdrawal, type PayoutNetwork } from "@/lib/money";
 import { money } from "@/lib/utils";
 import { withdrawAction, type WalletState } from "@/lib/wallet-actions";
-import { LEVEL_2_REFERRALS } from "@/lib/referrals";
+import { BRONZE_REFERRALS, levelName } from "@/lib/referrals";
 
 type UserWallet = {
   available: number;
@@ -39,16 +39,18 @@ export function WalletPanel({
   initialUser,
   initialHistory,
   referrals,
+  showReferralTools,
 }: {
   initialUser: UserWallet;
   initialHistory: Withdrawal[];
   referrals: { qualified: number; level: number; code: string };
+  showReferralTools: boolean;
 }) {
   const [amount, setAmount] = useState(String(MIN_WITHDRAWAL));
   const [network, setNetwork] = useState<PayoutNetwork>(initialUser.payout.network || "usdt_trc20");
   const [state, formAction, pending] = useActionState<WalletState, FormData>(withdrawAction, null);
   const quote = useMemo(() => quoteWithdrawal(Number(amount) || 0, network), [amount, network]);
-  const needRefs = referrals.qualified < LEVEL_2_REFERRALS;
+  const needRefs = showReferralTools && referrals.qualified < BRONZE_REFERRALS;
   const needBalance = initialUser.available < MIN_WITHDRAWAL;
   const needActivation = !initialUser.walletActivated;
   const canRequest = !needRefs && !needBalance && !needActivation;
@@ -65,13 +67,19 @@ export function WalletPanel({
           <Stat label="Pending" value={money(initialUser.pending)} hint="We are reviewing your responses." />
           <Stat label="Withdrawn" value={money(initialUser.withdrawn)} />
         </div>
-        <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
-          <p>
-            Level {referrals.level} · {referrals.qualified}/{LEVEL_2_REFERRALS} active referrals for cash-out. Code{" "}
-            <span className="font-mono font-semibold">{referrals.code}</span>.
-          </p>
-          <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A $50 activation deposit is added to this balance, not taken as a fee.</p>
-        </div>
+        {showReferralTools ? (
+          <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
+            <p>
+              {levelName(referrals.level)} · {referrals.qualified}/{BRONZE_REFERRALS} active referrals for cash-out. Code{" "}
+              <span className="font-mono font-semibold">{referrals.code}</span>.
+            </p>
+            <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A $50 activation deposit is added to this balance, not taken as a fee.</p>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
+            <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A $50 activation deposit is added to this balance, not taken as a fee.</p>
+          </div>
+        )}
         <div className="mt-4 rounded-2xl border-2 border-indigo-600 bg-white p-5 dark:bg-gray-900">
           <h2 className="font-bold">How crypto withdrawal works</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
@@ -82,8 +90,8 @@ export function WalletPanel({
         </div>
         {needBalance || needRefs || needActivation ? (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-            {needRefs ? <p>Reach level 2 with {LEVEL_2_REFERRALS} active referrals (approved people who finished a survey).</p> : null}
-            {needBalance ? <p className="mt-1">Build available balance to {money(MIN_WITHDRAWAL)} with level 2 studies.</p> : null}
+            {needRefs ? <p>Reach Bronze with {BRONZE_REFERRALS} active referrals (approved people who finished a survey).</p> : null}
+            {needBalance ? <p className="mt-1">Build available balance to {money(MIN_WITHDRAWAL)} with Bronze and Gold studies after you unlock them.</p> : null}
             {!needRefs && !needBalance && needActivation ? (
               <p className="mt-1">
                 Activate your wallet on the{" "}

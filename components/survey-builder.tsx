@@ -117,9 +117,10 @@ export function SurveyBuilder({ initial }: { initial?: Study }) {
           <label>
             Unlock level
             <select name="tier" defaultValue={String(draft?.tier ?? initial?.tier ?? 1)} className="mt-1 w-full rounded-lg border px-3 py-2">
-              <option value="1">Level 1 starter</option>
-              <option value="2">Level 2 · 20 referrals</option>
-              <option value="3">Level 3 · 50 referrals</option>
+              <option value="1">Beginner · free starter</option>
+              <option value="2">Bronze · 20 referrals</option>
+              <option value="3">Gold · 50 referrals</option>
+              <option value="4">Platinum · 100 referrals</option>
             </select>
           </label>
         </div>

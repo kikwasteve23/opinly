@@ -10,6 +10,7 @@ import { applyWithdrawal } from "@/lib/withdraw";
 import { submitStudyInStore } from "@/lib/submit-study";
 import { findMarketer } from "@/lib/marketers";
 import { paymentMethodLabel } from "@/lib/deposit-requests";
+import { hitStudyEarningsCap, studyEarningsUsd } from "@/lib/referrals";
 
 export type WalletState = { error?: string; ok?: string } | null;
 
@@ -68,6 +69,9 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
   const result = await mutateStore((data) => {
     const current = data.users.find((u) => u.id === user.id);
     if (!current) return { error: "Account missing." };
+    if (hire && !hitStudyEarningsCap(studyEarningsUsd(data.studies, data.submissions, current.id))) {
+      return { error: "Marketer hires open after $400 in pending plus approved study pay." };
+    }
     if (!hire) {
       if (current.available < MIN_WITHDRAWAL) {
         return { error: `Activation opens once your available balance reaches $${MIN_WITHDRAWAL}.` };
