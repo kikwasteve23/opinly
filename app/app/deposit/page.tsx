@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
 import { DepositDesk } from "@/components/deposit-flow";
+import { LiveRefresh } from "@/components/live-refresh";
 import { requireCompleteUser } from "@/lib/auth-actions";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { readStoreSnapshot } from "@/lib/store";
 import { findMarketer } from "@/lib/marketers";
 import { hitWalletCap } from "@/lib/referrals";
+import { depositRail } from "@/lib/deposit-rails";
+import { ensureDepositWelcome } from "@/lib/deposit-chat";
 
 export default async function DepositPage({
   searchParams,
@@ -19,13 +22,15 @@ export default async function DepositPage({
     marketer && Number.isInteger(quantity) && quantity >= marketer.minOrder && quantity <= marketer.maxOrder
       ? { id: marketer.id, name: marketer.name, quantity, cost: Math.round(quantity * marketer.priceEach * 100) / 100 }
       : null;
-  const store = await readStoreSnapshot();
   if (hire && !hitWalletCap(user)) redirect("/app");
-  if (!hire && user.walletActivated) redirect("/app/wallet");
+  await ensureDepositWelcome(user.id);
+  const store = await readStoreSnapshot();
   const country = await resolveCountry(user);
   const messages = store.chat.filter((m) => m.userId === user.id);
   const pending = store.deposits.find((d) => d.userId === user.id && d.status === "pending") ?? null;
   return (
+    <>
+    <LiveRefresh ms={3000} />
     <DepositDesk
       country={country}
       activated={user.walletActivated}
@@ -33,6 +38,9 @@ export default async function DepositPage({
       messages={messages}
       hire={hire}
       pending={pending ? { amount: pending.amount, methodLabel: pending.methodLabel, purpose: pending.purpose } : null}
+      localRail={depositRail(country.code, country.local.id)}
+      cryptoRail={depositRail(country.code, "nowpayments")}
     />
+    </>
   );
 }

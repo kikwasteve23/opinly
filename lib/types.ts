@@ -135,6 +135,7 @@ export type ChatMessage = {
   from: "user" | "support";
   body: string;
   createdAt: string;
+  adminName: string | null;
 };
 
 export type DepositRequest = {

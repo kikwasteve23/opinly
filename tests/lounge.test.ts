@@ -1,21 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { pickLoungeEvent, repliesForThread, LOUNGE_ADMIN, LOUNGE_THREADS } from "../lib/lounge-script";
+import {
+  pickLoungeEvent,
+  repliesForThread,
+  LOUNGE_ADMINS,
+  LOUNGE_MEMBERS,
+  LOUNGE_THREADS,
+  loungeCensus,
+  loungeGapMs,
+  typingMs,
+} from "../lib/lounge-script";
 
 describe("lounge conversation", () => {
   it("asks unused questions and lets admin or a peer answer", () => {
-    const event = pickLoungeEvent([], () => 0.1);
+    const event = pickLoungeEvent([], [], () => 0.1);
     expect(event.kind).toBe("question");
     if (event.kind !== "question") return;
-    const replies = repliesForThread(event.thread, () => 0.9);
+    const replies = repliesForThread(event.thread, [], () => 0.2);
     expect(replies.length).toBeGreaterThanOrEqual(1);
     const adminThread = LOUNGE_THREADS.find((t) => t.answerer === "admin")!;
-    const adminReplies = repliesForThread(adminThread, () => 0.99);
-    expect(adminReplies[0]?.speaker).toBe(LOUNGE_ADMIN.id);
+    const adminReplies = repliesForThread(adminThread, [], () => 0.01);
+    expect(LOUNGE_ADMINS.some((a) => a.id === adminReplies[0]?.speaker)).toBe(true);
   });
 
   it("falls back to chatter when no questions remain", () => {
     const used = LOUNGE_THREADS.map((t) => t.id);
-    const event = pickLoungeEvent(used, () => 0.1);
+    const event = pickLoungeEvent(used, [], () => 0.1);
     expect(event.kind).toBe("chatter");
+  });
+
+  it("uses a wide name pool and keeps census above launch floors", () => {
+    expect(LOUNGE_MEMBERS.length).toBeGreaterThan(180);
+    expect(loungeGapMs(() => 0)).toBe(10_000);
+    expect(loungeGapMs(() => 1)).toBe(90_000);
+    const names = new Set(LOUNGE_MEMBERS.map((m) => m.name));
+    expect(names.size).toBe(LOUNGE_MEMBERS.length);
+    const { total, online } = loungeCensus();
+    expect(total).toBeGreaterThan(10_000);
+    expect(online).toBeGreaterThan(200);
+    expect(typingMs("Hi")).toBeLessThan(12_000);
+    expect(typingMs("x".repeat(200), () => 0)).toBeGreaterThanOrEqual(30_000);
   });
 });

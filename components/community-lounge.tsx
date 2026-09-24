@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { ACTIVATION_DEPOSIT } from "@/lib/money";
 import {
+  formatCount,
+  loungeCensus,
   loungeGapMs,
   personaById,
   pickLoungeEvent,
@@ -26,23 +29,37 @@ function toLine(post: LoungePost, id: string): Line {
 }
 
 export function CommunityLounge({ walletActivated }: { walletActivated: boolean }) {
+  const pathname = usePathname();
+  const hide = pathname.startsWith("/app/deposit");
   const [open, setOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [joined, setJoined] = useState(walletActivated);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState<LoungePersona | null>(null);
-  const [lines, setLines] = useState<Line[]>(() =>
-    seedLoungePosts().map((row, i) => toLine(row.post, `seed-${i}`)),
-  );
+  const [census, setCensus] = useState(() => loungeCensus());
+  const [lines, setLines] = useState<Line[]>(() => seedLoungePosts().map((post, i) => toLine(post, `seed-${i}`)));
   const bottomRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
-  const usedThreads = useRef<string[]>(["pending"]);
+  const usedThreads = useRef<string[]>(["join-fee"]);
+  const recent = useRef<string[]>([]);
   const seq = useRef(0);
   openRef.current = open;
 
   useEffect(() => {
     if (walletActivated) setJoined(true);
   }, [walletActivated]);
+
+  useEffect(() => {
+    if (hide) {
+      setOpen(false);
+      setJoinOpen(false);
+    }
+  }, [hide]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setCensus(loungeCensus()), 8000);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,9 +69,13 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
         window.clearTimeout(timer);
         timer = window.setTimeout(resolve, ms);
       });
+    const remember = (id: string) => {
+      recent.current = [...recent.current, id].slice(-14);
+    };
     const push = (post: LoungePost) => {
       seq.current += 1;
-      setLines((prev) => [...prev, toLine(post, `${Date.now()}-${seq.current}`)].slice(-48));
+      remember(post.speaker);
+      setLines((prev) => [...prev, toLine(post, `${Date.now()}-${seq.current}`)].slice(-60));
     };
     const speak = async (post: LoungePost) => {
       if (cancelled) return;
@@ -67,18 +88,18 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
     };
     const loop = async () => {
       while (!cancelled) {
-        await wait(loungeGapMs(openRef.current));
+        await wait(loungeGapMs());
         if (cancelled) return;
-        const event = pickLoungeEvent(usedThreads.current);
+        const event = pickLoungeEvent(usedThreads.current, recent.current);
         if (event.kind === "chatter") {
           await speak(event.post);
           continue;
         }
-        usedThreads.current = [...usedThreads.current, event.thread.id].slice(-LOUNGE_THREAD_CAP);
-        await speak(event.thread.question);
-        const replies = repliesForThread(event.thread);
+        usedThreads.current = [...usedThreads.current, event.thread.id].slice(-10);
+        await speak({ speaker: event.asker, text: event.thread.question });
+        const replies = repliesForThread(event.thread, recent.current);
         for (const reply of replies) {
-          await wait(1400 + Math.random() * 3200);
+          await wait(loungeGapMs());
           if (cancelled) return;
           await speak(reply);
         }
@@ -95,7 +116,7 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
     if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [lines, typing, open]);
 
-  const online = useMemo(() => 22 + ((lines.length * 3) % 11), [lines.length]);
+  if (hide) return null;
 
   function onJoin() {
     if (walletActivated) {
@@ -118,7 +139,7 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
         persona: { id: "you", name: "You", city: "here", color: "bg-gray-700", role: "member" as const },
         text,
       },
-    ].slice(-48));
+    ].slice(-60));
   }
 
   return (
@@ -128,7 +149,9 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
           <div className="flex items-center justify-between border-b border-gray-100 bg-indigo-600 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Opinly lounge</p>
-              <p className="text-xs text-indigo-100">{online} in the room</p>
+              <p className="text-xs text-indigo-100">
+                {formatCount(census.total)} members · {formatCount(census.online)} online
+              </p>
             </div>
             <button type="button" className="rounded-lg p-1 hover:bg-indigo-500" onClick={() => setOpen(false)} aria-label="Close chat">
               <X className="h-5 w-5" />
@@ -177,11 +200,7 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
                 <button className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white">Send</button>
               </form>
             ) : (
-              <button
-                type="button"
-                onClick={onJoin}
-                className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
-              >
+              <button type="button" onClick={onJoin} className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white">
                 Join the chat
               </button>
             )}
@@ -204,6 +223,11 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
               </button>
               <Link
                 href="/app/deposit?activate=1"
+                onClick={() => {
+                  setOpen(false);
+                  setJoinOpen(false);
+                  setTyping(null);
+                }}
                 className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
               >
                 Activate account
@@ -225,5 +249,3 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
     </>
   );
 }
-
-const LOUNGE_THREAD_CAP = 8;

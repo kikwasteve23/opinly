@@ -27,13 +27,10 @@ export const COUNTRIES: CountryProfile[] = [
   { code: "NG", name: "Nigeria", currency: "NGN", locale: "en-NG", perUsd: 1550, local: { id: "bankng", name: "Nigerian bank transfer", steps: ["Open your Nigerian bank or fintech app.", "Transfer the NGN amount to the Opinly account shown.", "Use your email as the narration.", "Tap “I have sent the payment”."] } },
   { code: "GH", name: "Ghana", currency: "GHS", locale: "en-GH", perUsd: 15.2, local: { id: "momo", name: "Mobile Money", steps: ["Dial your MoMo short code or open the wallet app.", "Send the GHS amount to the merchant number shown.", "Use your Opinly email as the reference.", "Confirm the payment here."] } },
   { code: "ZA", name: "South Africa", currency: "ZAR", locale: "en-ZA", perUsd: 18.4, local: { id: "capitec", name: "Capitec (recommended)", steps: [
-    "Open the Capitec remote-banking app. Opinly recommends Capitec for South African deposits because it is the fastest to match.",
-    "Tap Pay / Transfer, then choose Capitec Pay or an EFT to another Capitec account.",
-    "Beneficiary bank: Capitec. Account name: Opinly Deposits. Account type: Savings.",
-    "Account number: 1480054321. Branch code: 470010.",
-    "Enter the exact ZAR amount shown on this page. Do not round it.",
-    "Payment reference: your Opinly email (this is how we match the deposit).",
-    "Send the payment, wait for the Capitec confirmation SMS, then return here and tap “I have sent the payment”.",
+    "Open the Capitec app and start a Pay / Transfer to another Capitec account.",
+    "Use only the live account name, number, and branch shown on the deposit page (or sent in deposit chat).",
+    "Enter the exact ZAR amount. Reference: your Opinly email.",
+    "Wait for the Capitec confirmation SMS, then tap “I have sent the payment”.",
   ] } },
   { code: "IN", name: "India", currency: "INR", locale: "en-IN", perUsd: 84, local: { id: "upi", name: "UPI", steps: ["Open GPay, PhonePe, or your UPI app.", "Pay the INR amount to the UPI ID shown.", "Add your Opinly email in the note.", "Return and confirm."] } },
   { code: "PH", name: "Philippines", currency: "PHP", locale: "en-PH", perUsd: 58, local: { id: "gcash", name: "GCash", steps: ["Open GCash.", "Send the PHP amount to the GCash number shown.", "Put your Opinly email in the message.", "Confirm the transfer here."] } },
@@ -47,10 +44,10 @@ export const NOWPAYMENTS: LocalPayment = {
   id: "nowpayments",
   name: "NOWPayments (crypto, worldwide)",
   steps: [
-    "Choose NOWPayments if your local rails are slow or unavailable.",
-    "Send USDT (TRC20) or the listed coin to the invoice address. Send the exact USD amount.",
-    "Wait for the network to confirm (usually a few minutes).",
-    "Return here and tap “I have sent the payment”. An admin matches the transfer before anything is credited.",
+    "Use this if local bank or mobile money is slow.",
+    "Wait for the live USDT TRC20 address or invoice on this page or in deposit chat. Do not send to an address from a DM.",
+    "Send the exact USD amount on TRON (TRC20) only.",
+    "When the network confirms, tap “I have sent the payment”.",
   ],
 };
 

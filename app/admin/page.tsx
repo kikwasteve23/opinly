@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
 import { countsFromStore, LEVEL_2_REFERRALS } from "@/lib/referrals";
+import { waitingDepositThreadCount } from "@/lib/deposit-chat";
 import { money } from "@/lib/utils";
 
 export default async function AdminHome() {
@@ -26,6 +27,7 @@ export default async function AdminHome() {
         <Card label="People" value={String(people.length)} href="/admin/people" />
         <Card label="Live surveys" value={String(liveSurveys)} href="/admin/surveys" />
         <Card label="Deposits waiting" value={String(store.deposits.filter((d) => d.status === "pending").length)} href="/admin/deposits" />
+        <Card label="Deposit chats waiting" value={String(waitingDepositThreadCount(store.chat))} href="/admin/support" />
         <Card label="Payouts in queue" value={String(pendingPayouts.length)} href="/admin/withdrawals" />
         <Card label="Studies to review" value={String(pendingStudies)} href="/admin/reviews" />
       </div>

@@ -48,7 +48,11 @@ function normalizeStore(data: StoreData): StoreData {
     })),
     ledger: data.ledger ?? [],
     marketerJobs: data.marketerJobs ?? [],
-    chat: data.chat ?? [],
+    chat: (data.chat ?? []).map((m) => ({
+      ...m,
+      createdAt: m.createdAt ?? new Date().toISOString(),
+      adminName: m.adminName ?? null,
+    })),
     deposits: data.deposits ?? [],
   };
 }

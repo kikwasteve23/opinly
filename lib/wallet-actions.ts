@@ -120,32 +120,17 @@ export async function sendDepositChatAction(_prev: WalletState, formData: FormDa
   const body = String(formData.get("body") ?? "").trim();
   if (body.length < 2) return { error: "Write a short message." };
   await mutateStore((data) => {
-    const current = data.users.find((u) => u.id === user.id);
-    const za = current?.detectedCountry === "ZA" || current?.profile?.country === "South Africa";
     data.chat.push({
       id: newId("msg"),
       userId: user.id,
       from: "user",
       body,
       createdAt: new Date().toISOString(),
-    });
-    let reply =
-      "Use the local method for your country if you can; otherwise NOWPayments works everywhere. After you pay, tap “I have sent the payment”. An admin has to approve it before anything is credited.";
-    if (za) {
-      reply =
-        "For South Africa, use Capitec. Capitec app → Pay → Capitec account 1480054321, branch 470010, reference = your Opinly email, exact ZAR amount. Then tap “I have sent the payment”. An admin will match it before funds or referrals are released.";
-    } else if (body.toLowerCase().includes("now") || body.toLowerCase().includes("crypto")) {
-      reply =
-        "NOWPayments is available in every country. Send the exact USD amount as USDT TRC20 to the invoice address, then tap “I have sent the payment”. An admin approves the match.";
-    }
-    data.chat.push({
-      id: newId("msg"),
-      userId: user.id,
-      from: "support",
-      body: reply,
-      createdAt: new Date().toISOString(),
+      adminName: null,
     });
   });
   revalidatePath("/app/deposit");
-  return { ok: "Sent." };
+  revalidatePath("/admin/support");
+  revalidatePath("/admin");
+  return { ok: "Sent. An admin will reply in this thread." };
 }

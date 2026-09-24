@@ -300,6 +300,31 @@ export async function removeReferralAction(formData: FormData) {
   revalidatePath(`/admin/people/${userId}`);
 }
 
+export async function replyDepositChatAction(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+  if (body.length < 2) return { error: "Write a reply." };
+  const result = await mutateStore((data) => {
+    const person = data.users.find((u) => u.id === userId && u.role === "participant");
+    if (!person) return { error: "Person not found." };
+    data.chat.push({
+      id: newId("msg"),
+      userId,
+      from: "support",
+      body,
+      createdAt: new Date().toISOString(),
+      adminName: admin.profile?.legalName || admin.email,
+    });
+    return { ok: "Reply sent." };
+  });
+  revalidatePath("/admin/support");
+  revalidatePath("/admin");
+  revalidatePath("/app/deposit");
+  if ("error" in result && result.error) return { error: result.error };
+  return { ok: result.ok };
+}
+
 export async function deleteSurveyAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");

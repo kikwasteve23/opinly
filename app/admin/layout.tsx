@@ -1,9 +1,13 @@
 import { requireAdmin, logoutAction } from "@/lib/auth-actions";
 import { Logo } from "@/components/logo";
 import { AdminNav } from "@/components/admin-nav";
+import { readStoreSnapshot } from "@/lib/store";
+import { waitingDepositThreadCount } from "@/lib/deposit-chat";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
+  const store = await readStoreSnapshot();
+  const waitingChats = waitingDepositThreadCount(store.chat);
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-gray-950">
       <aside className="flex w-44 shrink-0 flex-col border-r border-gray-200 bg-white sm:w-56 dark:border-gray-800 dark:bg-gray-900">
@@ -14,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </span>
         </div>
         <div className="flex flex-1 flex-col p-3">
-          <AdminNav />
+          <AdminNav waitingChats={waitingChats} />
         </div>
         <div className="border-t border-gray-100 p-4 text-sm dark:border-gray-800">
           <p className="truncate text-xs text-gray-500">{admin.email}</p>

@@ -15,7 +15,7 @@ export default async function LoggedInLayout({ children }: { children: React.Rea
     <AppShell
       email={user.email}
       photoUrl={user.photoUrl}
-      showDeposit={user.available >= MIN_WITHDRAWAL}
+      showDeposit={!user.walletActivated || user.available >= MIN_WITHDRAWAL}
       showReferralTools={hitWalletCap(user)}
       locationLabel={`${country.name} · ${country.currency}`}
       walletActivated={user.walletActivated}

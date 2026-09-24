@@ -1,193 +1,256 @@
-export type LoungeRole = "member" | "admin";
+import { loungeCrowd, type LoungePersona, type LoungeRole } from "./lounge-people";
 
-export type LoungePersona = {
-  id: string;
-  name: string;
-  city: string;
-  color: string;
-  role: LoungeRole;
-};
+export type { LoungePersona, LoungeRole };
 
-export const LOUNGE_ADMIN: LoungePersona = {
-  id: "ada",
-  name: "Ada",
-  city: "Opinly staff",
-  color: "bg-indigo-700",
-  role: "admin",
-};
-
-export const LOUNGE_MEMBERS: LoungePersona[] = [
-  { id: "maya", name: "Maya", city: "Nairobi", color: "bg-violet-500", role: "member" },
-  { id: "luis", name: "Luis", city: "Manila", color: "bg-sky-500", role: "member" },
-  { id: "amina", name: "Amina", city: "Lagos", color: "bg-amber-500", role: "member" },
-  { id: "theo", name: "Theo", city: "Cape Town", color: "bg-emerald-500", role: "member" },
-  { id: "priya", name: "Priya", city: "Mumbai", color: "bg-rose-500", role: "member" },
-  { id: "noah", name: "Noah", city: "Accra", color: "bg-indigo-500", role: "member" },
-  { id: "lila", name: "Lila", city: "Jakarta", color: "bg-fuchsia-500", role: "member" },
-  { id: "ken", name: "Ken", city: "Kisumu", color: "bg-teal-500", role: "member" },
+export const LOUNGE_ADMINS: LoungePersona[] = [
+  { id: "ada", name: "Ada", city: "Opinly staff", color: "bg-indigo-700", role: "admin" },
+  { id: "malik", name: "Malik", city: "Opinly staff", color: "bg-slate-700", role: "admin" },
 ];
 
-export const LOUNGE_PERSONAS: LoungePersona[] = [LOUNGE_ADMIN, ...LOUNGE_MEMBERS];
+export const LOUNGE_ADMIN = LOUNGE_ADMINS[0]!;
+export const LOUNGE_MEMBERS = loungeCrowd();
+export const LOUNGE_PERSONAS: LoungePersona[] = [...LOUNGE_ADMINS, ...LOUNGE_MEMBERS];
 
 export type LoungePost = { speaker: string; text: string };
 
 export type LoungeThread = {
   id: string;
-  question: LoungePost;
-  /** Who should answer: staff or another member. */
+  question: string;
   answerer: "admin" | "peer";
-  answers: LoungePost[];
+  adminText?: string;
+  peerText?: string;
 };
 
-const CHATTER: LoungePost[] = [
-  { speaker: "maya", text: "Just wrapped a short one on my lunch break. Pay was sitting there before I even tapped start." },
-  { speaker: "luis", text: "Finished work going to History is such a small thing but my dashboard finally looks calm." },
-  { speaker: "amina", text: "Nobody asked me to pay to join. That still surprises me." },
-  { speaker: "theo", text: "My cousin finished her first study last night. She sent me a voice note laughing about it." },
-  { speaker: "priya", text: "Researchers never get my name. I keep repeating that to my sister so she stops worrying." },
-  { speaker: "noah", text: "Pending just means they are reading the answers. Mine moved over this morning." },
-  { speaker: "lila", text: "Kettle on, phone out, five questions. That is the whole evening for me lately." },
-  { speaker: "ken", text: "Seeing local pay next to USD made it feel real, not like points." },
-  { speaker: "maya", text: "I treat it as extra money. A few careful studies beat rushing junk ones." },
-  { speaker: "luis", text: "Matching happens before I waste ten minutes. I used to screenshot every screen-out. Stopped that." },
-  { speaker: "amina", text: "I used to doomscroll. Now I answer things that actually go into research. Mood is better." },
-  { speaker: "theo", text: "Mum asked why I was quieter after dinner. Told her I was on studies. She wants the link." },
+const CHATTER: string[] = [
+  "Just wrapped a short one on my lunch break. Pay was sitting there before I even tapped start.",
+  "Finished work going to History is such a small thing but my dashboard finally looks calm.",
+  "Nobody asked me to pay to join. That still surprises me.",
+  "My cousin finished her first study last night. She sent me a voice note laughing about it.",
+  "Researchers never get my name. I keep repeating that to my sister so she stops worrying.",
+  "Pending just means they are reading the answers. Mine moved over this morning.",
+  "Kettle on, phone out, five questions. That is the whole evening for me lately.",
+  "Seeing local pay next to USD made it feel real, not like points.",
+  "I treat it as extra money. A few careful studies beat rushing junk ones.",
+  "Matching happens before I waste ten minutes. I used to screenshot every screen-out. Stopped that.",
+  "I used to doomscroll. Now I answer things that actually go into research. Mood is better.",
+  "Mum asked why I was quieter after dinner. Told her I was doing studies. She wants the link.",
+  "Profile photo is just for the account. Researchers still do not see it.",
+  "The English writing sample was a few honest sentences. That was enough.",
+  "Sharing my invite in the family WhatsApp felt natural once I had actually been paid.",
+  "Hi everyone. First study done. This is nicer than I expected.",
+  "gm. One study before work then I am out.",
+  "Thanks Ada. That cleared it up.",
+  "Malik just confirmed my pending study. Off to History it went.",
+  "Did a 12-minute one while the rice cooked. That is my kind of evening.",
+  "Invite went to my church group. Two people actually finished a study.",
+  "I keep the tab open on mobile data. Short ones load fine.",
+  "First withdrawal is still a way off for me. I am not rushing studies though.",
+  "Ada said ID can wait. I started without uploading anything.",
+  "Anyone else get the snack diary? Mine paid more than the opinion ones.",
+  "I almost DMed someone who asked for a joining fee. Glad I checked here first.",
+  "Gold studies showed up after I shared the link enough times. Slow but real.",
+  "Typing on a cracked screen in a matatu. Still got the attention check.",
+  "Pending sat overnight then moved. I stopped refreshing every five minutes.",
+  "My sister in Cebu finished English in one sitting. She was overthinking it.",
+  "Do not send crypto until staff posts the address in deposit chat. Learned that the loud way from a fake TG group.",
+  "Lounge is quieter at my 3am. Morning crowd is nicer.",
+  "I only take studies I actually qualify for. Screen-outs used to annoy me.",
+  "Malik: withdrawals are crypto. I already had a TRC20 wallet so that was easy.",
+  "Photo on Profile is just so I recognise my own account. Researchers never see it.",
+  "Beginner list went empty and I thought the site broke. It is the upgrade pause.",
+  "Told my uncle it is research, not a scheme. He still asked three times.",
 ];
 
 export const LOUNGE_THREADS: LoungeThread[] = [
   {
     id: "join-fee",
-    question: { speaker: "ken", text: "Quick one — do I pay anything to create the account?" },
+    question: "Quick one — do I pay anything to create the account?",
     answerer: "admin",
-    answers: [
-      { speaker: "ada", text: "No. Signing up is free. Opinly staff will never ask you to pay just to open an account." },
-      { speaker: "maya", text: "If someone DMs you a joining fee, it is not us. Report it." },
-    ],
+    adminText: "No. Signing up is free. Opinly staff will never ask you to pay just to open an account.",
+    peerText: "If someone DMs you a joining fee, it is not us. Report it.",
   },
   {
     id: "pending",
-    question: { speaker: "lila", text: "My balance is in pending. Did I do something wrong?" },
+    question: "My balance is in pending. Did I do something wrong?",
     answerer: "peer",
-    answers: [
-      { speaker: "noah", text: "Same thing happened to me. Pending means they are reviewing your responses. It moved after that." },
-      { speaker: "ada", text: "That is right. We read the answers first, then it goes to available. Nothing for you to chase." },
-    ],
+    peerText: "Same thing happened to me. Pending means they are reviewing your responses. It moved after that.",
+    adminText: "That is right. We read the answers first, then it goes to available. Nothing for you to chase.",
   },
   {
     id: "devices",
-    question: { speaker: "priya", text: "Can I do these on my phone or do I need a laptop?" },
+    question: "Can I do these on my phone or do I need a laptop?",
     answerer: "peer",
-    answers: [
-      { speaker: "luis", text: "Phone is fine. I do the short ones on the commute." },
-      { speaker: "amina", text: "Laptop too. Same studies either way." },
-    ],
+    peerText: "Phone is fine. I do the short ones on the commute. Laptop works too — same studies.",
   },
   {
     id: "id-docs",
-    question: { speaker: "theo", text: "Do I have to upload an ID before I start studies?" },
+    question: "Do I have to upload an ID before I start studies?",
     answerer: "admin",
-    answers: [
-      { speaker: "ada", text: "ID is optional. Finish About you and English, then you can take studies. You can add a document later from Profile." },
-    ],
+    adminText: "ID is optional. Finish About you and English, then you can take studies. You can add a document later from Profile.",
   },
   {
     id: "researchers",
-    question: { speaker: "maya", text: "Who actually sees what I write in a study?" },
+    question: "Who actually sees what I write in a study?",
     answerer: "admin",
-    answers: [
-      { speaker: "ada", text: "Researchers see your answers and the demographics the study screened on. Not your name, email, or ID." },
-      { speaker: "priya", text: "That is why I stayed. I was not going to put my full name next to a shopping diary." },
-    ],
+    adminText: "Researchers see your answers and the demographics the study screened on. Not your name, email, or ID.",
+    peerText: "That is why I stayed. I was not going to put my full name next to a shopping diary.",
   },
   {
     id: "upgrade",
-    question: { speaker: "noah", text: "Beginner studies disappeared for me. Is the account broken?" },
+    question: "Beginner studies disappeared for me. Is the account broken?",
     answerer: "peer",
-    answers: [
-      { speaker: "ken", text: "You ran out of Beginner ones. Share your invite or hire a marketer to unlock the next level." },
-      { speaker: "ada", text: "Higher-paying studies open after you upgrade. Referrals have to finish a survey to count." },
-    ],
+    peerText: "You ran out of Beginner ones. Share your invite or hire a marketer to unlock the next level.",
+    adminText: "Higher-paying studies open after you upgrade. Referrals have to finish a survey to count.",
   },
   {
     id: "attention",
-    question: { speaker: "amina", text: "I missed an attention check. Am I done here?" },
+    question: "I missed an attention check. Am I done here?",
     answerer: "peer",
-    answers: [
-      { speaker: "theo", text: "I failed one too. Slowed down on the next study and it approved. Read every line." },
-    ],
+    peerText: "I failed one too. Slowed down on the next study and it approved. Read every line.",
   },
   {
     id: "payout",
-    question: { speaker: "luis", text: "When I cash out, is it gift cards or actual money?" },
+    question: "When I cash out, is it gift cards or actual money?",
     answerer: "admin",
-    answers: [
-      { speaker: "ada", text: "Withdrawals are crypto to a wallet you control. The $50 activation is added to your balance and goes out with your first withdrawal — it is not a fee we keep." },
-    ],
+    adminText: "Withdrawals are crypto to a wallet you control. The $50 activation is added to your balance and goes out with your first withdrawal — it is not a fee we keep.",
   },
   {
     id: "english",
-    question: { speaker: "lila", text: "How strict is the English step? I am nervous about the writing bit." },
+    question: "How strict is the English step? I am nervous about the writing bit.",
     answerer: "peer",
-    answers: [
-      { speaker: "maya", text: "A few honest sentences were enough for me. Grammar questions are short." },
-      { speaker: "ada", text: "We need to know you can follow a study in English. You do not need perfect prose." },
-    ],
+    peerText: "A few honest sentences were enough for me. Grammar questions are short.",
+    adminText: "We need to know you can follow a study in English. You do not need perfect prose.",
   },
   {
     id: "habit",
-    question: { speaker: "ken", text: "Has this actually changed anything for you, or is it just extra cash?" },
+    question: "Has this actually changed anything for you, or is it just extra cash?",
     answerer: "peer",
-    answers: [
-      { speaker: "maya", text: "Both. Twenty quiet minutes after the kids sleep. Real studies, and I stopped scrolling junk." },
-      { speaker: "amina", text: "Same. I feel like my evenings went somewhere useful." },
-    ],
+    peerText: "Both. Twenty quiet minutes after the kids sleep. Real studies, and I stopped scrolling junk.",
+  },
+  {
+    id: "photo",
+    question: "Is the profile picture shown to researchers?",
+    answerer: "admin",
+    adminText: "No. The photo is only on your Opinly account. Researchers never see it.",
+  },
+  {
+    id: "wait",
+    question: "How long does a review usually take?",
+    answerer: "admin",
+    adminText: "We review responses in the background. Most approved studies move from pending to available the same day.",
+  },
+  {
+    id: "deposit-chat",
+    question: "Where do I send the $50? I do not want a fake account number.",
+    answerer: "admin",
+    adminText: "Open Deposit funds. If pay-to details are not printed, use deposit chat on that page. Ada or I will send the live account, paybill, or invoice. Never pay someone who DMs you.",
+  },
+  {
+    id: "two-admins",
+    question: "Who actually replies in here — is this a bot?",
+    answerer: "admin",
+    adminText: "Ada and I (Malik) take turns. Same for deposit chat: a staff account replies, not an auto-message.",
+    peerText: "I waited a bit and Ada answered my ID question. Felt like a person.",
+  },
+  {
+    id: "members",
+    question: "How many people are actually on this thing?",
+    answerer: "peer",
+    peerText: "Header shows the live count. Online stays in the hundreds whenever I open it.",
+    adminText: "The member total ticks up as people finish onboarding. Online is whoever is in the product right now.",
+  },
+  {
+    id: "crypto-net",
+    question: "USDT on the wrong network — can you recover it?",
+    answerer: "admin",
+    adminText: "No. TRC20 only if that is what we posted. ERC20 or BSC to a TRON address is gone. Ask in deposit chat before you send.",
   },
 ];
 
 export function personaById(id: string) {
-  return LOUNGE_PERSONAS.find((p) => p.id === id) ?? LOUNGE_MEMBERS[0];
+  return LOUNGE_PERSONAS.find((p) => p.id === id) ?? LOUNGE_MEMBERS[0]!;
 }
 
-export function loungeGapMs(open: boolean, rng = Math.random) {
-  if (open) return Math.round(3500 + rng() * 14000);
-  return Math.round(9000 + rng() * 28000);
+export function loungeGapMs(rng = Math.random) {
+  return Math.round(10_000 + rng() * 80_000);
 }
 
+/** Typing wait: short greetings stay brief; long answers take 30–120s. */
 export function typingMs(text: string, rng = Math.random) {
-  return Math.round(700 + Math.min(2200, text.length * 18) + rng() * 600);
+  const n = text.trim().length;
+  if (n <= 40) return Math.round(2_000 + rng() * 6_000);
+  if (n <= 110) return Math.round(8_000 + rng() * 18_000);
+  return Math.round(30_000 + rng() * 90_000);
 }
 
 export type LoungeEvent =
   | { kind: "chatter"; post: LoungePost }
-  | { kind: "question"; thread: LoungeThread };
+  | { kind: "question"; thread: LoungeThread; asker: string };
 
-export function pickLoungeEvent(usedThreadIds: string[], rng = Math.random): LoungeEvent {
+function unusedMember(recent: string[], rng: () => number) {
+  const pool = LOUNGE_MEMBERS.filter((p) => !recent.includes(p.id));
+  const pickFrom = pool.length > 8 ? pool : LOUNGE_MEMBERS;
+  return pickFrom[Math.floor(rng() * pickFrom.length)]!;
+}
+
+export function pickLoungeEvent(usedThreadIds: string[], recentSpeakers: string[], rng = Math.random): LoungeEvent {
   const unused = LOUNGE_THREADS.filter((t) => !usedThreadIds.includes(t.id));
-  const askQuestion = rng() < 0.55 && unused.length > 0;
+  const askQuestion = rng() < 0.48 && unused.length > 0;
+  const speaker = unusedMember(recentSpeakers, rng);
   if (askQuestion) {
-    return { kind: "question", thread: unused[Math.floor(rng() * unused.length)]! };
+    return { kind: "question", thread: unused[Math.floor(rng() * unused.length)]!, asker: speaker.id };
   }
-  return { kind: "chatter", post: CHATTER[Math.floor(rng() * CHATTER.length)]! };
+  return {
+    kind: "chatter",
+    post: { speaker: speaker.id, text: CHATTER[Math.floor(rng() * CHATTER.length)]! },
+  };
 }
 
-export function repliesForThread(thread: LoungeThread, rng = Math.random): LoungePost[] {
-  const primary =
-    thread.answerer === "admin"
-      ? thread.answers.find((a) => a.speaker === LOUNGE_ADMIN.id) ?? thread.answers[0]
-      : thread.answers.find((a) => a.speaker !== LOUNGE_ADMIN.id) ?? thread.answers[0];
-  const extras = thread.answers.filter((a) => a !== primary);
-  const out = [primary];
-  if (extras.length && rng() < 0.55) out.push(extras[Math.floor(rng() * extras.length)]!);
-  return out;
+export function repliesForThread(thread: LoungeThread, recentSpeakers: string[], rng = Math.random): LoungePost[] {
+  const out: LoungePost[] = [];
+  if (thread.answerer === "admin" || thread.adminText) {
+    const admin = LOUNGE_ADMINS[Math.floor(rng() * LOUNGE_ADMINS.length)]!;
+    if (thread.answerer === "admin") {
+      out.push({ speaker: admin.id, text: thread.adminText ?? "A staff member will confirm that in deposit chat." });
+      if (thread.peerText && rng() < 0.45) {
+        out.push({ speaker: unusedMember([...recentSpeakers, admin.id], rng).id, text: thread.peerText });
+      }
+      return out;
+    }
+  }
+  if (thread.peerText) {
+    out.push({ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText });
+  }
+  if (thread.adminText && rng() < 0.5) {
+    const admin = LOUNGE_ADMINS[Math.floor(rng() * LOUNGE_ADMINS.length)]!;
+    out.push({ speaker: admin.id, text: thread.adminText });
+  }
+  return out.length ? out : [{ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText || thread.adminText || "Staff will confirm in deposit chat." }];
 }
 
-export function seedLoungePosts(now = Date.now()): { post: LoungePost; at: number }[] {
-  const t = LOUNGE_THREADS[1]!;
+export function seedLoungePosts(): LoungePost[] {
+  const a = LOUNGE_MEMBERS[3]!;
+  const b = LOUNGE_MEMBERS[11]!;
+  const c = LOUNGE_MEMBERS[22]!;
   return [
-    { post: CHATTER[0]!, at: now - 240_000 },
-    { post: CHATTER[4]!, at: now - 190_000 },
-    { post: t.question, at: now - 140_000 },
-    { post: t.answers[0]!, at: now - 95_000 },
-    { post: CHATTER[8]!, at: now - 50_000 },
+    { speaker: a.id, text: CHATTER[15]! },
+    { speaker: b.id, text: CHATTER[0]! },
+    { speaker: c.id, text: LOUNGE_THREADS[0]!.question },
+    { speaker: "ada", text: LOUNGE_THREADS[0]!.adminText ?? "Signing up is free." },
+    { speaker: LOUNGE_MEMBERS[40]!.id, text: CHATTER[8]! },
   ];
+}
+
+/** Total members crawl upward from a base above 10,000. Online stays above 200. */
+export function loungeCensus(now = Date.now()) {
+  const start = Date.parse("2026-08-01T00:00:00.000Z");
+  const hours = Math.max(0, (now - start) / 3_600_000);
+  const total = 11_247 + Math.floor(hours * 2.4);
+  const wave = Math.sin(now / 190_000);
+  const online = Math.floor(208 + ((wave + 1) / 2) * 72 + ((now / 11_000) % 28));
+  return { total, online: Math.max(201, online) };
+}
+
+export function formatCount(n: number) {
+  return new Intl.NumberFormat("en-US").format(n);
 }

@@ -71,11 +71,44 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 - Completed studies stay in pending while we review responses (approvals also run in the background)
 - Withdraw from $500 after a $50 activation deposit that an admin must match and approve (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
 - Hire marketers ($5–$10 per referral) to fill slots in 1–2 hours
-- After onboarding, a lounge chat icon sits at the bottom right. The room asks and answers questions at random (staff or peers). Join the chat asks you to activate with $50, which is credited and withdrawn with your first cash-out.
+- After onboarding, a lounge chat icon sits at the bottom right (it hides on the deposit page so phone users can see the steps). Two staff names take questions. Join the chat asks you to activate with $50, which is credited and withdrawn with your first cash-out.
+- **Deposit chat is live.** Participants send a message on `/app/deposit`. Staff reply from **Admin → Deposit chat**. There is no auto-reply. The first line is always “Having trouble with deposits? Send us your message.”
+
+## Live payment details (required before launch)
+
+Until these env vars are set, the deposit page **will not print account numbers**. It tells people to ask in deposit chat. Put real values on Render (Environment) and redeploy:
+
+| Key | What to paste |
+| --- | --- |
+| `DEPOSIT_USDT_TRC20` | Your USDT TRC20 address (starts with `T`) |
+| `DEPOSIT_US_ZELLE` | Zelle email or US phone |
+| `DEPOSIT_US_BANK_NAME` | Bank name for ACH |
+| `DEPOSIT_US_ACH_ROUTING` | ACH routing number |
+| `DEPOSIT_US_ACH_ACCOUNT` | ACH account number |
+| `DEPOSIT_KE_MPESA_PAYBILL` | M-Pesa paybill |
+| `DEPOSIT_KE_MPESA_ACCOUNT` | Account format (or leave as email) |
+| `DEPOSIT_ZA_CAPITEC_NAME` | Account name |
+| `DEPOSIT_ZA_CAPITEC_ACCOUNT` | Capitec account number |
+| `DEPOSIT_ZA_CAPITEC_BRANCH` | Branch (default `470010`) |
+| `DEPOSIT_GB_SORT_ACCOUNT` | `sort-code account` |
+| `DEPOSIT_CA_INTERAC_EMAIL` | Interac email |
+| `DEPOSIT_AU_PAYID` | PayID |
+| `DEPOSIT_EU_IBAN` | IBAN |
+| `DEPOSIT_NG_BANK_ACCOUNT` | Nigerian account |
+| `DEPOSIT_GH_MOMO` | MoMo number |
+| `DEPOSIT_IN_UPI` | UPI ID |
+| `DEPOSIT_PH_GCASH` | GCash number |
+| `DEPOSIT_PK_WALLET` | JazzCash / Easypaisa |
+| `DEPOSIT_BD_BKASH` | bKash |
+| `DEPOSIT_UG_MM` | Uganda MM |
+| `DEPOSIT_TZ_MM` | Tanzania MM |
+
+Staff login: `/login?staff=1` → Admin → **Deposit chat**. Reply there; the participant’s thread updates within a few seconds.
 - Admin (`/login?staff=1` — not linked from the public site) → `/admin`:
   - **Surveys** — write studies by hand or generate a draft with AI, then publish
   - **Applicants** — review identity applications and approve or reject
   - **People** — search participants, open a profile, and add or remove referrals by count or email
-  - **Deposits** — only people who submitted a payment-method deposit to activate a wallet or hire a marketer; study pay is not listed here
+  - **Deposits** — match activation and marketer payments
+  - **Deposit chat** — live replies to people stuck on payment
   - **Withdrawals** — mark crypto payouts sent, or reject and refund
   - **Study reviews** — approve completed work so pay moves to available
