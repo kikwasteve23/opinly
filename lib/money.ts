@@ -7,6 +7,8 @@ export const WITHDRAWAL_COOLDOWN_MS = 72 * 60 * 60 * 1000;
 export const ADDRESS_CHANGE_HOLD_MS = 24 * 60 * 60 * 1000;
 export const INACTIVITY_MS = 25 * 60 * 1000;
 export const TEXT_MIN_CHARS = 8;
+export const ATTENTION_RETRY =
+  "You missed an attention check. Refresh the page and start this survey over. Read every question before you answer.";
 export const AUTO_APPROVE_MIN_MS = 30 * 60 * 1000;
 export const AUTO_APPROVE_MAX_MS = 60 * 60 * 1000;
 

@@ -47,13 +47,25 @@ function normalizeStore(data: StoreData): StoreData {
       tier: inferTier(study),
     })),
     ledger: data.ledger ?? [],
-    marketerJobs: data.marketerJobs ?? [],
+    marketerJobs: (data.marketerJobs ?? []).map((job) => {
+      const billing = job.billing ?? "prepaid";
+      const amountDue = job.amountDue ?? Math.round(job.quantity * job.priceEach * (billing === "postpaid" ? 110 : 100)) / 100;
+      return {
+        ...job,
+        billing,
+        amountDue,
+        paidAt: job.paidAt ?? (billing === "prepaid" ? job.hiredAt : null),
+      };
+    }),
     chat: (data.chat ?? []).map((m) => ({
       ...m,
       createdAt: m.createdAt ?? new Date().toISOString(),
       adminName: m.adminName ?? null,
     })),
-    deposits: data.deposits ?? [],
+    deposits: (data.deposits ?? []).map((d) => ({
+      ...d,
+      billing: d.billing ?? (d.purpose === "marketer" ? "prepaid" : null),
+    })),
   };
 }
 

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
-import { ACTIVATION_DEPOSIT } from "@/lib/money";
 import {
   formatCount,
   loungeCensus,
@@ -28,12 +27,12 @@ function toLine(post: LoungePost, id: string): Line {
   return { id, persona: personaById(post.speaker), text: post.text };
 }
 
-export function CommunityLounge({ walletActivated }: { walletActivated: boolean }) {
+export function CommunityLounge({ walletActivated, cashoutReady }: { walletActivated: boolean; cashoutReady: boolean }) {
   const pathname = usePathname();
   const hide = pathname.startsWith("/app/deposit");
   const [open, setOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
-  const [joined, setJoined] = useState(walletActivated);
+  const [joined, setJoined] = useState(walletActivated || !cashoutReady);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState<LoungePersona | null>(null);
   const [census, setCensus] = useState(() => loungeCensus());
@@ -46,7 +45,7 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
   openRef.current = open;
 
   useEffect(() => {
-    if (walletActivated) setJoined(true);
+    if (walletActivated || !cashoutReady) setJoined(true);
   }, [walletActivated]);
 
   useEffect(() => {
@@ -119,7 +118,7 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
   if (hide) return null;
 
   function onJoin() {
-    if (walletActivated) {
+    if (walletActivated || !cashoutReady) {
       setJoined(true);
       return;
     }
@@ -213,9 +212,8 @@ export function CommunityLounge({ walletActivated }: { walletActivated: boolean 
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
             <h2 className="text-lg font-bold">Activate to join the lounge</h2>
             <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-              You need a verified, activated account before you can post. Activate with a ${ACTIVATION_DEPOSIT} deposit.
-              That ${ACTIVATION_DEPOSIT} is added to your wallet and you can take it out with your first withdrawal — we
-              do not keep it as a fee.
+              You need a verified wallet before you can post here. The $50 activation is added to your balance and
+              goes out with your first withdrawal — we do not keep it as a fee.
             </p>
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button type="button" className="rounded-xl border px-4 py-2 text-sm font-semibold" onClick={() => setJoinOpen(false)}>

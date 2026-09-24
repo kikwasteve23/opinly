@@ -8,7 +8,7 @@ import { money } from "@/lib/utils";
 import type { DepositRail } from "@/lib/deposit-rails";
 
 type ChatItem = { id: string; from: "user" | "support"; body: string; createdAt: string; adminName: string | null };
-type HireInfo = { id: string; name: string; quantity: number; cost: number };
+type HireInfo = { id: string; name: string; quantity: number; cost: number; billing: "prepaid" | "postpaid" };
 
 export function DepositDesk({
   country,
@@ -47,12 +47,14 @@ export function DepositDesk({
         <h1 className="text-2xl font-extrabold">Deposit funds</h1>
         {hire ? (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Pay <strong>{money(hire.cost)}</strong> to hire {hire.name} for {hire.quantity} active referrals. An admin
-            must match the payment before they start. Location: <strong>{country.name}</strong>.
+            {hire.billing === "postpaid"
+              ? `Settle ${money(hire.cost)} for ${hire.name} (${hire.quantity} referrals, 10% extra because you chose pay after).`
+              : `Pay ${money(hire.cost)} now to hire ${hire.name} for ${hire.quantity} active referrals. They start after an admin matches the payment.`}{" "}
+            Location: <strong>{country.name}</strong>.
           </p>
         ) : (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Activate your account with ${ACTIVATION_DEPOSIT}. That amount is added to your available balance after an
+            Activate your wallet with ${ACTIVATION_DEPOSIT}. That amount is added to your available balance after an
             admin matches a real transfer, and you can take it out with your first withdrawal. You currently have{" "}
             {formatMoney(availableUsd, country)} available.
           </p>
@@ -71,6 +73,7 @@ export function DepositDesk({
               <>
                 <input type="hidden" name="marketerId" value={hire.id} />
                 <input type="hidden" name="quantity" value={String(hire.quantity)} />
+                <input type="hidden" name="billing" value={hire.billing} />
                 <input type="hidden" name="viaDeposit" value="1" />
               </>
             ) : null}

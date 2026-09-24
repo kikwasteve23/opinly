@@ -64,7 +64,7 @@ const examples = [
 const faqs = [
   {
     q: "Is it really free to join?",
-    a: "Yes. Creating an account costs nothing. When you later reach the $500 withdrawal floor, you activate the wallet with a $50 deposit. That $50 is added to your available balance and can be withdrawn with your earnings.",
+    a: "Yes. Creating an account costs nothing. We will never ask you to pay just to join or to start studies.",
   },
   {
     q: "Do I need to upload an ID?",
@@ -76,11 +76,11 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "Your rewards build up in US dollars and also display in your local currency. When you reach $500 available and Bronze (20 active referrals), you activate with $50 (credited to you) and withdraw by crypto. Local deposit methods plus NOWPayments are listed on the deposit page.",
+    a: "Your rewards build up in US dollars and also display in your local currency. When you are ready, withdraw by crypto from a $500 available balance. You always see the fees before you confirm.",
   },
   {
     q: "Why was my submission rejected?",
-    a: "Usually because the answers did not follow the brief: attention checks missed, contradictory responses, or text that appears copy-pasted. If you think a rejection was wrong, contact support and a person will look at it again.",
+    a: "Usually the answers did not follow the brief: contradictory responses, or text that appears copy-pasted. If you miss an attention check, refresh the page and start that survey over — it is not a permanent rejection. If you think a later rejection was wrong, contact support and a person will look at it again.",
   },
   {
     q: "Do I need a phone?",
@@ -223,11 +223,6 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
-        <div className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/15">
-          <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
-            You also need 20 active referrals (approved people who have finished a survey) before Bronze studies and withdrawals open. When Beginner surveys run out, share your referral link or hire a marketer to upgrade. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
-          </p>
-        </div>
       </section>
 
       <section id="studies" className="scroll-mt-24 border-y border-gray-200 bg-gray-50 py-20 dark:border-gray-800 dark:bg-gray-900/50 lg:py-28">
@@ -324,7 +319,7 @@ export default async function HomePage() {
           <p className="font-semibold">A couple of house rules</p>
           <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400">
             {[
-              "You need Bronze (20 active referrals: approved, and they must complete a survey) and a $500 available balance. A $50 activation deposit is then added to that balance so you can withdraw.",
+              "Joining is always free. We never charge a fee just to open an account or take your first studies — pay is shown up front and approved work is real dollars, not points.",
               "One withdrawal every 72 hours, so let your balance build up before cashing out.",
               "Both fees come out of the amount you request, so the figure you confirm is the figure that arrives.",
               "Double-check the address and the network. Crypto sent to the wrong chain cannot be recovered.",

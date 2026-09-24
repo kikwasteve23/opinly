@@ -52,6 +52,7 @@ describe("auto-approve", () => {
       detectedCountry: "US",
       photoUrl: null,
       identityImageUrl: null,
+      dismissedMilestones: [],
     });
     data.submissions.push({
       id: "sub1",

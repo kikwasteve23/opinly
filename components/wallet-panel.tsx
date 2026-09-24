@@ -40,11 +40,13 @@ export function WalletPanel({
   initialHistory,
   referrals,
   showReferralTools,
+  cashoutReady,
 }: {
   initialUser: UserWallet;
   initialHistory: Withdrawal[];
   referrals: { qualified: number; level: number; code: string };
   showReferralTools: boolean;
+  cashoutReady: boolean;
 }) {
   const [amount, setAmount] = useState(String(MIN_WITHDRAWAL));
   const [network, setNetwork] = useState<PayoutNetwork>(initialUser.payout.network || "usdt_trc20");
@@ -52,7 +54,7 @@ export function WalletPanel({
   const quote = useMemo(() => quoteWithdrawal(Number(amount) || 0, network), [amount, network]);
   const needRefs = showReferralTools && referrals.qualified < BRONZE_REFERRALS;
   const needBalance = initialUser.available < MIN_WITHDRAWAL;
-  const needActivation = !initialUser.walletActivated;
+  const needActivation = cashoutReady && !initialUser.walletActivated;
   const canRequest = !needRefs && !needBalance && !needActivation;
 
   return (
@@ -73,11 +75,11 @@ export function WalletPanel({
               {levelName(referrals.level)} · {referrals.qualified}/{BRONZE_REFERRALS} active referrals for cash-out. Code{" "}
               <span className="font-mono font-semibold">{referrals.code}</span>.
             </p>
-            <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A $50 activation deposit is added to this balance, not taken as a fee.</p>
+            <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}.</p>
           </div>
         ) : (
           <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
-            <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}. A $50 activation deposit is added to this balance, not taken as a fee.</p>
+            <p>Keep taking studies. Cash-out opens at {money(MIN_WITHDRAWAL)} available.</p>
           </div>
         )}
         <div className="mt-4 rounded-2xl border-2 border-indigo-600 bg-white p-5 dark:bg-gray-900">
@@ -98,7 +100,7 @@ export function WalletPanel({
                 <Link className="font-semibold underline" href="/app/deposit">
                   deposit funds
                 </Link>{" "}
-                page, then come back to withdraw crypto.
+                page, then come back to withdraw crypto. The $50 is added to your balance.
               </p>
             ) : null}
           </div>

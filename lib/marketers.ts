@@ -1,3 +1,8 @@
+import { roundCents } from "./money";
+import type { MarketerBilling } from "./types";
+
+export const PAY_AFTER_SURCHARGE = 0.1;
+
 export type Marketer = {
   id: string;
   name: string;
@@ -58,4 +63,10 @@ export const MARKETERS: Marketer[] = [
 
 export function findMarketer(id: string) {
   return MARKETERS.find((m) => m.id === id) ?? null;
+}
+
+export function marketerQuote(priceEach: number, quantity: number, billing: MarketerBilling) {
+  const base = roundCents(quantity * priceEach);
+  const amount = billing === "postpaid" ? roundCents(base * (1 + PAY_AFTER_SURCHARGE)) : base;
+  return { base, amount };
 }

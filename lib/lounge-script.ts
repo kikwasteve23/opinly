@@ -106,13 +106,14 @@ export const LOUNGE_THREADS: LoungeThread[] = [
     id: "attention",
     question: "I missed an attention check. Am I done here?",
     answerer: "peer",
-    peerText: "I failed one too. Slowed down on the next study and it approved. Read every line.",
+    peerText: "Refresh and start that survey over. It is not the end — just read every line the second time.",
+    adminText: "That is right. A missed attention check asks you to refresh and begin again. It does not close your account.",
   },
   {
     id: "payout",
     question: "When I cash out, is it gift cards or actual money?",
     answerer: "admin",
-    adminText: "Withdrawals are crypto to a wallet you control. The $50 activation is added to your balance and goes out with your first withdrawal — it is not a fee we keep.",
+    adminText: "Withdrawals are crypto to a wallet you control. Minimum cash-out is $500 available. You always see the fees before you confirm.",
   },
   {
     id: "english",

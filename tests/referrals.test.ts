@@ -40,6 +40,7 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
     detectedCountry: "US",
     photoUrl: null,
     identityImageUrl: null,
+    dismissedMilestones: [],
     ...partial,
   };
 }

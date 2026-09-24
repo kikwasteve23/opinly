@@ -27,5 +27,6 @@ export function normalizeUser(raw: Partial<User> & Pick<User, "id" | "email" | "
     detectedCountry: detectedCountry ?? null,
     photoUrl: raw.photoUrl ?? null,
     identityImageUrl: raw.identityImageUrl ?? null,
+    dismissedMilestones: raw.dismissedMilestones ?? [],
   };
 }

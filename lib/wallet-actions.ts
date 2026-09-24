@@ -8,9 +8,10 @@ import type { PayoutNetwork } from "@/lib/money";
 import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL } from "@/lib/money";
 import { applyWithdrawal } from "@/lib/withdraw";
 import { submitStudyInStore } from "@/lib/submit-study";
-import { findMarketer } from "@/lib/marketers";
-import { paymentMethodLabel } from "@/lib/deposit-requests";
+import { findMarketer, marketerQuote } from "@/lib/marketers";
+import { paymentMethodLabel, startMarketerJob } from "@/lib/deposit-requests";
 import { canAccessStudyTier, countsFromStore, hitWalletCap } from "@/lib/referrals";
+import type { MarketerBilling } from "@/lib/types";
 
 export type WalletState = { error?: string; ok?: string } | null;
 
@@ -77,7 +78,10 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
   if (hire && (!Number.isInteger(quantity) || quantity < hire.minOrder || quantity > hire.maxOrder)) {
     return { error: `Order between ${hire.minOrder} and ${hire.maxOrder} referrals.` };
   }
-  const amount = hire ? Math.round(quantity * hire.priceEach * 100) / 100 : ACTIVATION_DEPOSIT;
+  const billing = (String(formData.get("billing") ?? "prepaid") === "postpaid" ? "postpaid" : "prepaid") as MarketerBilling;
+  const amount = hire
+    ? marketerQuote(hire.priceEach, quantity, billing).amount
+    : ACTIVATION_DEPOSIT;
   const result = await mutateStore((data) => {
     const current = data.users.find((u) => u.id === user.id);
     if (!current) return { error: "Account missing." };
@@ -85,7 +89,23 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
       return { error: "Marketer hires open after you finish Beginner surveys and are ready to upgrade." };
     }
     if (!hire) {
+      if (current.available < MIN_WITHDRAWAL) {
+        return { error: "Wallet activation opens when your available balance reaches $500." };
+      }
       if (current.walletActivated) return { error: "This wallet is already activated." };
+    }
+    if (hire && billing === "postpaid") {
+      const invoice = data.marketerJobs.find(
+        (j) =>
+          j.userId === current.id &&
+          j.marketerId === hire.id &&
+          j.billing === "postpaid" &&
+          !j.paidAt &&
+          j.status === "complete",
+      );
+      if (!invoice) {
+        return { error: "Pay-after invoices open once the referrals have landed. Hire with Pay after first, then come back to pay." };
+      }
     }
     const pendingSame = data.deposits.some(
       (d) => d.userId === current.id && d.status === "pending" && d.purpose === (hire ? "marketer" : "activation"),
@@ -100,6 +120,7 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
       purpose: hire ? "marketer" : "activation",
       marketerId: hire?.id ?? null,
       quantity: hire ? quantity : null,
+      billing: hire ? billing : null,
       status: "pending",
       createdAt: new Date().toISOString(),
       reviewedAt: null,
@@ -133,4 +154,34 @@ export async function sendDepositChatAction(_prev: WalletState, formData: FormDa
   revalidatePath("/admin/support");
   revalidatePath("/admin");
   return { ok: "Sent. An admin will reply in this thread." };
+}
+
+export async function hireMarketerPayAfterAction(_prev: WalletState, formData: FormData): Promise<WalletState> {
+  const user = await requireCompleteUser();
+  const marketerId = String(formData.get("marketerId") ?? "").trim();
+  const quantity = Number(formData.get("quantity"));
+  const hire = findMarketer(marketerId);
+  if (!hire) return { error: "That marketer is not available." };
+  if (!Number.isInteger(quantity) || quantity < hire.minOrder || quantity > hire.maxOrder) {
+    return { error: `Order between ${hire.minOrder} and ${hire.maxOrder} referrals.` };
+  }
+  const result = await mutateStore((data) => {
+    const current = data.users.find((u) => u.id === user.id);
+    if (!current) return { error: "Account missing." };
+    if (!hitWalletCap(current)) {
+      return { error: "Marketer hires open after you finish Beginner surveys and are ready to upgrade." };
+    }
+    const busy = data.marketerJobs.some(
+      (j) => j.userId === current.id && (j.status === "processing" || (j.billing === "postpaid" && !j.paidAt)),
+    );
+    if (busy) return { error: "Finish or pay your current hire before starting another pay-after order." };
+    startMarketerJob(data, current.id, hire.id, quantity, "postpaid");
+    const due = marketerQuote(hire.priceEach, quantity, "postpaid").amount;
+    return {
+      ok: `${hire.name} is filling ${quantity} referrals. Pay $${due.toFixed(2)} (10% extra) after they land.`,
+    };
+  });
+  revalidatePath("/app/marketers");
+  revalidatePath("/app");
+  return result;
 }

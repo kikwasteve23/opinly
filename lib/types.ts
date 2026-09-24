@@ -11,6 +11,7 @@ export type StudyTier = 1 | 2 | 3 | 4;
 export type MarketerJobStatus = "processing" | "complete" | "failed";
 export type DepositRequestStatus = "pending" | "approved" | "rejected";
 export type DepositPurpose = "activation" | "marketer";
+export type MarketerBilling = "prepaid" | "postpaid";
 
 export type Profile = {
   legalName: string;
@@ -52,6 +53,7 @@ export type User = {
   detectedCountry: string | null;
   photoUrl: string | null;
   identityImageUrl: string | null;
+  dismissedMilestones: string[];
 };
 
 export type Question = {
@@ -122,6 +124,9 @@ export type MarketerJob = {
   marketerId: string;
   quantity: number;
   priceEach: number;
+  billing: MarketerBilling;
+  amountDue: number;
+  paidAt: string | null;
   hiredAt: string;
   completeAt: string;
   completedAt: string | null;
@@ -147,6 +152,7 @@ export type DepositRequest = {
   purpose: DepositPurpose;
   marketerId: string | null;
   quantity: number | null;
+  billing: MarketerBilling | null;
   status: DepositRequestStatus;
   createdAt: string;
   reviewedAt: string | null;

@@ -89,7 +89,18 @@ export async function reviewDepositAction(formData: FormData) {
         adminEmail: admin.email,
       });
     } else if (deposit.marketerId && deposit.quantity) {
-      startMarketerJob(data, user.id, deposit.marketerId, deposit.quantity);
+      if (deposit.billing === "postpaid") {
+        const job = data.marketerJobs.find(
+          (j) =>
+            j.userId === user.id &&
+            j.marketerId === deposit.marketerId &&
+            j.billing === "postpaid" &&
+            !j.paidAt,
+        );
+        if (job) job.paidAt = new Date().toISOString();
+      } else {
+        startMarketerJob(data, user.id, deposit.marketerId, deposit.quantity, "prepaid");
+      }
       data.ledger.unshift({
         id: newId("led"),
         userId: user.id,

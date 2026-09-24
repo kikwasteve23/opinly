@@ -4,25 +4,35 @@ import { LiveRefresh } from "@/components/live-refresh";
 import { requireCompleteUser } from "@/lib/auth-actions";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { readStoreSnapshot } from "@/lib/store";
-import { findMarketer } from "@/lib/marketers";
+import { findMarketer, marketerQuote } from "@/lib/marketers";
 import { hitWalletCap } from "@/lib/referrals";
 import { depositRail } from "@/lib/deposit-rails";
 import { ensureDepositWelcome } from "@/lib/deposit-chat";
+import { MIN_WITHDRAWAL } from "@/lib/money";
+import type { MarketerBilling } from "@/lib/types";
 
 export default async function DepositPage({
   searchParams,
 }: {
-  searchParams: Promise<{ hire?: string; qty?: string; activate?: string }>;
+  searchParams: Promise<{ hire?: string; qty?: string; activate?: string; billing?: string }>;
 }) {
   const user = await requireCompleteUser();
-  const { hire: hireId, qty } = await searchParams;
+  const { hire: hireId, qty, billing: billingRaw } = await searchParams;
+  const billing: MarketerBilling = billingRaw === "postpaid" ? "postpaid" : "prepaid";
   const marketer = hireId ? findMarketer(hireId) : null;
   const quantity = Number(qty);
   const hire =
     marketer && Number.isInteger(quantity) && quantity >= marketer.minOrder && quantity <= marketer.maxOrder
-      ? { id: marketer.id, name: marketer.name, quantity, cost: Math.round(quantity * marketer.priceEach * 100) / 100 }
+      ? {
+          id: marketer.id,
+          name: marketer.name,
+          quantity,
+          cost: marketerQuote(marketer.priceEach, quantity, billing).amount,
+          billing,
+        }
       : null;
   if (hire && !hitWalletCap(user)) redirect("/app");
+  if (!hire && user.available < MIN_WITHDRAWAL) redirect("/app/wallet");
   await ensureDepositWelcome(user.id);
   const store = await readStoreSnapshot();
   const country = await resolveCountry(user);

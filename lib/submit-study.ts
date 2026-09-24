@@ -1,4 +1,4 @@
-import { autoApproveAt, TEXT_MIN_CHARS } from "./money";
+import { autoApproveAt, ATTENTION_RETRY, TEXT_MIN_CHARS } from "./money";
 import { canAccessStudyTier, countsFromStore, studyLockReason } from "./referrals";
 import { textAnswersPass } from "./progression";
 import { findStudy } from "./studies-data";
@@ -22,12 +22,14 @@ export function submitStudyInStore(data: StoreData, userId: string, studyId: str
     if (question.type === "attention" && question.correct) {
       const value = Array.isArray(answer) ? answer.join(" ") : String(answer ?? "");
       if (value.trim().toLowerCase() !== question.correct.toLowerCase()) {
-        submission.status = "rejected";
-        submission.submittedAt = new Date().toISOString();
-        submission.reviewedAt = new Date().toISOString();
-        submission.rejectionReason = "An attention check was missed.";
+        submission.status = "in_progress";
+        submission.answers = {};
+        submission.submittedAt = null;
+        submission.reviewedAt = null;
+        submission.rejectionReason = null;
         submission.autoApproveAt = null;
-        return { error: submission.rejectionReason };
+        submission.updatedAt = new Date().toISOString();
+        return { error: ATTENTION_RETRY };
       }
     }
   }

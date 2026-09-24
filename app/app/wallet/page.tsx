@@ -1,6 +1,7 @@
 import { WalletPanel } from "@/components/wallet-panel";
 import { requireCompleteUser } from "@/lib/auth-actions";
 import { readStoreSnapshot } from "@/lib/store";
+import { MIN_WITHDRAWAL } from "@/lib/money";
 import { countsFromStore, hitWalletCap } from "@/lib/referrals";
 
 export default async function WalletPage() {
@@ -21,6 +22,7 @@ export default async function WalletPage() {
       initialHistory={withdrawals}
       referrals={{ qualified, level, code: user.referralCode }}
       showReferralTools={showReferralTools}
+      cashoutReady={user.available >= MIN_WITHDRAWAL}
     />
   );
 }

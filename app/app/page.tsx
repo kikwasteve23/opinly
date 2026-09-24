@@ -80,7 +80,8 @@ export default async function DashboardPage() {
 
       {starterLocked ? (
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          You have run out of Beginner surveys. Upgrade to the next level to unlock higher-paying surveys. Share your{" "}
+          You have run out of Beginner surveys. Bring referrals to unlock the rest, or hire our experts. Pay before
+          (exact price) or pay after the referrals land (10% extra). Share your{" "}
           <Link className="font-semibold underline" href="/app/referrals">
             referral link
           </Link>{" "}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Question, Study } from "@/lib/types";
 import { money } from "@/lib/utils";
+import { ATTENTION_RETRY } from "@/lib/money";
 import { saveStudyAction, submitStudyAction } from "@/lib/wallet-actions";
 
 export type StudyPayload = {
@@ -29,6 +30,11 @@ export function StudyRunner({ studyId, initial }: { studyId: string; initial: St
     setPending(true);
     const result = await submitStudyAction(studyId, answers);
     setPending(false);
+    if (result?.error === ATTENTION_RETRY) {
+      setError(result.error);
+      setAnswers({});
+      return;
+    }
     if (result?.error) setError(result.error);
   }
 
@@ -95,7 +101,20 @@ export function StudyRunner({ studyId, initial }: { studyId: string; initial: St
         ))}
       </div>
       {saved ? <p className="mt-4 text-sm text-gray-500">{saved}</p> : null}
-      {error ? <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <div className="mt-4 rounded-xl bg-red-50 px-3 py-3 text-sm text-red-800">
+          <p>{error}</p>
+          {error === ATTENTION_RETRY ? (
+            <button
+              type="button"
+              className="mt-3 rounded-xl bg-red-700 px-4 py-2 text-sm font-semibold text-white"
+              onClick={() => window.location.reload()}
+            >
+              Refresh and start over
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button type="button" onClick={() => void save()} className="rounded-xl border border-gray-300 px-5 py-3 font-semibold">
           Save progress

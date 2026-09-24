@@ -17,6 +17,7 @@ export function AppShell({
   showReferralTools,
   locationLabel,
   walletActivated,
+  cashoutReady,
 }: {
   children: React.ReactNode;
   email: string;
@@ -25,6 +26,7 @@ export function AppShell({
   showReferralTools: boolean;
   locationLabel: string;
   walletActivated: boolean;
+  cashoutReady: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -112,7 +114,7 @@ export function AppShell({
         ) : null}
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-      <CommunityLounge walletActivated={walletActivated} />
+      <CommunityLounge walletActivated={walletActivated} cashoutReady={cashoutReady} />
     </div>
   );
 }

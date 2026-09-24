@@ -70,7 +70,7 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 - Take Beginner studies until your **wallet** (available plus pending) reaches $400, then Beginner work pauses. Share referrals or hire a marketer. Bronze / Gold / Platinum work then appears locked until you have 20 / 50 / 100 active referrals
 - Completed studies stay in pending while we review responses (approvals also run in the background)
 - Withdraw from $500 after a $50 activation deposit that an admin must match and approve (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
-- Hire marketers ($5–$10 per referral) to fill slots in 1–2 hours
+- Hire marketers ($5–$10 per referral). Pay before at the listed price, or pay after they land for 10% extra.
 - After onboarding, a lounge chat icon sits at the bottom right (it hides on the deposit page so phone users can see the steps). Two staff names take questions. Join the chat asks you to activate with $50, which is credited and withdrawn with your first cash-out.
 - **Deposit chat is live.** Participants send a message on `/app/deposit`. Staff reply from **Admin → Deposit chat**. There is no auto-reply. The first line is always “Having trouble with deposits? Send us your message.”
 
