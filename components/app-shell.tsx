@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { logoutAction } from "@/lib/auth-actions";
+import { CommunityLounge } from "@/components/community-lounge";
 
 export function AppShell({
   children,
@@ -109,6 +110,7 @@ export function AppShell({
         ) : null}
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <CommunityLounge />
     </div>
   );
 }

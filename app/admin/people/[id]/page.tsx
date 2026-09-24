@@ -5,6 +5,8 @@ import { readStoreSnapshot } from "@/lib/store";
 import { countsFromStore, LEVEL_2_REFERRALS } from "@/lib/referrals";
 import { money } from "@/lib/utils";
 import { adjustWalletAction, setAccountStatusAction, setIdentityAction } from "@/lib/admin-actions";
+import { AdminReferralsDesk } from "@/components/admin-referrals-desk";
+import { referralStatusLabel } from "@/lib/admin-referrals";
 import { findStudy } from "@/lib/studies-data";
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
@@ -127,20 +129,14 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         </form>
       </section>
 
-      <section>
-        <h2 className="font-semibold">Referrals</h2>
-        <ul className="mt-3 space-y-2 text-sm">
-          {referrals.length === 0 ? <li className="text-gray-500">None yet.</li> : null}
-          {referrals.map((ref) => (
-            <li key={ref.id}>
-              <Link className="text-indigo-700" href={`/admin/people/${ref.id}`}>
-                {ref.email}
-              </Link>{" "}
-              · {ref.identityStatus} · {ref.accountStatus}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <AdminReferralsDesk
+        userId={person.id}
+        referrals={referrals.map((ref) => ({
+          id: ref.id,
+          email: ref.email,
+          status: referralStatusLabel(store, ref),
+        }))}
+      />
 
       <section>
         <h2 className="font-semibold">Studies</h2>

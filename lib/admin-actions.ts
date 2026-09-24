@@ -7,6 +7,7 @@ import { findStudy } from "@/lib/studies-data";
 import type { IdentityStatus, Question, Study, StudyKind, WithdrawalStatus } from "@/lib/types";
 import { generateSurveyDraft } from "@/lib/ai-survey";
 import { startMarketerJob } from "@/lib/deposit-requests";
+import { addQualifiedReferrals, attachExistingReferral, unlinkReferral } from "@/lib/admin-referrals";
 
 export type AdminFormState = { error?: string; ok?: string } | null;
 
@@ -262,6 +263,41 @@ export async function toggleSurveyAction(formData: FormData) {
   });
   revalidatePath("/admin");
   revalidatePath("/app");
+}
+
+export async function addReferralsAction(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const count = Number(formData.get("count"));
+  const result = await mutateStore((data) => addQualifiedReferrals(data, userId, count));
+  revalidatePath("/admin");
+  revalidatePath("/admin/people");
+  revalidatePath(`/admin/people/${userId}`);
+  revalidatePath("/app");
+  if ("error" in result && result.error) return { error: result.error };
+  return { ok: result.ok };
+}
+
+export async function attachReferralAction(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const email = String(formData.get("email") ?? "");
+  const result = await mutateStore((data) => attachExistingReferral(data, userId, email));
+  revalidatePath("/admin");
+  revalidatePath("/admin/people");
+  revalidatePath(`/admin/people/${userId}`);
+  if ("error" in result && result.error) return { error: result.error };
+  return { ok: result.ok };
+}
+
+export async function removeReferralAction(formData: FormData) {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const referralId = String(formData.get("referralId") ?? "");
+  await mutateStore((data) => unlinkReferral(data, userId, referralId));
+  revalidatePath("/admin");
+  revalidatePath("/admin/people");
+  revalidatePath(`/admin/people/${userId}`);
 }
 
 export async function deleteSurveyAction(formData: FormData) {

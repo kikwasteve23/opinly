@@ -71,11 +71,11 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 - Completed studies stay in pending while we review responses (approvals also run in the background)
 - Withdraw from $500 after a $50 activation deposit that an admin must match and approve (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
 - Hire marketers ($5–$10 per referral) to fill slots in 1–2 hours
-- Idle sessions sign out after 25 minutes
+- After onboarding, a lounge chat icon sits at the bottom right. Opening it shows members talking about Opinly (benefits and how it has helped them). The room keeps moving.
 - Admin (`/login?staff=1` — not linked from the public site) → `/admin`:
   - **Surveys** — write studies by hand or generate a draft with AI, then publish
   - **Applicants** — review identity applications and approve or reject
-  - **People** — search participants and open a full profile preview
+  - **People** — search participants, open a profile, and add or remove referrals by count or email
   - **Deposits** — only people who submitted a payment-method deposit to activate a wallet or hire a marketer; study pay is not listed here
   - **Withdrawals** — mark crypto payouts sent, or reject and refund
   - **Study reviews** — approve completed work so pay moves to available
