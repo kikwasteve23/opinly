@@ -143,14 +143,13 @@ export const LOUNGE_THREADS: LoungeThread[] = [
     id: "deposit-chat",
     question: "Where do I send the $50? I do not want a fake account number.",
     answerer: "admin",
-    adminText: "Open Deposit funds. If pay-to details are not printed, use deposit chat on that page. Ada or I will send the live account, paybill, or invoice. Never pay someone who DMs you.",
+    adminText: "Open Deposit funds. If pay-to details are not printed, use deposit chat on that page. Staff will send the live account, paybill, or invoice. Never pay someone who DMs you.",
   },
   {
     id: "two-admins",
     question: "Who actually replies in here — is this a bot?",
     answerer: "admin",
-    adminText: "Ada and I (Malik) take turns. Same for deposit chat: a staff account replies, not an auto-message.",
-    peerText: "I waited a bit and Ada answered my ID question. Felt like a person.",
+    adminText: "We are here to help you. Real staff read this room and deposit chat — it is not an auto-message.",
   },
   {
     id: "members",
