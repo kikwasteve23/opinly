@@ -29,18 +29,18 @@ export default async function DepositPage({
   const messages = store.chat.filter((m) => m.userId === user.id);
   const pending = store.deposits.find((d) => d.userId === user.id && d.status === "pending") ?? null;
   return (
-    <>
-    <LiveRefresh ms={3000} />
-    <DepositDesk
-      country={country}
-      activated={user.walletActivated}
-      availableUsd={user.available}
-      messages={messages}
-      hire={hire}
-      pending={pending ? { amount: pending.amount, methodLabel: pending.methodLabel, purpose: pending.purpose } : null}
-      localRail={depositRail(country.code, country.local.id)}
-      cryptoRail={depositRail(country.code, "nowpayments")}
-    />
-    </>
+    <div>
+      <LiveRefresh ms={3000} />
+      <DepositDesk
+        country={country}
+        activated={user.walletActivated}
+        availableUsd={user.available}
+        messages={messages}
+        hire={hire}
+        pending={pending ? { amount: pending.amount, methodLabel: pending.methodLabel, purpose: pending.purpose } : null}
+        localRail={depositRail(country.code, country.local.id)}
+        cryptoRail={depositRail(country.code, "nowpayments")}
+      />
+    </div>
   );
 }
