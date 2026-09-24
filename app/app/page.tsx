@@ -10,10 +10,8 @@ import {
   hitWalletCap,
   levelName,
   starterSurveysLocked,
-  STARTER_EARNINGS_CAP,
   studyLockReason,
   studyVisibleOnDashboard,
-  walletCapUsd,
 } from "@/lib/referrals";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { formatMoney } from "@/lib/geo";
@@ -26,7 +24,6 @@ export default async function DashboardPage() {
   const store = await readStoreSnapshot();
   const submissions = store.submissions.filter((s) => s.userId === user.id);
   const { qualified, level } = countsFromStore(store, user.id);
-  const walletTowardCap = walletCapUsd(user);
   const country = await resolveCountry(user);
   const starterLocked = starterSurveysLocked(user, level);
   const showReferralTrack = hitWalletCap(user);
@@ -52,23 +49,15 @@ export default async function DashboardPage() {
           <p className="mt-1 text-3xl font-bold">{money(user.pending)}</p>
           <p className="mt-1 text-xs text-gray-500">We are reviewing your responses.</p>
         </div>
-        {showReferralTrack ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Your level</p>
-            <p className="mt-1 text-3xl font-bold">{levelName(level)}</p>
-            <p className="mt-1 text-xs text-gray-500">
-              {qualified} active referrals · {BRONZE_REFERRALS} unlocks Bronze
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Toward $400</p>
-            <p className="mt-1 text-3xl font-bold">{money(walletTowardCap)}</p>
-            <p className="mt-1 text-xs text-gray-500">
-              Available plus pending, toward {money(STARTER_EARNINGS_CAP)} on Beginner.
-            </p>
-          </div>
-        )}
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+          <p className="text-sm text-gray-500">Your level</p>
+          <p className="mt-1 text-3xl font-bold">{levelName(level)}</p>
+          <p className="mt-1 text-xs text-gray-500">
+            {showReferralTrack
+              ? `${qualified} active referrals · ${BRONZE_REFERRALS} unlocks Bronze`
+              : "Beginner studies are open."}
+          </p>
+        </div>
       </div>
 
       {!user.photoUrl ? (
@@ -91,8 +80,7 @@ export default async function DashboardPage() {
 
       {starterLocked ? (
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          Your wallet has reached {money(STARTER_EARNINGS_CAP)}. Beginner surveys pause here so you cannot hit the $500
-          withdrawal floor without unlocking the next level. Share your{" "}
+          You have run out of Beginner surveys. Upgrade to the next level to unlock higher-paying surveys. Share your{" "}
           <Link className="font-semibold underline" href="/app/referrals">
             referral link
           </Link>{" "}
@@ -100,8 +88,7 @@ export default async function DashboardPage() {
           <Link className="font-semibold underline" href="/app/marketers">
             hire a marketer
           </Link>{" "}
-          until you have {BRONZE_REFERRALS} active referrals. Higher-paying studies are listed below and stay locked
-          until then.
+          until you have {BRONZE_REFERRALS} active referrals.
         </div>
       ) : null}
 

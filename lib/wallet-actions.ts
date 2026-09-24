@@ -82,7 +82,7 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
     const current = data.users.find((u) => u.id === user.id);
     if (!current) return { error: "Account missing." };
     if (hire && !hitWalletCap(current)) {
-      return { error: "Marketer hires open after your wallet reaches $400." };
+      return { error: "Marketer hires open after you finish Beginner surveys and are ready to upgrade." };
     }
     if (!hire) {
       if (current.available < MIN_WITHDRAWAL) {

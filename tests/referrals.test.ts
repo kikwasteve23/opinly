@@ -8,6 +8,7 @@ import {
   referralLevel,
   starterSurveysLocked,
   studyEarningsUsd,
+  studyLockReason,
   studyVisibleOnDashboard,
 } from "../lib/referrals";
 import { BEGINNER_STUDIES } from "../lib/beginner-catalog";
@@ -138,6 +139,9 @@ describe("referrals", () => {
     expect(canAccessStudyTier(early, 1, 1)).toBe(true);
     const bronze = person({ id: "usr_c", available: 409.75, pending: 0 });
     expect(canAccessStudyTier(bronze, 1, 2)).toBe(true);
+    const reason = studyLockReason(overCap, 1, 1);
+    expect(reason).toMatch(/run out of Beginner surveys/i);
+    expect(reason).not.toMatch(/400/);
   });
 
   it("counts pending review and approved study pay", () => {

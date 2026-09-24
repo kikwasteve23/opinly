@@ -225,7 +225,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/15">
           <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
-            You also need 20 active referrals (approved people who have finished a survey) before Bronze studies and withdrawals open. Beginner surveys pause once your wallet (available plus pending) reaches $400 — share your referral link or hire a marketer to keep going. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
+            You also need 20 active referrals (approved people who have finished a survey) before Bronze studies and withdrawals open. When Beginner surveys run out, share your referral link or hire a marketer to upgrade. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
           </p>
         </div>
       </section>

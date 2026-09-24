@@ -113,10 +113,10 @@ export function canAccessStudyTier(user: User, studyTier: number, level: number)
 
 export function studyLockReason(user: User, studyTier: number, level: number) {
   if (studyTier <= 1 && starterSurveysLocked(user, level)) {
-    return `Beginner surveys pause once your wallet (available plus pending) reaches $${STARTER_EARNINGS_CAP}. Bring ${BRONZE_REFERRALS} active referrals or hire a marketer to open Bronze work.`;
+    return `You have run out of Beginner surveys. Upgrade to the next level to unlock higher-paying surveys. Bring ${BRONZE_REFERRALS} active referrals or hire a marketer.`;
   }
   if (!hitWalletCap(user) && studyTier > 1) {
-    return `Higher-paying studies appear after your wallet reaches $${STARTER_EARNINGS_CAP}.`;
+    return "This study opens after you upgrade from Beginner.";
   }
   if (level < studyTier) {
     return `This is a ${levelName(studyTier)} study. You need ${refsNeededForLevel(studyTier)} active referrals to unlock it.`;
