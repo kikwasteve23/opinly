@@ -44,9 +44,9 @@ export function DepositDesk({
           </p>
         ) : (
           <p className="mt-2 text-sm text-gray-600">
-            You have reached the $500 withdrawal floor. Activate the wallet with ${ACTIVATION_DEPOSIT}. That amount is
-            added to your available balance after an admin approves the payment ({formatMoney(availableUsd, country)} now).
-            Detected location: <strong>{country.name}</strong>.
+            Activate your account with ${ACTIVATION_DEPOSIT}. That amount is added to your available balance after an
+            admin matches the payment, and you can take it out with your first withdrawal — it is not a fee we keep.
+            You currently have {formatMoney(availableUsd, country)} available. Detected location: <strong>{country.name}</strong>.
           </p>
         )}
         {za ? (

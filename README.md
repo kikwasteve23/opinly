@@ -71,7 +71,7 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 - Completed studies stay in pending while we review responses (approvals also run in the background)
 - Withdraw from $500 after a $50 activation deposit that an admin must match and approve (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
 - Hire marketers ($5–$10 per referral) to fill slots in 1–2 hours
-- After onboarding, a lounge chat icon sits at the bottom right. Opening it shows members talking about Opinly (benefits and how it has helped them). The room keeps moving.
+- After onboarding, a lounge chat icon sits at the bottom right. The room asks and answers questions at random (staff or peers). Join the chat asks you to activate with $50, which is credited and withdrawn with your first cash-out.
 - Admin (`/login?staff=1` — not linked from the public site) → `/admin`:
   - **Surveys** — write studies by hand or generate a draft with AI, then publish
   - **Applicants** — review identity applications and approve or reject

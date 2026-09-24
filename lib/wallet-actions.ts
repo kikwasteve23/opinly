@@ -85,9 +85,6 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
       return { error: "Marketer hires open after you finish Beginner surveys and are ready to upgrade." };
     }
     if (!hire) {
-      if (current.available < MIN_WITHDRAWAL) {
-        return { error: `Activation opens once your available balance reaches $${MIN_WITHDRAWAL}.` };
-      }
       if (current.walletActivated) return { error: "This wallet is already activated." };
     }
     const pendingSame = data.deposits.some(
