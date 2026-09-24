@@ -1,19 +1,21 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
-import { readStoreSnapshot } from "@/lib/store";
-import { hitStudyEarningsCap, studyEarningsUsd } from "@/lib/referrals";
+import { hitWalletCap } from "@/lib/referrals";
+import { OptionalIdForm, ProfilePhotoForm } from "@/components/profile-media";
 
 export default async function ProfilePage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   const profile = user.profile;
-  const store = await readStoreSnapshot();
-  const showReferral = hitStudyEarningsCap(studyEarningsUsd(store.studies, store.submissions, user.id));
+  const showReferral = hitWalletCap(user);
 
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-extrabold">Profile</h1>
-      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Researchers see the demographics a study screened on, never your name or email.</p>
+      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        Add a profile picture. ID is optional and can wait until you are ready.
+      </p>
+      <ProfilePhotoForm photoUrl={user.photoUrl} />
       <dl className="mt-8 divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
         <Row label="Email" value={user.email} />
         <Row label="Legal name" value={profile?.legalName ?? "—"} />
@@ -22,10 +24,13 @@ export default async function ProfilePage() {
         <Row label="Languages" value={profile?.languages.join(", ") ?? "—"} />
         <Row label="Occupation" value={profile?.occupation ?? "—"} />
         <Row label="English assessment" value={user.englishPassed ? "Passed" : "Not finished"} />
-        <Row label="Identity" value={user.identityStatus.replace("_", " ")} />
         {showReferral ? <Row label="Referral code" value={user.referralCode} /> : null}
-        <Row label="Identity note" value={user.identityNote || "—"} />
       </dl>
+      <OptionalIdForm
+        identityStatus={user.identityStatus}
+        identityNote={user.identityNote}
+        country={profile?.country ?? ""}
+      />
     </div>
   );
 }

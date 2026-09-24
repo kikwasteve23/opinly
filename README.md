@@ -66,8 +66,8 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 
 ## What you can do
 
-- Join with a referral code, finish profile / English / identity
-- Take Beginner studies until $400 in pending plus approved study pay, then Bronze / Gold / Platinum work appears locked until you have 20 / 50 / 100 active referrals
+- Join with a referral code, finish profile and English (ID is optional later; add a profile photo from Profile)
+- Take Beginner studies until your **wallet** (available plus pending) reaches $400, then Beginner work pauses. Share referrals or hire a marketer. Bronze / Gold / Platinum work then appears locked until you have 20 / 50 / 100 active referrals
 - Completed studies stay in pending while we review responses (approvals also run in the background)
 - Withdraw from $500 after a $50 activation deposit that an admin must match and approve (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
 - Hire marketers ($5–$10 per referral) to fill slots in 1–2 hours

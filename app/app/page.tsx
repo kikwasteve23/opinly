@@ -7,13 +7,13 @@ import {
   BRONZE_REFERRALS,
   canAccessStudyTier,
   countsFromStore,
-  hitStudyEarningsCap,
+  hitWalletCap,
   levelName,
   starterSurveysLocked,
   STARTER_EARNINGS_CAP,
-  studyEarningsUsd,
   studyLockReason,
   studyVisibleOnDashboard,
+  walletCapUsd,
 } from "@/lib/referrals";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { formatMoney } from "@/lib/geo";
@@ -26,17 +26,17 @@ export default async function DashboardPage() {
   const store = await readStoreSnapshot();
   const submissions = store.submissions.filter((s) => s.userId === user.id);
   const { qualified, level } = countsFromStore(store, user.id);
-  const earnings = studyEarningsUsd(store.studies, store.submissions, user.id);
+  const walletTowardCap = walletCapUsd(user);
   const country = await resolveCountry(user);
-  const starterLocked = starterSurveysLocked(earnings, level);
-  const showReferralTrack = hitStudyEarningsCap(earnings);
+  const starterLocked = starterSurveysLocked(user, level);
+  const showReferralTrack = hitWalletCap(user);
 
   const openStudies = store.studies
     .filter((study) => study.published)
     .filter((study) => {
       const mine = latestUserSubmission(submissions, study.id);
       if (isFinishedStudy(mine?.status)) return false;
-      return studyVisibleOnDashboard(earnings, study.tier, Boolean(mine));
+      return studyVisibleOnDashboard(user, study.tier, Boolean(mine));
     });
 
   return (
@@ -62,24 +62,37 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Study earnings</p>
-            <p className="mt-1 text-3xl font-bold">{money(earnings)}</p>
+            <p className="text-sm text-gray-500">Toward $400</p>
+            <p className="mt-1 text-3xl font-bold">{money(walletTowardCap)}</p>
             <p className="mt-1 text-xs text-gray-500">
-              Pending review plus approved, toward {money(STARTER_EARNINGS_CAP)} on Beginner.
+              Available plus pending, toward {money(STARTER_EARNINGS_CAP)} on Beginner.
             </p>
           </div>
         )}
       </div>
 
-      {user.identityStatus !== "approved" ? (
-        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          Identity is {user.identityStatus.replace("_", " ")}. Studies stay closed until an admin approves your check.
+      {!user.photoUrl ? (
+        <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-950">
+          Add a profile picture from{" "}
+          <Link className="font-semibold underline" href="/app/profile">
+            Profile
+          </Link>
+          . A government ID is optional and can wait.
+        </div>
+      ) : user.identityStatus === "not_started" ? (
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200">
+          ID is optional. Add it later from{" "}
+          <Link className="font-semibold underline" href="/app/profile">
+            Profile
+          </Link>{" "}
+          if you want extra account protection.
         </div>
       ) : null}
 
       {starterLocked ? (
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          Beginner surveys pause at {money(STARTER_EARNINGS_CAP)} in pending plus approved study pay. Share your{" "}
+          Your wallet has reached {money(STARTER_EARNINGS_CAP)}. Beginner surveys pause here so you cannot hit the $500
+          withdrawal floor without unlocking the next level. Share your{" "}
           <Link className="font-semibold underline" href="/app/referrals">
             referral link
           </Link>{" "}
@@ -118,8 +131,8 @@ export default async function DashboardPage() {
         {openStudies.map((study) => {
           const mine = latestUserSubmission(submissions, study.id);
           const status = mine?.status ?? "available";
-          const open = canAccessStudyTier(user, study.tier, level, earnings);
-          const reason = open ? null : studyLockReason(user, study.tier, level, earnings);
+          const open = canAccessStudyTier(user, study.tier, level);
+          const reason = open ? null : studyLockReason(user, study.tier, level);
           return (
             <StudyCard
               key={study.id}

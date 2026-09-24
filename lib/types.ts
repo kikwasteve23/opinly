@@ -50,6 +50,8 @@ export type User = {
   lastWithdrawalAt: string | null;
   walletActivated: boolean;
   detectedCountry: string | null;
+  photoUrl: string | null;
+  identityImageUrl: string | null;
 };
 
 export type Question = {

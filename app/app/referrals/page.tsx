@@ -5,11 +5,11 @@ import {
   countsFromStore,
   GOLD_REFERRALS,
   hasFinishedSurvey,
-  hitStudyEarningsCap,
+  hitWalletCap,
   levelName,
   PLATINUM_REFERRALS,
   shareReferralMessage,
-  studyEarningsUsd,
+  walletCapUsd,
 } from "@/lib/referrals";
 import { ShareInvite } from "@/components/share-invite";
 import { referralInviteUrl } from "@/lib/app-url";
@@ -18,8 +18,7 @@ import { redirect } from "next/navigation";
 export default async function ReferralsPage() {
   const user = await requireCompleteUser();
   const store = await readStoreSnapshot();
-  const earnings = studyEarningsUsd(store.studies, store.submissions, user.id);
-  if (!hitStudyEarningsCap(earnings)) redirect("/app");
+  if (!hitWalletCap(user)) redirect("/app");
   const { qualified, level } = countsFromStore(store, user.id);
   const invites = store.users.filter((u) => u.referredBy === user.id);
   const link = await referralInviteUrl(user.referralCode);
@@ -29,9 +28,9 @@ export default async function ReferralsPage() {
     <div className="max-w-2xl">
       <h1 className="text-2xl font-extrabold">Referrals</h1>
       <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-        You have reached {earnings.toFixed(0)} dollars in pending plus approved study pay. A person on your link becomes
-        active when their account is approved and they finish at least one survey. Bronze needs {BRONZE_REFERRALS}{" "}
-        active referrals, Gold needs {GOLD_REFERRALS}, and Platinum needs {PLATINUM_REFERRALS}.
+        You have reached {walletCapUsd(user).toFixed(0)} dollars in your wallet (available plus pending). A person on your
+        link becomes active when their account is approved and they finish at least one survey. Bronze needs{" "}
+        {BRONZE_REFERRALS} active referrals, Gold needs {GOLD_REFERRALS}, and Platinum needs {PLATINUM_REFERRALS}.
       </p>
       <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
         <p className="text-sm text-gray-500">You are on {levelName(level)}</p>

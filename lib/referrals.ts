@@ -67,7 +67,6 @@ export function canWithdrawByReferrals(users: User[], submissions: Submission[],
   return qualifiedReferralCount(users, submissions, referrerId) >= BRONZE_REFERRALS;
 }
 
-/** Study pay already in pending review or approved. Deposits do not count. */
 export function studyEarningsUsd(studies: Study[], submissions: Submission[], userId: string) {
   const rewards = new Map(studies.map((study) => [study.id, study.reward]));
   let total = 0;
@@ -79,36 +78,45 @@ export function studyEarningsUsd(studies: Study[], submissions: Submission[], us
   return Math.round(total * 100) / 100;
 }
 
-export function hitStudyEarningsCap(earnings: number) {
-  return earnings >= STARTER_EARNINGS_CAP;
+/** Wallet available plus pending review. This is what hits the $400 Beginner pause. */
+export function walletCapUsd(user: Pick<User, "available" | "pending">) {
+  return Math.round((user.available + user.pending) * 100) / 100;
 }
 
-export function starterSurveysLocked(earnings: number, level: number) {
-  return level < 2 && hitStudyEarningsCap(earnings);
+export function hitWalletCap(user: Pick<User, "available" | "pending">) {
+  return walletCapUsd(user) >= STARTER_EARNINGS_CAP;
 }
 
-/** Higher-paying studies appear only after $400 in pending + approved study pay. */
-export function studyVisibleOnDashboard(earnings: number, studyTier: number, alreadyStarted: boolean) {
+/** @deprecated use hitWalletCap */
+export function hitStudyEarningsCap(earningsOrUser: number | Pick<User, "available" | "pending">) {
+  if (typeof earningsOrUser === "number") return earningsOrUser >= STARTER_EARNINGS_CAP;
+  return hitWalletCap(earningsOrUser);
+}
+
+export function starterSurveysLocked(user: Pick<User, "available" | "pending">, level: number) {
+  return level < 2 && hitWalletCap(user);
+}
+
+/** Higher-paying studies appear only after the wallet (available + pending) reaches $400. */
+export function studyVisibleOnDashboard(user: Pick<User, "available" | "pending">, studyTier: number, alreadyStarted: boolean) {
   if (alreadyStarted) return true;
   if (studyTier <= 1) return true;
-  return hitStudyEarningsCap(earnings);
+  return hitWalletCap(user);
 }
 
-export function canAccessStudyTier(user: User, studyTier: number, level: number, earnings: number) {
-  if (user.identityStatus !== "approved") return false;
-  if (studyTier > 1 && !hitStudyEarningsCap(earnings)) return false;
+export function canAccessStudyTier(user: User, studyTier: number, level: number) {
+  if (studyTier > 1 && !hitWalletCap(user)) return false;
   if (level < studyTier) return false;
-  if (studyTier <= 1 && starterSurveysLocked(earnings, level)) return false;
+  if (studyTier <= 1 && starterSurveysLocked(user, level)) return false;
   return true;
 }
 
-export function studyLockReason(user: User, studyTier: number, level: number, earnings: number) {
-  if (user.identityStatus !== "approved") return "Identity has to be approved first.";
-  if (studyTier <= 1 && starterSurveysLocked(earnings, level)) {
-    return `Beginner surveys pause once pending review plus approved study pay reaches $${STARTER_EARNINGS_CAP}. Bring ${BRONZE_REFERRALS} active referrals to open Bronze work.`;
+export function studyLockReason(user: User, studyTier: number, level: number) {
+  if (studyTier <= 1 && starterSurveysLocked(user, level)) {
+    return `Beginner surveys pause once your wallet (available plus pending) reaches $${STARTER_EARNINGS_CAP}. Bring ${BRONZE_REFERRALS} active referrals or hire a marketer to open Bronze work.`;
   }
-  if (!hitStudyEarningsCap(earnings) && studyTier > 1) {
-    return `Higher-paying studies appear after $${STARTER_EARNINGS_CAP} in pending and approved study pay.`;
+  if (!hitWalletCap(user) && studyTier > 1) {
+    return `Higher-paying studies appear after your wallet reaches $${STARTER_EARNINGS_CAP}.`;
   }
   if (level < studyTier) {
     return `This is a ${levelName(studyTier)} study. You need ${refsNeededForLevel(studyTier)} active referrals to unlock it.`;

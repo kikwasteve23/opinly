@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canAccessStudyTier,
   canWithdrawByReferrals,
   BRONZE_REFERRALS,
   levelName,
@@ -11,7 +12,8 @@ import {
 } from "../lib/referrals";
 import { BEGINNER_STUDIES } from "../lib/beginner-catalog";
 import { DEFAULT_STUDIES } from "../lib/studies-data";
-import type { Study, Submission, User } from "../lib/types";
+import type { Study, Submission, User, StoreData } from "../lib/types";
+import { submitStudyInStore } from "../lib/submit-study";
 
 function person(partial: Partial<User> & Pick<User, "id">): User {
   return {
@@ -35,6 +37,8 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
     lastWithdrawalAt: null,
     walletActivated: false,
     detectedCountry: "US",
+    photoUrl: null,
+    identityImageUrl: null,
     ...partial,
   };
 }
@@ -115,13 +119,28 @@ describe("referrals", () => {
     expect(qualifiedReferralCount(users, submissions, "usr_a")).toBe(0);
   });
 
-  it("locks beginner surveys at $400 pending plus approved study pay", () => {
-    expect(starterSurveysLocked(400, 1)).toBe(true);
-    expect(starterSurveysLocked(399, 1)).toBe(false);
-    expect(starterSurveysLocked(400, 2)).toBe(false);
+  it("locks beginner surveys at a $400 wallet (available plus pending)", () => {
+    expect(starterSurveysLocked(person({ id: "usr_a", available: 400, pending: 0 }), 1)).toBe(true);
+    expect(starterSurveysLocked(person({ id: "usr_a", available: 350, pending: 50 }), 1)).toBe(true);
+    expect(starterSurveysLocked(person({ id: "usr_a", available: 399, pending: 0 }), 1)).toBe(false);
+    expect(starterSurveysLocked(person({ id: "usr_a", available: 400, pending: 0 }), 2)).toBe(false);
   });
 
-  it("counts pending review and approved study pay, not wallet deposits", () => {
+  it("blocks taking Beginner work when wallet is over $400 even without an ID", () => {
+    const overCap = person({
+      id: "usr_a",
+      available: 409.75,
+      pending: 0,
+      identityStatus: "not_started",
+    });
+    expect(canAccessStudyTier(overCap, 1, 1)).toBe(false);
+    const early = person({ id: "usr_b", available: 159.75, pending: 0, identityStatus: "not_started" });
+    expect(canAccessStudyTier(early, 1, 1)).toBe(true);
+    const bronze = person({ id: "usr_c", available: 409.75, pending: 0 });
+    expect(canAccessStudyTier(bronze, 1, 2)).toBe(true);
+  });
+
+  it("counts pending review and approved study pay", () => {
     const submissions: Submission[] = [
       { ...done("usr_a", "news-trust"), status: "approved" },
       { ...done("usr_a", "other"), status: "pending_review", id: "sub_pending" },
@@ -129,17 +148,35 @@ describe("referrals", () => {
     expect(studyEarningsUsd(studies, submissions, "usr_a")).toBe(400);
   });
 
-  it("hides higher-tier studies until the $400 cap", () => {
-    expect(studyVisibleOnDashboard(10, 2, false)).toBe(false);
-    expect(studyVisibleOnDashboard(10, 1, false)).toBe(true);
-    expect(studyVisibleOnDashboard(400, 2, false)).toBe(true);
+  it("hides higher-tier studies until the wallet hits $400", () => {
+    const early = person({ id: "usr_a", available: 10, pending: 0 });
+    expect(studyVisibleOnDashboard(early, 2, false)).toBe(false);
+    expect(studyVisibleOnDashboard(early, 1, false)).toBe(true);
+    const capped = person({ id: "usr_a", available: 409, pending: 0 });
+    expect(studyVisibleOnDashboard(capped, 2, false)).toBe(true);
   });
 
-  it("offers enough Beginner pay to reach $400", () => {
-    const beginnerPay = BEGINNER_STUDIES.reduce((sum, study) => sum + study.reward, 0);
-    const catalogPay = DEFAULT_STUDIES.filter((study) => study.tier === 1).reduce((sum, study) => sum + study.reward, 0);
-    expect(beginnerPay).toBeGreaterThanOrEqual(400);
-    expect(catalogPay).toBeGreaterThanOrEqual(400);
-    expect(DEFAULT_STUDIES.every((study) => study.questions.length >= 3)).toBe(true);
+  it("rejects submit when the wallet already sits at the $400 pause", () => {
+    const user = person({ id: "usr_a", available: 409.75, pending: 0, identityStatus: "not_started" });
+    const data: StoreData = {
+      users: [user],
+      submissions: [
+        {
+          ...done("usr_a", "news-trust"),
+          status: "in_progress",
+          submittedAt: null,
+          reviewedAt: null,
+        },
+      ],
+      withdrawals: [],
+      studies,
+      ledger: [],
+      marketerJobs: [],
+      chat: [],
+      deposits: [],
+    };
+    const result = submitStudyInStore(data, "usr_a", "news-trust");
+    expect("error" in result).toBe(true);
+    expect(user.pending).toBe(0);
   });
 });

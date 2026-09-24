@@ -50,6 +50,8 @@ describe("auto-approve", () => {
       lastWithdrawalAt: null,
       walletActivated: false,
       detectedCountry: "US",
+      photoUrl: null,
+      identityImageUrl: null,
     });
     data.submissions.push({
       id: "sub1",

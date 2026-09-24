@@ -11,7 +11,7 @@ export default async function ApplicantsPage() {
   return (
     <div>
       <h1 className="text-2xl font-extrabold">Applicants</h1>
-      <p className="mt-1 text-sm text-gray-600">Review identity applications before anyone can take a study. Open the profile if you need the full picture.</p>
+      <p className="mt-1 text-sm text-gray-600">ID is optional. People can take studies without it. Review any documents they send from Profile. Open the profile if you need the full picture.</p>
       <div className="mt-6 space-y-4">
         {applicants.length === 0 ? <p className="text-sm text-gray-500">No applications waiting.</p> : null}
         {applicants.map((person) => (

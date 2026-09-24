@@ -7,7 +7,7 @@ import { DEFAULT_STUDIES } from "./studies-data";
 import { newId } from "./ids";
 import { normalizeUser } from "./normalize-user";
 import { processDueWork } from "./progression";
-import { STARTER_EARNINGS_CAP, studyEarningsUsd } from "./referrals";
+import { STARTER_EARNINGS_CAP, walletCapUsd } from "./referrals";
 
 export { newId } from "./ids";
 export { normalizeUser } from "./normalize-user";
@@ -102,9 +102,7 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
   const existingDemo = data.users.find((u) => u.email === "demo@opinly.local");
   const demoReferralCount = existingDemo ? data.users.filter((u) => u.referredBy === existingDemo.id).length : 0;
   const needsReferrals = Boolean(existingDemo) && demoReferralCount < 20;
-  const needsDemoCap = existingDemo
-    ? studyEarningsUsd(data.studies, data.submissions, existingDemo.id) < STARTER_EARNINGS_CAP
-    : false;
+  const needsDemoCap = existingDemo ? walletCapUsd(existingDemo) < STARTER_EARNINGS_CAP : false;
   if (!needsAdmin && !needsDemo && !needsReferrals && !needsDemoCap && !seeded) {
     catalogReady = true;
     return { data, seeded: false };
@@ -194,16 +192,6 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
     for (const referral of data.users.filter((u) => u.referredBy === demo.id)) {
       if (!data.submissions.some((s) => s.userId === referral.id && s.status === "approved")) {
         data.submissions.push(seedReferralSubmission(referral.id, sampleId));
-        seeded = true;
-      }
-    }
-    if (studyEarningsUsd(data.studies, data.submissions, demo.id) < STARTER_EARNINGS_CAP) {
-      for (const study of data.studies.filter((s) => s.published && s.tier === 1)) {
-        if (studyEarningsUsd(data.studies, data.submissions, demo.id) >= STARTER_EARNINGS_CAP) break;
-        if (data.submissions.some((s) => s.userId === demo.id && s.studyId === study.id && (s.status === "approved" || s.status === "pending_review"))) {
-          continue;
-        }
-        data.submissions.push(seedReferralSubmission(demo.id, study.id));
         seeded = true;
       }
     }

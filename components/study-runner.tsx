@@ -37,9 +37,17 @@ export function StudyRunner({ studyId, initial }: { studyId: string; initial: St
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
         <p className="font-semibold">This study is locked</p>
         <p className="mt-2 text-sm">{initial.lockReason ?? "You can look around, but you cannot start this study yet."}</p>
-        <Link href="/onboarding" className="mt-4 inline-block text-sm font-semibold text-indigo-700">
-          Finish onboarding
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-4">
+          <Link href="/app/referrals" className="text-sm font-semibold text-indigo-700">
+            Bring referrals
+          </Link>
+          <Link href="/app/marketers" className="text-sm font-semibold text-indigo-700">
+            Hire a marketer
+          </Link>
+          <Link href="/app" className="text-sm font-semibold text-indigo-700">
+            Back to studies
+          </Link>
+        </div>
       </div>
     );
   }

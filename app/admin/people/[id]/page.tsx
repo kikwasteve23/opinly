@@ -25,10 +25,22 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <p className="text-sm text-indigo-700">
           <Link href="/admin/people">← People</Link>
         </p>
-        <h1 className="mt-2 text-2xl font-extrabold">{profile?.legalName || person.email}</h1>
-        <p className="text-sm text-gray-500">
-          {person.email} · code {person.referralCode} · joined {new Date(person.createdAt).toLocaleDateString()}
-        </p>
+        <div className="mt-2 flex items-center gap-3">
+          {person.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={person.photoUrl} alt="" className="h-14 w-14 rounded-full object-cover" />
+          ) : (
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-500">
+              No photo
+            </span>
+          )}
+          <div>
+            <h1 className="text-2xl font-extrabold">{profile?.legalName || person.email}</h1>
+            <p className="text-sm text-gray-500">
+              {person.email} · code {person.referralCode} · joined {new Date(person.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Available" value={money(person.available)} />
@@ -68,8 +80,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       </section>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="font-semibold">Identity</h2>
-        <p className="mt-1 text-sm text-gray-500">{person.identityNote || "No note yet."}</p>
+        <h2 className="font-semibold">Identity (optional)</h2>
+        <p className="mt-1 text-sm text-gray-500">{person.identityNote || "No ID uploaded yet. Studies do not require this."}</p>
+        {person.identityImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={person.identityImageUrl} alt="Uploaded ID" className="mt-3 max-h-64 rounded-xl border object-contain" />
+        ) : null}
         <form action={setIdentityAction} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
           <input type="hidden" name="userId" value={person.id} />
           <label className="text-sm">

@@ -45,8 +45,8 @@ const steps = [
     body: "A short set of questions on grammar and comprehension, plus a brief writing sample. Studies are written in English, and this keeps the quality high for everyone.",
   },
   {
-    title: "Identity check",
-    body: "Confirm a government ID and a live selfie from your phone. One person, one account. This is what keeps duplicate accounts out.",
+    title: "Profile picture later",
+    body: "After you join, add a photo on your profile. A government ID is optional and can wait until you want extra protection before a withdrawal.",
   },
   {
     title: "Start earning",
@@ -67,8 +67,8 @@ const faqs = [
     a: "Yes. Creating an account costs nothing. When you later reach the $500 withdrawal floor, you activate the wallet with a $50 deposit. That $50 is added to your available balance and can be withdrawn with your earnings.",
   },
   {
-    q: "Why do you need my ID?",
-    a: "Because one person should have one account. Without an identity check, a handful of people with dozens of accounts each would take the studies meant for everyone else, and researchers would stop trusting the results. Your documents are stored privately, seen only by our review team, and never shared with researchers.",
+    q: "Do I need to upload an ID?",
+    a: "No. ID is optional and can be added later from Profile. You can start studies after the about-you and English steps. A profile picture is requested on your profile page.",
   },
   {
     q: "How much can I earn?",
@@ -84,7 +84,7 @@ const faqs = [
   },
   {
     q: "Do I need a phone?",
-    a: "For the identity check, yes. Studies themselves work on a computer or a phone.",
+    a: "No. Studies work on a computer or a phone. A profile photo can be uploaded from either.",
   },
   {
     q: "What happens to my data?",
@@ -225,7 +225,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/15">
           <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
-            You also need 20 active referrals (approved people who have finished a survey) before Bronze studies and withdrawals open. Beginner surveys pause at $400 in pending plus approved study pay. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
+            You also need 20 active referrals (approved people who have finished a survey) before Bronze studies and withdrawals open. Beginner surveys pause once your wallet (available plus pending) reaches $400 — share your referral link or hire a marketer to keep going. The cash-out floor is $500, and a $50 activation deposit is credited to your balance.
           </p>
         </div>
       </section>

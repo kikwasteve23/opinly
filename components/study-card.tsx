@@ -21,7 +21,7 @@ export function StudyCard({
   finishedAt?: string | null;
 }) {
   const done = isFinishedStudy(status);
-  const locked = variant === "available" && Boolean(reason) && !done && status !== "in_progress" && status !== "rejected";
+  const locked = variant === "available" && Boolean(reason) && !done;
 
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 sm:flex-row sm:items-center dark:border-gray-800 dark:bg-gray-900">

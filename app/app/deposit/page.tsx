@@ -5,7 +5,7 @@ import { MIN_WITHDRAWAL } from "@/lib/money";
 import { resolveCountry } from "@/lib/resolve-geo";
 import { readStoreSnapshot } from "@/lib/store";
 import { findMarketer } from "@/lib/marketers";
-import { hitStudyEarningsCap, studyEarningsUsd } from "@/lib/referrals";
+import { hitWalletCap } from "@/lib/referrals";
 
 export default async function DepositPage({
   searchParams,
@@ -21,7 +21,7 @@ export default async function DepositPage({
       ? { id: marketer.id, name: marketer.name, quantity, cost: Math.round(quantity * marketer.priceEach * 100) / 100 }
       : null;
   const store = await readStoreSnapshot();
-  if (hire && !hitStudyEarningsCap(studyEarningsUsd(store.studies, store.submissions, user.id))) redirect("/app");
+  if (hire && !hitWalletCap(user)) redirect("/app");
   if (!hire && user.available < MIN_WITHDRAWAL) redirect("/app/wallet");
   const country = await resolveCountry(user);
   const messages = store.chat.filter((m) => m.userId === user.id);

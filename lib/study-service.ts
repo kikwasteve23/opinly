@@ -1,6 +1,6 @@
 import { findStudy, kindLabel } from "./studies-data";
 import { mutateStore, newId } from "./store";
-import { canAccessStudyTier, countsFromStore, studyEarningsUsd, studyLockReason } from "./referrals";
+import { canAccessStudyTier, countsFromStore, studyLockReason } from "./referrals";
 import type { User } from "./types";
 
 export async function loadStudyForUser(user: User, id: string) {
@@ -8,8 +8,8 @@ export async function loadStudyForUser(user: User, id: string) {
     const study = findStudy(data.studies, id);
     if (!study || !study.published) return null;
     const { level } = countsFromStore(data, user.id);
-    const earnings = studyEarningsUsd(data.studies, data.submissions, user.id);
-    const allowed = canAccessStudyTier(user, study.tier, level, earnings);
+    const current = data.users.find((u) => u.id === user.id) ?? user;
+    const allowed = canAccessStudyTier(current, study.tier, level);
     const existing = data.submissions.find(
       (s) =>
         s.userId === user.id &&
@@ -41,7 +41,7 @@ export async function loadStudyForUser(user: User, id: string) {
       },
       submission,
       canStart: allowed,
-      lockReason: allowed ? null : studyLockReason(user, study.tier, level, earnings),
+      lockReason: allowed ? null : studyLockReason(current, study.tier, level),
     };
   }, false);
 }

@@ -11,12 +11,14 @@ import { logoutAction } from "@/lib/auth-actions";
 export function AppShell({
   children,
   email,
+  photoUrl,
   showDeposit,
   showReferralTools,
   locationLabel,
 }: {
   children: React.ReactNode;
   email: string;
+  photoUrl: string | null;
   showDeposit: boolean;
   showReferralTools: boolean;
   locationLabel: string;
@@ -56,6 +58,16 @@ export function AppShell({
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <Link href="/app/profile" className="hidden sm:block" title="Profile photo">
+              {photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-[10px] font-semibold text-indigo-700">
+                  Photo
+                </span>
+              )}
+            </Link>
             <span className="hidden text-xs text-gray-500 sm:inline">{locationLabel}</span>
             <span className="hidden text-xs text-gray-500 md:inline">{email}</span>
             <ThemeToggle />

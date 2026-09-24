@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       if (!current) throw new Error("missing");
       current.englishPassed = true;
       current.englishWriting = parsed.data.writing;
-      current.onboardingStep = current.identityStatus === "approved" ? "complete" : "identity";
+      current.onboardingStep = "complete";
       return current;
     });
     return NextResponse.json({ user: publicUser(user) });

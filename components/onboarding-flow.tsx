@@ -8,8 +8,8 @@ import type { User } from "@/lib/types";
 
 export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
   const router = useRouter();
-  const initialStep = user.onboardingStep === "english" || user.onboardingStep === "identity" ? user.onboardingStep : "profile";
-  const [step, setStep] = useState<"profile" | "english" | "identity">(initialStep);
+  const initialStep = user.onboardingStep === "english" ? "english" : "profile";
+  const [step, setStep] = useState<"profile" | "english">(initialStep);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -26,20 +26,16 @@ export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
   });
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [writing, setWriting] = useState(user.englishWriting ?? "");
-  const [documentType, setDocumentType] = useState("Passport");
-  const [issuingCountry, setIssuingCountry] = useState(profile.country);
-  const [consent, setConsent] = useState(false);
 
   const steps = useMemo(
     () => [
       { id: "profile", label: "About you" },
       { id: "english", label: "English" },
-      { id: "identity", label: "Identity" },
     ],
     [],
   );
 
-  async function submit(body: Record<string, unknown>, next?: "english" | "identity") {
+  async function submit(body: Record<string, unknown>, next?: "english") {
     setError("");
     setPending(true);
     const res = await fetch("/api/onboarding", {
@@ -155,7 +151,7 @@ export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
             className="mt-8 space-y-5 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900"
             onSubmit={(e) => {
               e.preventDefault();
-              void submit({ step: "english", answers, writing }, "identity");
+              void submit({ step: "english", answers, writing });
             }}
           >
             <h1 className="text-2xl font-extrabold">English assessment</h1>
@@ -186,50 +182,7 @@ export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
             </label>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <button disabled={pending} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white">
-              Continue
-            </button>
-          </form>
-        ) : null}
-
-        {step === "identity" ? (
-          <form
-            className="mt-8 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void submit({ step: "identity", documentType, issuingCountry, consent: true });
-            }}
-          >
-            <h1 className="text-2xl font-extrabold">Identity check</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              One person, one account. An Opinly reviewer checks the document type you submit. You can look around while you wait, but studies stay locked until an admin approves you.
-            </p>
-            <label className="block text-sm font-medium">
-              Document type
-              <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className="mt-1.5 w-full rounded-xl border border-gray-300 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-950">
-                <option>Passport</option>
-                <option>Driver licence</option>
-                <option>National ID card</option>
-              </select>
-            </label>
-            <label className="block text-sm font-medium">
-              Issuing country
-              <input value={issuingCountry} onChange={(e) => setIssuingCountry(e.target.value)} className="mt-1.5 w-full rounded-xl border border-gray-300 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-950" />
-            </label>
-            <label className="block text-sm font-medium">
-              ID photo (demo — any image)
-              <input type="file" accept="image/*" className="mt-1.5 w-full text-sm" />
-            </label>
-            <label className="block text-sm font-medium">
-              Selfie holding the ID (demo)
-              <input type="file" accept="image/*" className="mt-1.5 w-full text-sm" />
-            </label>
-            <label className="flex items-start gap-2 text-sm">
-              <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" />
-              I consent to Opinly reviewing these documents to confirm I am one adult with one account.
-            </label>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <button disabled={pending || !consent} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">
-              Submit for review
+              Start earning
             </button>
           </form>
         ) : null}

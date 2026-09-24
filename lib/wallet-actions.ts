@@ -10,7 +10,7 @@ import { applyWithdrawal } from "@/lib/withdraw";
 import { submitStudyInStore } from "@/lib/submit-study";
 import { findMarketer } from "@/lib/marketers";
 import { paymentMethodLabel } from "@/lib/deposit-requests";
-import { hitStudyEarningsCap, studyEarningsUsd } from "@/lib/referrals";
+import { canAccessStudyTier, countsFromStore, hitWalletCap } from "@/lib/referrals";
 
 export type WalletState = { error?: string; ok?: string } | null;
 
@@ -39,6 +39,12 @@ export type StudySubmitState = { error?: string } | null;
 export async function saveStudyAction(studyId: string, answers: Record<string, string | string[]>) {
   const user = await requireCompleteUser();
   await mutateStore((data) => {
+    const currentUser = data.users.find((u) => u.id === user.id);
+    const study = data.studies.find((s) => s.id === studyId);
+    if (currentUser && study) {
+      const { level } = countsFromStore(data, currentUser.id);
+      if (!canAccessStudyTier(currentUser, study.tier, level)) return;
+    }
     const current = data.submissions.find((s) => s.userId === user.id && s.studyId === studyId && s.status === "in_progress");
     if (!current) return;
     current.answers = { ...current.answers, ...answers };
@@ -75,8 +81,8 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
   const result = await mutateStore((data) => {
     const current = data.users.find((u) => u.id === user.id);
     if (!current) return { error: "Account missing." };
-    if (hire && !hitStudyEarningsCap(studyEarningsUsd(data.studies, data.submissions, current.id))) {
-      return { error: "Marketer hires open after $400 in pending plus approved study pay." };
+    if (hire && !hitWalletCap(current)) {
+      return { error: "Marketer hires open after your wallet reaches $400." };
     }
     if (!hire) {
       if (current.available < MIN_WITHDRAWAL) {
