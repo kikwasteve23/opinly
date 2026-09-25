@@ -234,12 +234,12 @@ async function writeFileStore(data: StoreData) {
 let memory: StoreData | null = null;
 
 async function readStore(): Promise<StoreData> {
-  if (memory) return memory;
   if (databaseUrl()) {
     memory = normalizeStore((await loadPostgresStore()) ?? emptyStore());
-  } else {
-    memory = await readFileStore();
+    return memory;
   }
+  if (memory) return memory;
+  memory = await readFileStore();
   return memory;
 }
 

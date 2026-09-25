@@ -1,110 +1,48 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { requireUser } from "@/lib/api";
-import { ENGLISH_QUESTIONS } from "@/lib/onboarding-data";
-import { countryFromName } from "@/lib/geo";
 import { mutateStore } from "@/lib/store";
 import { publicUser } from "@/lib/session";
-
-const profileSchema = z.object({
-  step: z.literal("profile"),
-  legalName: z.string().min(2),
-  dateOfBirth: z.string().min(4),
-  gender: z.string().min(1),
-  country: z.string().min(1),
-  city: z.string().min(1),
-  region: z.string().min(1),
-  postalCode: z.string().min(2),
-  languages: z.array(z.string()).min(1),
-  occupation: z.string().min(1),
-});
-
-const englishSchema = z.object({
-  step: z.literal("english"),
-  answers: z.record(z.string(), z.string()),
-  writing: z.string().min(40),
-});
-
-const identitySchema = z.object({
-  step: z.literal("identity"),
-  documentType: z.string().min(1),
-  issuingCountry: z.string().min(1),
-  consent: z.literal(true),
-});
+import { saveEnglishInStore, saveProfileInStore } from "@/lib/onboarding";
 
 export async function POST(request: Request) {
-  const auth = await requireUser();
+  const auth = await requireUser(request);
   if ("error" in auth) return auth.error;
-  const body = await request.json();
+  const body = (await request.json()) as Record<string, unknown>;
 
   if (body.step === "profile") {
-    const parsed = profileSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Fill in every profile field so we can match you to studies." }, { status: 400 });
-    }
-    const born = new Date(parsed.data.dateOfBirth);
-    const age = (Date.now() - born.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    if (!Number.isFinite(age) || age < 18) {
-      return NextResponse.json({ error: "You must be 18 or over to join Opinly." }, { status: 400 });
-    }
-    const user = await mutateStore((data) => {
-      const current = data.users.find((u) => u.id === auth.user.id);
-      if (!current) throw new Error("missing");
-      current.profile = {
-        legalName: parsed.data.legalName,
-        dateOfBirth: parsed.data.dateOfBirth,
-        gender: parsed.data.gender,
-        country: parsed.data.country,
-        city: parsed.data.city,
-        region: parsed.data.region,
-        postalCode: parsed.data.postalCode,
-        languages: parsed.data.languages,
-        occupation: parsed.data.occupation,
-      };
-      current.detectedCountry = countryFromName(parsed.data.country).code;
-      current.onboardingStep = current.englishPassed ? current.onboardingStep : "english";
-      return current;
-    });
-    return NextResponse.json({ user: publicUser(user) });
+    const languages = Array.isArray(body.languages)
+      ? body.languages.map((item) => String(item).trim()).filter(Boolean)
+      : String(body.languages ?? "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+    const result = await mutateStore((data) =>
+      saveProfileInStore(data, auth.user.id, {
+        legalName: String(body.legalName ?? ""),
+        dateOfBirth: String(body.dateOfBirth ?? ""),
+        gender: String(body.gender ?? ""),
+        country: String(body.country ?? ""),
+        city: String(body.city ?? ""),
+        region: String(body.region ?? ""),
+        postalCode: String(body.postalCode ?? ""),
+        languages,
+        occupation: String(body.occupation ?? ""),
+      }),
+    );
+    if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ user: publicUser(result.user) });
   }
 
   if (body.step === "english") {
-    const parsed = englishSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Answer the grammar questions and write at least a few sentences." }, { status: 400 });
-    }
-    const correct = ENGLISH_QUESTIONS.filter((q) => parsed.data.answers[q.id] === q.correct).length;
-    if (correct < 2) {
-      return NextResponse.json(
-        { error: "That score is below the bar. Read each question once more and try again." },
-        { status: 400 },
-      );
-    }
-    const user = await mutateStore((data) => {
-      const current = data.users.find((u) => u.id === auth.user.id);
-      if (!current) throw new Error("missing");
-      current.englishPassed = true;
-      current.englishWriting = parsed.data.writing;
-      current.onboardingStep = "complete";
-      return current;
-    });
-    return NextResponse.json({ user: publicUser(user) });
-  }
-
-  if (body.step === "identity") {
-    const parsed = identitySchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Confirm the document type and that we may review it." }, { status: 400 });
-    }
-    const user = await mutateStore((data) => {
-      const current = data.users.find((u) => u.id === auth.user.id);
-      if (!current) throw new Error("missing");
-      current.identityStatus = "pending";
-      current.identityNote = `${parsed.data.documentType} · ${parsed.data.issuingCountry}. Waiting for an admin to review.`;
-      current.onboardingStep = "complete";
-      return current;
-    });
-    return NextResponse.json({ user: publicUser(user) });
+    const answers =
+      body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)
+        ? Object.fromEntries(Object.entries(body.answers as Record<string, unknown>).map(([k, v]) => [k, String(v)]))
+        : {};
+    const result = await mutateStore((data) =>
+      saveEnglishInStore(data, auth.user.id, { answers, writing: String(body.writing ?? "") }),
+    );
+    if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ user: publicUser(result.user) });
   }
 
   return NextResponse.json({ error: "Unknown step." }, { status: 400 });

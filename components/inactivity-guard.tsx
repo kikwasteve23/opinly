@@ -25,9 +25,9 @@ export function InactivityGuard() {
         /* ignore */
       }
       if (Date.now() - last < INACTIVITY_MS) return;
-      const me = await fetch("/api/auth/me", { cache: "no-store" }).then((r) => r.json().catch(() => null));
+      const me = await fetch("/api/auth/me", { cache: "no-store", credentials: "include" }).then((r) => r.json().catch(() => null));
       if (!me?.user) return;
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       window.location.href = "/login?idle=1";
     }, 15_000);
     return () => {

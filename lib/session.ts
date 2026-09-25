@@ -9,6 +9,15 @@ function secret() {
   return new TextEncoder().encode(process.env.APP_SECRET ?? "opinly-dev-secret-change-me");
 }
 
+function tokenFromCookieHeader(header: string | null | undefined) {
+  if (!header) return null;
+  for (const part of header.split(";")) {
+    const [name, ...rest] = part.trim().split("=");
+    if (name === COOKIE) return rest.join("=");
+  }
+  return null;
+}
+
 export async function signSession(userId: string) {
   return new SignJWT({ sub: userId })
     .setProtectedHeader({ alg: "HS256" })
@@ -23,6 +32,7 @@ export async function setSessionCookie(userId: string) {
   jar.set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 14,
   });
@@ -33,9 +43,9 @@ export async function clearSessionCookie() {
   jar.delete(COOKIE);
 }
 
-export async function getSessionUser(): Promise<User | null> {
+export async function getSessionUser(request?: Request): Promise<User | null> {
   const jar = await cookies();
-  const token = jar.get(COOKIE)?.value;
+  const token = jar.get(COOKIE)?.value ?? tokenFromCookieHeader(request?.headers.get("cookie"));
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret());

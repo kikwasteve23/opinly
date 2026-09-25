@@ -3,6 +3,8 @@ import { OnboardingFlow } from "@/components/onboarding-flow";
 import { getSessionUser, publicUser } from "@/lib/session";
 import { mutateStore } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
