@@ -3,6 +3,7 @@ import {
   canAccessStudyTier,
   canWithdrawByReferrals,
   BRONZE_REFERRALS,
+  dashboardTrack,
   levelName,
   qualifiedReferralCount,
   referralLevel,
@@ -127,10 +128,10 @@ describe("referrals", () => {
     expect(starterSurveysLocked(person({ id: "usr_a", available: 400, pending: 0 }), 1)).toBe(true);
     expect(starterSurveysLocked(person({ id: "usr_a", available: 350, pending: 50 }), 1)).toBe(true);
     expect(starterSurveysLocked(person({ id: "usr_a", available: 399, pending: 0 }), 1)).toBe(false);
-    expect(starterSurveysLocked(person({ id: "usr_a", available: 400, pending: 0 }), 2)).toBe(false);
+    expect(starterSurveysLocked(person({ id: "usr_a", available: 400, pending: 0 }), 2)).toBe(true);
   });
 
-  it("blocks taking Beginner work when wallet is over $400 even without an ID", () => {
+  it("blocks taking Beginner work once the wallet hits $400", () => {
     const overCap = person({
       id: "usr_a",
       available: 409.75,
@@ -141,9 +142,9 @@ describe("referrals", () => {
     const early = person({ id: "usr_b", available: 159.75, pending: 0, identityStatus: "not_started" });
     expect(canAccessStudyTier(early, 1, 1)).toBe(true);
     const bronze = person({ id: "usr_c", available: 409.75, pending: 0 });
-    expect(canAccessStudyTier(bronze, 1, 2)).toBe(true);
+    expect(canAccessStudyTier(bronze, 1, 2)).toBe(false);
     const reason = studyLockReason(overCap, 1, 1);
-    expect(reason).toMatch(/run out of Beginner surveys/i);
+    expect(reason).toMatch(/Beginner surveys are complete/i);
     expect(reason).not.toMatch(/400/);
   });
 
@@ -155,12 +156,17 @@ describe("referrals", () => {
     expect(studyEarningsUsd(studies, submissions, "usr_a")).toBe(400);
   });
 
-  it("hides higher-tier studies until the wallet hits $400", () => {
+  it("shows this track and higher, and hides lower tracks", () => {
     const early = person({ id: "usr_a", available: 10, pending: 0 });
-    expect(studyVisibleOnDashboard(early, 2, false)).toBe(false);
-    expect(studyVisibleOnDashboard(early, 1, false)).toBe(true);
+    expect(dashboardTrack(early, 1)).toBe(1);
+    expect(studyVisibleOnDashboard(early, 2, false, 1)).toBe(false);
+    expect(studyVisibleOnDashboard(early, 1, false, 1)).toBe(true);
     const capped = person({ id: "usr_a", available: 409, pending: 0 });
-    expect(studyVisibleOnDashboard(capped, 2, false)).toBe(true);
+    expect(dashboardTrack(capped, 1)).toBe(2);
+    expect(studyVisibleOnDashboard(capped, 1, false, 2)).toBe(false);
+    expect(studyVisibleOnDashboard(capped, 2, false, 2)).toBe(true);
+    expect(studyVisibleOnDashboard(capped, 3, false, 2)).toBe(true);
+    expect(studyVisibleOnDashboard(capped, 2, false, 3)).toBe(false);
   });
 
   it("rejects submit when the wallet already sits at the $400 pause", () => {

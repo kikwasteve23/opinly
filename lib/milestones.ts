@@ -82,9 +82,9 @@ export function achievedMilestones(input: {
   if (hitWalletCap(input.user)) {
     cards.push({
       id: "cap400",
-      title: "Thank you for reaching the $400 milestone",
-      body: "You need to bring in referrals to unlock the remaining surveys. If you do not have anyone to refer, hire our experts. They accept two payment modes: pay after getting the referrals (10% extra) or pay before (the exact amount).",
-      nextLabel: "Hire experts",
+      title: "Congratulations on earning $400",
+      body: "You are now on the Bronze track. Bronze surveys unlock with 20 active referrals. Share your invite link, or hire marketers who can promote it — pay before they start, or pay after the referrals land.",
+      nextLabel: "See marketers",
       nextHref: "/app/marketers",
     });
   }

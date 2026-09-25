@@ -7,9 +7,10 @@ import {
   BRONZE_REFERRALS,
   canAccessStudyTier,
   countsFromStore,
+  dashboardTrack,
   hitWalletCap,
   levelName,
-  starterSurveysLocked,
+  needsBronzeReferrals,
   studyLockReason,
   studyVisibleOnDashboard,
 } from "@/lib/referrals";
@@ -17,6 +18,8 @@ import { resolveCountry } from "@/lib/resolve-geo";
 import { formatMoney } from "@/lib/geo";
 import { isFinishedStudy, latestUserSubmission } from "@/lib/studies-data";
 import { StudyCard } from "@/components/study-card";
+import { BronzeTrackBanner } from "@/components/bronze-track-banner";
+import { referralInviteUrl } from "@/lib/app-url";
 
 export default async function DashboardPage() {
   const user = await getSessionUser();
@@ -24,16 +27,17 @@ export default async function DashboardPage() {
   const store = await readStoreSnapshot();
   const submissions = store.submissions.filter((s) => s.userId === user.id);
   const { qualified, level } = countsFromStore(store, user.id);
+  const track = dashboardTrack(user, level);
   const country = await resolveCountry(user);
-  const starterLocked = starterSurveysLocked(user, level);
   const showReferralTrack = hitWalletCap(user);
+  const inviteLink = await referralInviteUrl(user.referralCode);
 
   const openStudies = store.studies
     .filter((study) => study.published)
     .filter((study) => {
       const mine = latestUserSubmission(submissions, study.id);
       if (isFinishedStudy(mine?.status)) return false;
-      return studyVisibleOnDashboard(user, study.tier, Boolean(mine));
+      return studyVisibleOnDashboard(user, study.tier, Boolean(mine), track);
     });
 
   return (
@@ -51,53 +55,24 @@ export default async function DashboardPage() {
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <p className="text-sm text-gray-500">Your level</p>
-          <p className="mt-1 text-3xl font-bold">{levelName(level)}</p>
+          <p className="mt-1 text-3xl font-bold">{levelName(track)}</p>
           <p className="mt-1 text-xs text-gray-500">
             {showReferralTrack
-              ? `${qualified} active referrals · ${BRONZE_REFERRALS} unlocks Bronze`
+              ? `${qualified} active referrals · ${BRONZE_REFERRALS} unlocks Bronze surveys`
               : "Beginner studies are open."}
           </p>
         </div>
       </div>
 
-      {!user.photoUrl ? (
-        <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-950">
-          Add a profile picture from{" "}
-          <Link className="font-semibold underline" href="/app/profile">
-            Profile
-          </Link>
-          . A government ID is optional and can wait.
-        </div>
-      ) : user.identityStatus === "not_started" ? (
-        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200">
-          ID is optional. Add it later from{" "}
-          <Link className="font-semibold underline" href="/app/profile">
-            Profile
-          </Link>{" "}
-          if you want extra account protection.
-        </div>
-      ) : null}
-
-      {starterLocked ? (
-        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          You have run out of Beginner surveys. Bring referrals to unlock the rest, or hire our experts. Pay before
-          (exact price) or pay after the referrals land (10% extra). Share your{" "}
-          <Link className="font-semibold underline" href="/app/referrals">
-            referral link
-          </Link>{" "}
-          or{" "}
-          <Link className="font-semibold underline" href="/app/marketers">
-            hire a marketer
-          </Link>{" "}
-          until you have {BRONZE_REFERRALS} active referrals.
-        </div>
+      {needsBronzeReferrals(user, qualified) ? (
+        <BronzeTrackBanner inviteLink={inviteLink} qualified={qualified} />
       ) : null}
 
       <div className="mt-10 flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold">Studies for you</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {showReferralTrack ? `${levelName(level)} is your current track.` : "Beginner studies are open."} Location{" "}
+            {showReferralTrack ? `${levelName(track)} is your current track.` : "Beginner studies are open."} Location{" "}
             {country.name} · pay shown in USD and {country.currency}. Finished work is in{" "}
             <Link href="/app/history" className="font-semibold text-indigo-700">
               History

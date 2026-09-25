@@ -93,35 +93,57 @@ export function hitStudyEarningsCap(earningsOrUser: number | Pick<User, "availab
   return hitWalletCap(earningsOrUser);
 }
 
-export function starterSurveysLocked(user: Pick<User, "available" | "pending">, level: number) {
-  return level < 2 && hitWalletCap(user);
+/**
+ * Display track: $400 moves you onto Bronze even before 20 referrals.
+ * Referral counts still unlock studies at each tier.
+ */
+export function dashboardTrack(user: Pick<User, "available" | "pending">, referralLevelValue: number) {
+  if (referralLevelValue >= 2) return referralLevelValue;
+  return hitWalletCap(user) ? 2 : 1;
 }
 
-/** Higher-paying studies appear only after the wallet (available + pending) reaches $400. */
-export function studyVisibleOnDashboard(user: Pick<User, "available" | "pending">, studyTier: number, alreadyStarted: boolean) {
+/** Beginner catalog closes once you are on Bronze or above. */
+export function starterSurveysLocked(user: Pick<User, "available" | "pending">, level: number) {
+  return dashboardTrack(user, level) >= 2;
+}
+
+/** Show this track and higher. Hide tracks you have already left. */
+export function studyVisibleOnDashboard(
+  user: Pick<User, "available" | "pending">,
+  studyTier: number,
+  alreadyStarted: boolean,
+  track: number,
+) {
   if (alreadyStarted) return true;
-  if (studyTier <= 1) return true;
-  return hitWalletCap(user);
+  if (studyTier < track) return false;
+  if (studyTier > 1 && track < 2) return false;
+  return true;
 }
 
 export function canAccessStudyTier(user: User, studyTier: number, level: number) {
+  const track = dashboardTrack(user, level);
+  if (studyTier <= 1 && track >= 2) return false;
   if (studyTier > 1 && !hitWalletCap(user)) return false;
   if (level < studyTier) return false;
-  if (studyTier <= 1 && starterSurveysLocked(user, level)) return false;
   return true;
 }
 
 export function studyLockReason(user: User, studyTier: number, level: number) {
-  if (studyTier <= 1 && starterSurveysLocked(user, level)) {
-    return `You have run out of Beginner surveys. Upgrade to the next level to unlock higher-paying surveys. Bring ${BRONZE_REFERRALS} active referrals or hire a marketer.`;
+  const track = dashboardTrack(user, level);
+  if (studyTier <= 1 && track >= 2) {
+    return "Beginner surveys are complete on your account. Bronze and higher studies are on your list.";
   }
   if (!hitWalletCap(user) && studyTier > 1) {
-    return "This study opens after you upgrade from Beginner.";
+    return "This study opens after you move up from Beginner.";
   }
   if (level < studyTier) {
     return `This is a ${levelName(studyTier)} study. You need ${refsNeededForLevel(studyTier)} active referrals to unlock it.`;
   }
   return null;
+}
+
+export function needsBronzeReferrals(user: Pick<User, "available" | "pending">, qualified: number) {
+  return hitWalletCap(user) && qualified < BRONZE_REFERRALS;
 }
 
 export function countsFromStore(data: Pick<StoreData, "users" | "submissions">, referrerId: string) {

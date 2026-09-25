@@ -5,6 +5,7 @@ import {
   countsFromStore,
   GOLD_REFERRALS,
   hasFinishedSurvey,
+  dashboardTrack,
   hitWalletCap,
   levelName,
   PLATINUM_REFERRALS,
@@ -19,6 +20,7 @@ export default async function ReferralsPage() {
   const store = await readStoreSnapshot();
   if (!hitWalletCap(user)) redirect("/app");
   const { qualified, level } = countsFromStore(store, user.id);
+  const track = dashboardTrack(user, level);
   const invites = store.users.filter((u) => u.referredBy === user.id);
   const link = await referralInviteUrl(user.referralCode);
   const message = shareReferralMessage(user.available, link);
@@ -27,12 +29,13 @@ export default async function ReferralsPage() {
     <div className="max-w-2xl">
       <h1 className="text-2xl font-extrabold">Referrals</h1>
       <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-        You have run out of Beginner surveys. Upgrade with active referrals to unlock higher-paying work. A person on your
-        link becomes active when their account is approved and they finish at least one survey. Bronze needs{" "}
-        {BRONZE_REFERRALS} active referrals, Gold needs {GOLD_REFERRALS}, and Platinum needs {PLATINUM_REFERRALS}.
+        Congratulations on earning $400 — you are on the Bronze track. Bronze surveys unlock with {BRONZE_REFERRALS}{" "}
+        active referrals. Share the link below, or hire marketers on pay-before or pay-after plans. A person on your
+        link becomes active when their account is approved and they finish at least one survey. Gold needs{" "}
+        {GOLD_REFERRALS}, and Platinum needs {PLATINUM_REFERRALS}.
       </p>
       <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-        <p className="text-sm text-gray-500">You are on {levelName(level)}</p>
+        <p className="text-sm text-gray-500">You are on {levelName(track)}</p>
         <p className="mt-1 font-mono text-3xl font-bold tracking-wide">{user.referralCode}</p>
         <p className="mt-4 text-sm text-gray-500">Invite link</p>
         <a href={link} className="mt-1 block break-all text-sm font-medium text-indigo-700 underline">
