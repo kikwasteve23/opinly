@@ -1,6 +1,8 @@
 import { AuthForm } from "@/components/auth-form";
+import { ensureDeviceCookie } from "@/lib/device";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ staff?: string; idle?: string }> }) {
+  await ensureDeviceCookie();
   const { staff, idle } = await searchParams;
   return (
     <div>

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { hitWalletCap } from "@/lib/referrals";
 import { OptionalIdForm, ProfilePhotoForm } from "@/components/profile-media";
+import { RecoveryCodesSettings } from "@/components/recovery-codes-settings";
 
 export default async function ProfilePage() {
   const user = await getSessionUser();
@@ -31,6 +32,7 @@ export default async function ProfilePage() {
         identityNote={user.identityNote}
         country={profile?.country ?? ""}
       />
+      <RecoveryCodesSettings remaining={user.recoveryCodeHashes.length} />
     </div>
   );
 }

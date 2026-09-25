@@ -29,6 +29,8 @@ function user(partial: Partial<User> = {}): User {
     identityImageUrl: null,
     dismissedMilestones: [],
     ...partial,
+    recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
+    deviceIds: partial.deviceIds ?? [],
   };
 }
 

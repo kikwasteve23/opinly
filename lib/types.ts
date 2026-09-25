@@ -54,6 +54,8 @@ export type User = {
   photoUrl: string | null;
   identityImageUrl: string | null;
   dismissedMilestones: string[];
+  recoveryCodeHashes: string[];
+  deviceIds: string[];
 };
 
 export type Question = {

@@ -18,6 +18,8 @@ Open [http://localhost:43173](http://localhost:43173).
 | Participant (20 seeded active referrals, $512 available) | `demo@opinly.local` | `demo-dev-only` |
 | Admin | `admin@opinly.local` | `admin-dev-only` |
 
+Demo forgot-password codes (one-time each, only if the demo account has not issued a new set): `SAVE-K7M2`, `SAVE-P9N4`, `SAVE-Q3W8`, `SAVE-T5H6`, `SAVE-R2J9`, `SAVE-X4C7`, `SAVE-B8D3`, `SAVE-F6G2`.
+
 Without `DATABASE_URL`, state is stored in `data/store.json`. With Postgres, live state is the `app_state` JSON document.
 
 ## Render + Neon Postgres
@@ -66,6 +68,7 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 
 ## What you can do
 
+- Create an account and **copy the 8 emergency recovery codes** (XXXX-XXXX). There is no email reset. Use one unused code on `/forgot-password`. Issue a fresh set from Profile. A browser may register at most **3** accounts (cookie + local device token); a fourth attempt shows “This device cannot be used to register more than three accounts.”
 - Join with a referral code, finish profile and English (ID is optional later; add a profile photo from Profile)
 - Take Beginner studies until your **wallet** (available plus pending) reaches $400, then Beginner work pauses. Share referrals or hire a marketer. Bronze / Gold / Platinum work then appears locked until you have 20 / 50 / 100 active referrals
 - Completed studies stay in pending while we review responses (approvals also run in the background)

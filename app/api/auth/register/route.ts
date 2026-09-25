@@ -5,12 +5,15 @@ import { makeReferralCode, mutateStore, newId, normalizeUser } from "@/lib/store
 import { setSessionCookie } from "@/lib/session";
 import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
 import { countryFromName } from "@/lib/geo";
+import { accountsOnDevice, DEVICE_LIMIT_MESSAGE, ensureDeviceCookie, MAX_ACCOUNTS_PER_DEVICE, readDeviceIds } from "@/lib/device";
+import { generateRecoveryCodes } from "@/lib/recovery";
 
 const schema = z.object({
   email: z.email(),
   password: z.string().min(8),
   country: z.string().min(1),
   referralCode: z.string().optional(),
+  deviceToken: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -26,39 +29,47 @@ export async function POST(request: Request) {
     );
   }
 
-  const user = await mutateStore(async (data) => {
-    if (data.users.some((u) => u.email === email)) {
-      throw new Error("exists");
-    }
-    const code = parsed.data.referralCode?.trim().toUpperCase();
-    let referredBy: string | null = null;
-    if (code) {
-      const sponsor = data.users.find((u) => u.referralCode === code && u.role === "participant");
-      if (!sponsor) throw new Error("bad_code");
-      referredBy = sponsor.id;
-    }
-    const created = normalizeUser({
-      id: newId("usr"),
-      email,
-      passwordHash: await bcrypt.hash(parsed.data.password, 10),
-      referralCode: makeReferralCode(),
-      referredBy,
-      detectedCountry: countryFromName(parsed.data.country).code,
+  await ensureDeviceCookie();
+  const deviceIds = await readDeviceIds(parsed.data.deviceToken);
+  const recovery = generateRecoveryCodes();
+
+  try {
+    const user = await mutateStore(async (data) => {
+      if (data.users.some((u) => u.email === email)) throw new Error("exists");
+      if (accountsOnDevice(data.users, deviceIds) >= MAX_ACCOUNTS_PER_DEVICE) throw new Error("device_limit");
+      const code = parsed.data.referralCode?.trim().toUpperCase();
+      let referredBy: string | null = null;
+      if (code) {
+        const sponsor = data.users.find((u) => u.referralCode === code && u.role === "participant");
+        if (!sponsor) throw new Error("bad_code");
+        referredBy = sponsor.id;
+      }
+      const created = normalizeUser({
+        id: newId("usr"),
+        email,
+        passwordHash: await bcrypt.hash(parsed.data.password, 10),
+        referralCode: makeReferralCode(),
+        referredBy,
+        detectedCountry: countryFromName(parsed.data.country).code,
+        recoveryCodeHashes: recovery.hashes,
+        deviceIds,
+      });
+      data.users.push(created);
+      return created;
     });
-    data.users.push(created);
-    return created;
-  }).catch((err: Error) => {
-    if (err.message === "exists" || err.message === "bad_code") return err.message;
+    await setSessionCookie(user.id);
+    return NextResponse.json({ ok: true, codes: recovery.codes });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message === "exists") {
+      return NextResponse.json({ error: "An account with that email already exists. Log in instead." }, { status: 409 });
+    }
+    if (message === "device_limit") {
+      return NextResponse.json({ error: DEVICE_LIMIT_MESSAGE }, { status: 429 });
+    }
+    if (message === "bad_code") {
+      return NextResponse.json({ error: "That referral code is not recognised." }, { status: 400 });
+    }
     throw err;
-  });
-
-  if (user === "exists") {
-    return NextResponse.json({ error: "An account with that email already exists. Log in instead." }, { status: 409 });
   }
-  if (user === "bad_code") {
-    return NextResponse.json({ error: "That referral code is not recognised." }, { status: 400 });
-  }
-
-  await setSessionCookie(user.id);
-  return NextResponse.json({ ok: true });
 }

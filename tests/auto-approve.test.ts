@@ -53,6 +53,8 @@ describe("auto-approve", () => {
       photoUrl: null,
       identityImageUrl: null,
       dismissedMilestones: [],
+      recoveryCodeHashes: [],
+      deviceIds: [],
     });
     data.submissions.push({
       id: "sub1",

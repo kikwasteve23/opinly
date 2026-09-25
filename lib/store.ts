@@ -3,6 +3,7 @@ import path from "node:path";
 import bcrypt from "bcryptjs";
 import { databaseUrl, loadPostgresStore, savePostgresStore } from "./db/postgres";
 import type { StoreData, Study, StudyTier, Submission, User } from "./types";
+import { DEMO_RECOVERY_CODES, hashRecoveryCode } from "./recovery";
 import { DEFAULT_STUDIES } from "./studies-data";
 import { newId } from "./ids";
 import { normalizeUser } from "./normalize-user";
@@ -119,7 +120,8 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
   const demoReferralCount = existingDemo ? data.users.filter((u) => u.referredBy === existingDemo.id).length : 0;
   const needsReferrals = Boolean(existingDemo) && demoReferralCount < 20;
   const needsDemoCap = existingDemo ? walletCapUsd(existingDemo) < STARTER_EARNINGS_CAP : false;
-  if (!needsAdmin && !needsDemo && !needsReferrals && !needsDemoCap && !seeded) {
+  const needsDemoRecovery = Boolean(existingDemo && (existingDemo.recoveryCodeHashes?.length ?? 0) === 0);
+  if (!needsAdmin && !needsDemo && !needsReferrals && !needsDemoCap && !needsDemoRecovery && !seeded) {
     catalogReady = true;
     return { data, seeded: false };
   }
@@ -177,12 +179,17 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
         englishWriting: "I enjoy answering research questions in my spare time.",
         identityNote: "Demo account, pre-verified.",
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40).toISOString(),
+        recoveryCodeHashes: DEMO_RECOVERY_CODES.map((code) => hashRecoveryCode(code)),
       }),
     );
     seeded = true;
   }
 
   const demo = data.users.find((u) => u.email === "demo@opinly.local");
+  if (demo && (demo.recoveryCodeHashes?.length ?? 0) === 0) {
+    demo.recoveryCodeHashes = DEMO_RECOVERY_CODES.map((code) => hashRecoveryCode(code));
+    seeded = true;
+  }
   if (demo) {
     const existing = data.users.filter((u) => u.referredBy === demo.id).length;
     const sampleId = data.studies.find((s) => s.tier === 1)?.id ?? data.studies[0]?.id ?? "news-trust";

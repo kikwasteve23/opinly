@@ -29,6 +29,8 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
     identityImageUrl: null,
     dismissedMilestones: [],
     ...partial,
+    recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
+    deviceIds: partial.deviceIds ?? [],
   };
 }
 
