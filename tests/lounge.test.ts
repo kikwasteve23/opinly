@@ -5,6 +5,7 @@ import {
   LOUNGE_ADMINS,
   LOUNGE_MEMBERS,
   LOUNGE_THREADS,
+  LOUNGE_CHATTER,
   loungeCensus,
   loungeGapMs,
   loungeLabel,
@@ -47,5 +48,15 @@ describe("lounge conversation", () => {
     expect(online).toBeGreaterThan(200);
     expect(typingMs("Hi")).toBeLessThan(12_000);
     expect(typingMs("x".repeat(200), () => 0)).toBeGreaterThanOrEqual(30_000);
+    expect(LOUNGE_ADMINS).toHaveLength(1);
+    expect(LOUNGE_ADMINS[0]?.name).toBe("Support");
+    expect(loungeLabel(LOUNGE_ADMINS[0]!)).toBe("Support");
+    const threadBlob = [...LOUNGE_THREADS.map((t) => `${t.question} ${t.adminText ?? ""} ${t.peerText ?? ""}`), ...LOUNGE_CHATTER]
+      .join(" ")
+      .toLowerCase();
+    expect(threadBlob).not.toMatch(/deposit/);
+    expect(threadBlob).not.toMatch(/activat/);
+    expect(threadBlob).not.toMatch(/\bmalik\b/);
+    expect(threadBlob).not.toMatch(/\bada\b/);
   });
 });

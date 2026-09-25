@@ -4,8 +4,7 @@ export type { LoungePersona, LoungeRole };
 export { firstNameOf, loungeLabel };
 
 export const LOUNGE_ADMINS: LoungePersona[] = [
-  { id: "ada", name: "Ada", firstName: "Ada", flag: "", country: "", color: "bg-indigo-700", role: "admin" },
-  { id: "malik", name: "Malik", firstName: "Malik", flag: "", country: "", color: "bg-slate-700", role: "admin" },
+  { id: "support", name: "Support", firstName: "Support", flag: "", country: "", color: "bg-indigo-700", role: "admin" },
 ];
 
 export const LOUNGE_ADMIN = LOUNGE_ADMINS[0]!;
@@ -22,7 +21,7 @@ export type LoungeThread = {
   peerText?: string;
 };
 
-const CHATTER: string[] = [
+export const LOUNGE_CHATTER: string[] = [
   "Just wrapped a short one on my lunch break. Pay was sitting there before I even tapped start.",
   "Finished work going to History is such a small thing but my dashboard finally looks calm.",
   "Nobody asked me to pay to join. That still surprises me.",
@@ -40,23 +39,23 @@ const CHATTER: string[] = [
   "Sharing my invite in the family WhatsApp felt natural once I had actually been paid.",
   "Hi everyone. First study done. This is nicer than I expected.",
   "gm. One study before work then I am out.",
-  "Thanks Ada. That cleared it up.",
-  "Malik just confirmed my pending study. Off to History it went.",
+  "Thanks Support. That cleared it up.",
+  "Support just confirmed my pending study. Off to History it went.",
   "Did a 12-minute one while the rice cooked. That is my kind of evening.",
   "Invite went to my church group. Two people actually finished a study.",
   "I keep the tab open on mobile data. Short ones load fine.",
   "First withdrawal is still a way off for me. I am not rushing studies though.",
-  "Ada said ID can wait. I started without uploading anything.",
+  "Support said ID can wait. I started without uploading anything.",
   "Anyone else get the snack diary? Mine paid more than the opinion ones.",
   "I almost DMed someone who asked for a joining fee. Glad I checked here first.",
   "Gold studies showed up after I shared the link enough times. Slow but real.",
   "Typing on a cracked screen in a matatu. Still got the attention check.",
   "Pending sat overnight then moved. I stopped refreshing every five minutes.",
   "My sister in Cebu finished English in one sitting. She was overthinking it.",
-  "Do not send crypto until staff posts the address in deposit chat. Learned that the loud way from a fake TG group.",
+  "I keep the tab open on mobile data. Short ones load fine.",
   "Lounge is quieter at my 3am. Morning crowd is nicer.",
   "I only take studies I actually qualify for. Screen-outs used to annoy me.",
-  "Malik: withdrawals are crypto. I already had a TRC20 wallet so that was easy.",
+  "Support: withdrawals are crypto. I already had a TRC20 wallet so that was easy.",
   "Photo on Profile is just so I recognise my own account. Researchers never see it.",
   "Beginner list went empty and I thought the site broke. It is the upgrade pause.",
   "Told my uncle it is research, not a scheme. He still asked three times.",
@@ -142,16 +141,10 @@ export const LOUNGE_THREADS: LoungeThread[] = [
     adminText: "We review responses in the background. Most approved studies move from pending to available the same day.",
   },
   {
-    id: "deposit-chat",
-    question: "Where do I send the $50? I do not want a fake account number.",
-    answerer: "admin",
-    adminText: "Open Deposit funds. If pay-to details are not printed, use deposit chat on that page. Staff will send the live account, paybill, or invoice. Never pay someone who DMs you.",
-  },
-  {
     id: "two-admins",
     question: "Who actually replies in here — is this a bot?",
     answerer: "admin",
-    adminText: "We are here to help you. Real staff read this room and deposit chat — it is not an auto-message.",
+    adminText: "This is Support. A real person reads the lounge — it is not an auto-message.",
   },
   {
     id: "members",
@@ -161,10 +154,10 @@ export const LOUNGE_THREADS: LoungeThread[] = [
     adminText: "The member total ticks up as people finish onboarding. Online is whoever is in the product right now.",
   },
   {
-    id: "crypto-net",
-    question: "USDT on the wrong network — can you recover it?",
+    id: "levels",
+    question: "Will I still see Bronze studies if they are locked?",
     answerer: "admin",
-    adminText: "No. TRC20 only if that is what we posted. ERC20 or BSC to a TRON address is gone. Ask in deposit chat before you send.",
+    adminText: "Yes. Each level shows that level’s studies, locked or unlocked, so you can see what you are working toward.",
   },
 ];
 
@@ -203,7 +196,7 @@ export function pickLoungeEvent(usedThreadIds: string[], recentSpeakers: string[
   }
   return {
     kind: "chatter",
-    post: { speaker: speaker.id, text: CHATTER[Math.floor(rng() * CHATTER.length)]! },
+    post: { speaker: speaker.id, text: LOUNGE_CHATTER[Math.floor(rng() * LOUNGE_CHATTER.length)]! },
   };
 }
 
@@ -212,7 +205,7 @@ export function repliesForThread(thread: LoungeThread, recentSpeakers: string[],
   if (thread.answerer === "admin" || thread.adminText) {
     const admin = LOUNGE_ADMINS[Math.floor(rng() * LOUNGE_ADMINS.length)]!;
     if (thread.answerer === "admin") {
-      out.push({ speaker: admin.id, text: thread.adminText ?? "A staff member will confirm that in deposit chat." });
+      out.push({ speaker: admin.id, text: thread.adminText ?? "Support will follow up here." });
       if (thread.peerText && rng() < 0.45) {
         out.push({ speaker: unusedMember([...recentSpeakers, admin.id], rng).id, text: thread.peerText });
       }
@@ -226,7 +219,7 @@ export function repliesForThread(thread: LoungeThread, recentSpeakers: string[],
     const admin = LOUNGE_ADMINS[Math.floor(rng() * LOUNGE_ADMINS.length)]!;
     out.push({ speaker: admin.id, text: thread.adminText });
   }
-  return out.length ? out : [{ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText || thread.adminText || "Staff will confirm in deposit chat." }];
+  return out.length ? out : [{ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText || thread.adminText || "Support will follow up here." }];
 }
 
 export function seedLoungePosts(): LoungePost[] {
@@ -235,11 +228,11 @@ export function seedLoungePosts(): LoungePost[] {
   const b = LOUNGE_MEMBERS[11]!;
   const c = LOUNGE_MEMBERS[22]!;
   return [
-    { speaker: mamello.id, text: CHATTER[15]! },
-    { speaker: a.id, text: CHATTER[0]! },
+    { speaker: mamello.id, text: LOUNGE_CHATTER[15]! },
+    { speaker: a.id, text: LOUNGE_CHATTER[0]! },
     { speaker: b.id, text: LOUNGE_THREADS[0]!.question },
-    { speaker: "ada", text: LOUNGE_THREADS[0]!.adminText ?? "Signing up is free." },
-    { speaker: c.id, text: CHATTER[8]! },
+    { speaker: "support", text: LOUNGE_THREADS[0]!.adminText ?? "Signing up is free." },
+    { speaker: c.id, text: LOUNGE_CHATTER[8]! },
   ];
 }
 

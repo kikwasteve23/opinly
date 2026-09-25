@@ -177,7 +177,7 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
                     {loungeLabel(line.persona)}
                     {line.persona.role === "admin" ? (
                       <span className="ml-1 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-800">
-                        Admin
+                        Support
                       </span>
                     ) : null}
                   </p>
@@ -188,10 +188,7 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
               </div>
             ))}
             {typing ? (
-              <p className="px-2 text-xs text-gray-500">
-                {firstNameOf(typing)}
-                {typing.role === "admin" ? " (admin)" : ""} is typing…
-              </p>
+              <p className="px-2 text-xs text-gray-500">{firstNameOf(typing)} is typing…</p>
             ) : null}
             <div ref={bottomRef} />
           </div>

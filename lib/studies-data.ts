@@ -1,5 +1,6 @@
 import type { Study } from "./types";
 import { BEGINNER_STUDIES } from "./beginner-catalog";
+import { BRONZE_STUDIES, GOLD_STUDIES, PLATINUM_STUDIES } from "./tier-catalogs";
 import { TIER_NAMES } from "./referrals";
 
 const FEATURED_STUDIES: Omit<Study, "published">[] = [
@@ -444,7 +445,7 @@ const FEATURED_STUDIES: Omit<Study, "published">[] = [
   },
 ];
 
-export const DEFAULT_STUDIES: Study[] = [...FEATURED_STUDIES, ...BEGINNER_STUDIES]
+export const DEFAULT_STUDIES: Study[] = [...FEATURED_STUDIES, ...BEGINNER_STUDIES, ...BRONZE_STUDIES, ...GOLD_STUDIES, ...PLATINUM_STUDIES]
   .filter((study, index, list) => list.findIndex((item) => item.id === study.id) === index)
   .map((study) => ({
     ...study,

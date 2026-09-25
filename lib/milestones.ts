@@ -39,7 +39,7 @@ export function achievedMilestones(input: {
         : {
             id: "cash500",
             title: "Congratulations — you reached the $500 mark",
-            body: "You can take your earnings out now. The next step is a $50 wallet activation. That $50 is added to your balance and goes out with your first withdrawal — it is not a fee we keep.",
+            body: "You can take your earnings out now. The next step is a $30 wallet activation. That $30 is added to your balance and goes out with your first withdrawal — it is not a fee we keep.",
             nextLabel: "Activate wallet",
             nextHref: "/app/deposit",
           },

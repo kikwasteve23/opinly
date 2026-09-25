@@ -2,7 +2,7 @@ export type PayoutNetwork = "usdt_trc20" | "ltc";
 
 export const PLATFORM_FEE_RATE = 0.05;
 export const MIN_WITHDRAWAL = 500;
-export const ACTIVATION_DEPOSIT = 50;
+export const ACTIVATION_DEPOSIT = 30;
 export const WITHDRAWAL_COOLDOWN_MS = 72 * 60 * 60 * 1000;
 export const ADDRESS_CHANGE_HOLD_MS = 24 * 60 * 60 * 1000;
 export const INACTIVITY_MS = 25 * 60 * 1000;

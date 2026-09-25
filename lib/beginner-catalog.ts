@@ -1,6 +1,6 @@
 import type { Question, Study, StudyKind } from "./types";
 
-function questionsFor(topic: string): Question[] {
+export function questionsFor(topic: string): Question[] {
   return [
     {
       id: "q1",

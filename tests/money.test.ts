@@ -1,4 +1,4 @@
-import { MIN_WITHDRAWAL, quoteWithdrawal } from "../lib/money";
+import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL, quoteWithdrawal } from "../lib/money";
 import { describe, expect, it } from "vitest";
 
 describe("quoteWithdrawal", () => {
@@ -17,6 +17,7 @@ describe("quoteWithdrawal", () => {
 
   it("rejects amounts under the $500 minimum", () => {
     expect(MIN_WITHDRAWAL).toBe(500);
+    expect(ACTIVATION_DEPOSIT).toBe(30);
     expect(quoteWithdrawal(499.99, "ltc").valid).toBe(false);
   });
 });

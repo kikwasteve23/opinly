@@ -10,7 +10,7 @@ export async function ensureDepositWelcome(userId: string) {
       from: "support",
       body: DEPOSIT_WELCOME,
       createdAt: new Date().toISOString(),
-      adminName: "Ada",
+      adminName: "Support",
     });
   });
 }

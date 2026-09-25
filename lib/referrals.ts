@@ -107,7 +107,7 @@ export function starterSurveysLocked(user: Pick<User, "available" | "pending">, 
   return dashboardTrack(user, level) >= 2;
 }
 
-/** Show this track and higher. Hide tracks you have already left. */
+/** Show only the current track. In-progress work stays visible. */
 export function studyVisibleOnDashboard(
   user: Pick<User, "available" | "pending">,
   studyTier: number,
@@ -115,9 +115,7 @@ export function studyVisibleOnDashboard(
   track: number,
 ) {
   if (alreadyStarted) return true;
-  if (studyTier < track) return false;
-  if (studyTier > 1 && track < 2) return false;
-  return true;
+  return studyTier === track;
 }
 
 export function canAccessStudyTier(user: User, studyTier: number, level: number) {

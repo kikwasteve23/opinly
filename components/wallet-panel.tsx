@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
-import { MIN_WITHDRAWAL, quoteWithdrawal, type PayoutNetwork } from "@/lib/money";
+import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL, quoteWithdrawal, type PayoutNetwork } from "@/lib/money";
 import { money } from "@/lib/utils";
 import { withdrawAction, type WalletState } from "@/lib/wallet-actions";
 import { BRONZE_REFERRALS, levelName } from "@/lib/referrals";
@@ -100,7 +100,7 @@ export function WalletPanel({
                 <Link className="font-semibold underline" href="/app/deposit">
                   deposit funds
                 </Link>{" "}
-                page, then come back to withdraw crypto. The $50 is added to your balance.
+                page, then come back to withdraw crypto. The ${ACTIVATION_DEPOSIT} is added to your balance.
               </p>
             ) : null}
           </div>

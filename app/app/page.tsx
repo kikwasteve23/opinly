@@ -17,7 +17,7 @@ import {
 import { resolveCountry } from "@/lib/resolve-geo";
 import { formatMoney } from "@/lib/geo";
 import { isFinishedStudy, latestUserSubmission } from "@/lib/studies-data";
-import { StudyCard } from "@/components/study-card";
+import { StudyList } from "@/components/study-list";
 import { BronzeTrackBanner } from "@/components/bronze-track-banner";
 import { referralInviteUrl } from "@/lib/app-url";
 
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-extrabold">Studies for you</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {showReferralTrack ? `${levelName(track)} is your current track.` : "Beginner studies are open."} Location{" "}
+            {levelName(track)} studies only — locked ones still show so you can see what unlocks next. Location{" "}
             {country.name} · pay shown in USD and {country.currency}. Finished work is in{" "}
             <Link href="/app/history" className="font-semibold text-indigo-700">
               History
@@ -85,28 +85,31 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="mt-6 space-y-3">
-        {openStudies.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-500">
-            No open studies right now. Anything you have already submitted lives in History.
-          </p>
-        ) : null}
-        {openStudies.map((study) => {
-          const mine = latestUserSubmission(submissions, study.id);
-          const status = mine?.status ?? "available";
-          const open = canAccessStudyTier(user, study.tier, level);
-          const reason = open ? null : studyLockReason(user, study.tier, level);
-          return (
-            <StudyCard
-              key={study.id}
-              study={study}
-              status={status}
-              localPay={formatMoney(study.reward, country)}
-              reason={reason}
-              rejectionReason={mine?.rejectionReason}
-            />
-          );
-        })}
+      <div className="mt-6">
+        <StudyList
+          items={openStudies.map((study) => {
+            const mine = latestUserSubmission(submissions, study.id);
+            const status = mine?.status ?? "available";
+            const open = canAccessStudyTier(user, study.tier, level);
+            return {
+              study: {
+                id: study.id,
+                title: study.title,
+                summary: study.summary,
+                kind: study.kind,
+                tier: study.tier,
+                reward: study.reward,
+                minutes: study.minutes,
+                format: study.format,
+                questions: study.questions,
+              },
+              status,
+              localPay: formatMoney(study.reward, country),
+              reason: open ? null : studyLockReason(user, study.tier, level),
+              rejectionReason: mine?.rejectionReason,
+            };
+          })}
+        />
       </div>
     </div>
   );

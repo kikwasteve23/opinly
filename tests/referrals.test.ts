@@ -12,7 +12,6 @@ import {
   studyLockReason,
   studyVisibleOnDashboard,
 } from "../lib/referrals";
-import { BEGINNER_STUDIES } from "../lib/beginner-catalog";
 import { DEFAULT_STUDIES } from "../lib/studies-data";
 import type { Study, Submission, User, StoreData } from "../lib/types";
 import { submitStudyInStore } from "../lib/submit-study";
@@ -156,7 +155,7 @@ describe("referrals", () => {
     expect(studyEarningsUsd(studies, submissions, "usr_a")).toBe(400);
   });
 
-  it("shows this track and higher, and hides lower tracks", () => {
+  it("lists only the current level, including locked studies", () => {
     const early = person({ id: "usr_a", available: 10, pending: 0 });
     expect(dashboardTrack(early, 1)).toBe(1);
     expect(dashboardTrack(early, 2)).toBe(1);
@@ -167,8 +166,14 @@ describe("referrals", () => {
     expect(dashboardTrack(capped, 3)).toBe(3);
     expect(studyVisibleOnDashboard(capped, 1, false, 2)).toBe(false);
     expect(studyVisibleOnDashboard(capped, 2, false, 2)).toBe(true);
-    expect(studyVisibleOnDashboard(capped, 3, false, 2)).toBe(true);
+    expect(studyVisibleOnDashboard(capped, 3, false, 2)).toBe(false);
     expect(studyVisibleOnDashboard(capped, 2, false, 3)).toBe(false);
+    expect(studyVisibleOnDashboard(capped, 3, false, 3)).toBe(true);
+  });
+
+  it("ships bronze and platinum catalogs", () => {
+    expect(DEFAULT_STUDIES.filter((s) => s.tier === 2).length).toBeGreaterThan(15);
+    expect(DEFAULT_STUDIES.filter((s) => s.tier === 4).length).toBeGreaterThan(15);
   });
 
   it("rejects submit when the wallet already sits at the $400 pause", () => {
