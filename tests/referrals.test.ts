@@ -159,10 +159,12 @@ describe("referrals", () => {
   it("shows this track and higher, and hides lower tracks", () => {
     const early = person({ id: "usr_a", available: 10, pending: 0 });
     expect(dashboardTrack(early, 1)).toBe(1);
+    expect(dashboardTrack(early, 2)).toBe(1);
     expect(studyVisibleOnDashboard(early, 2, false, 1)).toBe(false);
     expect(studyVisibleOnDashboard(early, 1, false, 1)).toBe(true);
     const capped = person({ id: "usr_a", available: 409, pending: 0 });
     expect(dashboardTrack(capped, 1)).toBe(2);
+    expect(dashboardTrack(capped, 3)).toBe(3);
     expect(studyVisibleOnDashboard(capped, 1, false, 2)).toBe(false);
     expect(studyVisibleOnDashboard(capped, 2, false, 2)).toBe(true);
     expect(studyVisibleOnDashboard(capped, 3, false, 2)).toBe(true);

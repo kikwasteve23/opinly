@@ -98,8 +98,8 @@ export function hitStudyEarningsCap(earningsOrUser: number | Pick<User, "availab
  * Referral counts still unlock studies at each tier.
  */
 export function dashboardTrack(user: Pick<User, "available" | "pending">, referralLevelValue: number) {
-  if (referralLevelValue >= 2) return referralLevelValue;
-  return hitWalletCap(user) ? 2 : 1;
+  if (!hitWalletCap(user)) return 1;
+  return Math.max(2, referralLevelValue);
 }
 
 /** Beginner catalog closes once you are on Bronze or above. */
@@ -134,7 +134,7 @@ export function studyLockReason(user: User, studyTier: number, level: number) {
     return "Beginner surveys are complete on your account. Bronze and higher studies are on your list.";
   }
   if (!hitWalletCap(user) && studyTier > 1) {
-    return "This study opens after you move up from Beginner.";
+    return "These studies open after you earn $400 on Beginner work.";
   }
   if (level < studyTier) {
     return `This is a ${levelName(studyTier)} study. You need ${refsNeededForLevel(studyTier)} active referrals to unlock it.`;
