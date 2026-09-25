@@ -5,9 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import {
+  firstNameOf,
   formatCount,
   loungeCensus,
   loungeGapMs,
+  loungeLabel,
   personaById,
   pickLoungeEvent,
   repliesForThread,
@@ -32,7 +34,7 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
   const hide = pathname.startsWith("/app/deposit");
   const [open, setOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
-  const [joined, setJoined] = useState(walletActivated || !cashoutReady);
+  const [joined, setJoined] = useState(false);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState<LoungePersona | null>(null);
   const [census, setCensus] = useState(() => loungeCensus());
@@ -45,8 +47,8 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
   openRef.current = open;
 
   useEffect(() => {
-    if (walletActivated || !cashoutReady) setJoined(true);
-  }, [walletActivated]);
+    if (!walletActivated) setJoined(false);
+  }, [walletActivated, cashoutReady]);
 
   useEffect(() => {
     if (hide) {
@@ -118,7 +120,7 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
   if (hide) return null;
 
   function onJoin() {
-    if (walletActivated || !cashoutReady) {
+    if (walletActivated) {
       setJoined(true);
       return;
     }
@@ -135,7 +137,15 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
       ...prev,
       {
         id: `you-${seq.current}`,
-        persona: { id: "you", name: "You", city: "here", color: "bg-gray-700", role: "member" as const },
+                    persona: {
+                      id: "you",
+                      name: "You",
+                      firstName: "You",
+                      flag: "",
+                      country: "",
+                      color: "bg-gray-700",
+                      role: "member" as const,
+                    },
         text,
       },
     ].slice(-60));
@@ -164,14 +174,12 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                    {line.persona.name}
+                    {loungeLabel(line.persona)}
                     {line.persona.role === "admin" ? (
                       <span className="ml-1 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-800">
                         Admin
                       </span>
-                    ) : (
-                      <span className="font-normal text-gray-400"> · {line.persona.city}</span>
-                    )}
+                    ) : null}
                   </p>
                   <p className="mt-0.5 rounded-2xl rounded-tl-sm bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-100">
                     {line.text}
@@ -181,7 +189,7 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
             ))}
             {typing ? (
               <p className="px-2 text-xs text-gray-500">
-                {typing.name}
+                {firstNameOf(typing)}
                 {typing.role === "admin" ? " (admin)" : ""} is typing…
               </p>
             ) : null}
@@ -210,27 +218,44 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
       {joinOpen ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
-            <h2 className="text-lg font-bold">Activate to join the lounge</h2>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-              You need a verified wallet before you can post here. The $50 activation is added to your balance and
-              goes out with your first withdrawal — we do not keep it as a fee.
-            </p>
-            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button type="button" className="rounded-xl border px-4 py-2 text-sm font-semibold" onClick={() => setJoinOpen(false)}>
-                Not now
-              </button>
-              <Link
-                href="/app/deposit?activate=1"
-                onClick={() => {
-                  setOpen(false);
-                  setJoinOpen(false);
-                  setTyping(null);
-                }}
-                className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
-              >
-                Activate account
-              </Link>
-            </div>
+            {cashoutReady ? (
+              <>
+                <h2 className="text-lg font-bold">Congratulations</h2>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                  Congratulations on reaching the minimum withdrawal limit of $500. Kindly activate your account to join
+                  the chat.
+                </p>
+                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <button type="button" className="rounded-xl border px-4 py-2 text-sm font-semibold" onClick={() => setJoinOpen(false)}>
+                    Later
+                  </button>
+                  <Link
+                    href="/app/deposit?activate=1"
+                    onClick={() => {
+                      setOpen(false);
+                      setJoinOpen(false);
+                      setTyping(null);
+                    }}
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
+                  >
+                    Activate account
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold">Keep going</h2>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                  The lounge is for people who have reached the $500 cash-out threshold. Keep taking studies and work
+                  toward that minimum — then you can activate and join the chat.
+                </p>
+                <div className="mt-5 flex justify-end">
+                  <button type="button" className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => setJoinOpen(false)}>
+                    Later
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       ) : null}

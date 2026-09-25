@@ -1,10 +1,11 @@
-import { loungeCrowd, type LoungePersona, type LoungeRole } from "./lounge-people";
+import { firstNameOf, loungeCrowd, loungeLabel, type LoungePersona, type LoungeRole } from "./lounge-people";
 
 export type { LoungePersona, LoungeRole };
+export { firstNameOf, loungeLabel };
 
 export const LOUNGE_ADMINS: LoungePersona[] = [
-  { id: "ada", name: "Ada", city: "Opinly staff", color: "bg-indigo-700", role: "admin" },
-  { id: "malik", name: "Malik", city: "Opinly staff", color: "bg-slate-700", role: "admin" },
+  { id: "ada", name: "Ada", firstName: "Ada", flag: "", country: "", color: "bg-indigo-700", role: "admin" },
+  { id: "malik", name: "Malik", firstName: "Malik", flag: "", country: "", color: "bg-slate-700", role: "admin" },
 ];
 
 export const LOUNGE_ADMIN = LOUNGE_ADMINS[0]!;
@@ -229,15 +230,16 @@ export function repliesForThread(thread: LoungeThread, recentSpeakers: string[],
 }
 
 export function seedLoungePosts(): LoungePost[] {
+  const mamello = LOUNGE_MEMBERS.find((p) => p.name.toLowerCase() === "mamello molefe") ?? LOUNGE_MEMBERS[0]!;
   const a = LOUNGE_MEMBERS[3]!;
   const b = LOUNGE_MEMBERS[11]!;
   const c = LOUNGE_MEMBERS[22]!;
   return [
-    { speaker: a.id, text: CHATTER[15]! },
-    { speaker: b.id, text: CHATTER[0]! },
-    { speaker: c.id, text: LOUNGE_THREADS[0]!.question },
+    { speaker: mamello.id, text: CHATTER[15]! },
+    { speaker: a.id, text: CHATTER[0]! },
+    { speaker: b.id, text: LOUNGE_THREADS[0]!.question },
     { speaker: "ada", text: LOUNGE_THREADS[0]!.adminText ?? "Signing up is free." },
-    { speaker: LOUNGE_MEMBERS[40]!.id, text: CHATTER[8]! },
+    { speaker: c.id, text: CHATTER[8]! },
   ];
 }
 
