@@ -7,7 +7,7 @@ import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
-  { href: "/#how", label: "How it works" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "/#studies", label: "The studies" },
   { href: "/#payouts", label: "Getting paid" },
   { href: "/#faq", label: "FAQ" },

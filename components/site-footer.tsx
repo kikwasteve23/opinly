@@ -16,8 +16,13 @@ export function SiteFooter() {
             <p className="font-semibold text-gray-900 dark:text-white">Platform</p>
             <ul className="mt-3 space-y-2 text-gray-600 dark:text-gray-400">
               <li>
-                <Link href="/#how" className="hover:text-indigo-700 dark:hover:text-indigo-400">
+                <Link href="/how-it-works" className="hover:text-indigo-700 dark:hover:text-indigo-400">
                   How it works
+                </Link>
+              </li>
+              <li>
+                <Link href="/share" className="hover:text-indigo-700 dark:hover:text-indigo-400">
+                  Social kit
                 </Link>
               </li>
               <li>
