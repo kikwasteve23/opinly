@@ -14,6 +14,7 @@ export function DeviceTokenField() {
         window.localStorage.setItem(KEY, id);
       }
       setToken(id);
+      void fetch("/api/device", { credentials: "same-origin" });
     } catch {
       /* ignore */
     }
