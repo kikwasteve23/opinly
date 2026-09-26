@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/app/register", destination: "/register", permanent: false },
       { source: "/join/:code", destination: "/register?ref=:code", permanent: false },
+      { source: "/share", destination: "/how-it-works", permanent: false },
     ];
   },
 };

@@ -76,7 +76,7 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "Your rewards build up in US dollars and also display in your local currency. When you are ready, withdraw by crypto from a $500 available balance. You always see the fees before you confirm.",
+    a: "Your rewards build up in US dollars and also display in your local currency. When you are ready, you withdraw to a wallet you control.",
   },
   {
     q: "Why was my submission rejected?",
@@ -269,7 +269,8 @@ export default async function HomePage() {
       <section id="payouts" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
         <h2 className="text-3xl font-extrabold tracking-tight">Your balance, your call</h2>
         <p className="mt-4 max-w-3xl text-lg text-gray-600 dark:text-gray-300">
-          Rewards are held in US dollars. When you&apos;re ready, withdraw to a crypto address you control. Two costs come off the amount you request: the blockchain&apos;s own network fee, and a 5% platform fee. Both are shown before you confirm, so you always know what will arrive.
+          Rewards are held in US dollars. When you are ready, withdraw to a crypto address you control. You always see
+          what will arrive before you confirm.
         </p>
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
@@ -277,51 +278,23 @@ export default async function HomePage() {
               <h3 className="text-lg font-semibold">USDT (TRC20)</h3>
               <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">Available</span>
             </div>
-            <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
-              <div>
-                <dt className="text-gray-500">Minimum</dt>
-                <dd className="font-semibold">$500.00</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Network fee</dt>
-                <dd className="font-semibold">$1.00</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Platform fee</dt>
-                <dd className="font-semibold">5%</dd>
-              </div>
-            </dl>
-            <p className="mt-4 text-sm text-gray-500">Tron network USDT address. Do not use an ERC20 or BEP20 address.</p>
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Withdraw to a Tron USDT address you control.</p>
+            <p className="mt-4 text-sm text-gray-500">Use a TRC20 address — not ERC20 or BEP20.</p>
           </div>
           <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Litecoin (LTC)</h3>
               <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">Available</span>
             </div>
-            <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
-              <div>
-                <dt className="text-gray-500">Minimum</dt>
-                <dd className="font-semibold">$500.00</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Network fee</dt>
-                <dd className="font-semibold">$0.10</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Platform fee</dt>
-                <dd className="font-semibold">5%</dd>
-              </div>
-            </dl>
-            <p className="mt-4 text-sm text-gray-500">Litecoin mainnet address.</p>
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Withdraw to a Litecoin mainnet address you control.</p>
+            <p className="mt-4 text-sm text-gray-500">Double-check the address before you confirm.</p>
           </div>
         </div>
         <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-900/50">
           <p className="font-semibold">A couple of house rules</p>
           <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400">
             {[
-              "Joining is always free. We never charge a fee just to open an account or take your first studies — pay is shown up front and approved work is real dollars, not points.",
-              "One withdrawal every 72 hours, so let your balance build up before cashing out.",
-              "Both fees come out of the amount you request, so the figure you confirm is the figure that arrives.",
+              "Joining is always free. We never ask you to pay just to open an account or take your first studies — pay is shown up front and approved work is real dollars, not points.",
               "Double-check the address and the network. Crypto sent to the wrong chain cannot be recovered.",
               "Completed work sits in pending while we review your responses.",
             ].map((rule) => (

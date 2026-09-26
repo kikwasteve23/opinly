@@ -21,11 +21,6 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/share" className="hover:text-indigo-700 dark:hover:text-indigo-400">
-                  Social kit
-                </Link>
-              </li>
-              <li>
                 <Link href="/register" className="hover:text-indigo-700 dark:hover:text-indigo-400">
                   Create account
                 </Link>
