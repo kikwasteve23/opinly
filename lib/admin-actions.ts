@@ -6,7 +6,7 @@ import { mutateStore, newId } from "@/lib/store";
 import { findStudy } from "@/lib/studies-data";
 import type { IdentityStatus, Question, Study, StudyKind, WithdrawalStatus } from "@/lib/types";
 import { generateSurveyDraft } from "@/lib/ai-survey";
-import { startMarketerJob } from "@/lib/deposit-requests";
+import { fulfillPaidMarketerHire } from "@/lib/deposit-requests";
 import { addQualifiedReferrals, attachExistingReferral, unlinkReferral } from "@/lib/admin-referrals";
 
 export type AdminFormState = { error?: string; ok?: string } | null;
@@ -89,18 +89,13 @@ export async function reviewDepositAction(formData: FormData) {
         adminEmail: admin.email,
       });
     } else if (deposit.marketerId && deposit.quantity) {
-      if (deposit.billing === "postpaid") {
-        const job = data.marketerJobs.find(
-          (j) =>
-            j.userId === user.id &&
-            j.marketerId === deposit.marketerId &&
-            j.billing === "postpaid" &&
-            !j.paidAt,
-        );
-        if (job) job.paidAt = new Date().toISOString();
-      } else {
-        startMarketerJob(data, user.id, deposit.marketerId, deposit.quantity, "prepaid");
-      }
+      fulfillPaidMarketerHire(
+        data,
+        user.id,
+        deposit.marketerId,
+        deposit.quantity,
+        deposit.billing === "postpaid" ? "postpaid" : "prepaid",
+      );
       data.ledger.unshift({
         id: newId("led"),
         userId: user.id,

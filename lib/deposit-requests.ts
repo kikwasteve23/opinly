@@ -29,11 +29,35 @@ export function startMarketerJob(
     priceEach: marketer.priceEach,
     billing,
     amountDue: amount,
-    paidAt: billing === "prepaid" ? now : null,
+    paidAt: now,
     hiredAt: now,
     completeAt: new Date(Date.now() + randomDelay(60 * 60 * 1000, 2 * 60 * 60 * 1000)).toISOString(),
     completedAt: null,
     status: "processing",
     addedUserIds: [],
   });
+}
+
+/** After an admin matches a marketer deposit: settle an unpaid invoice, or start the hire. */
+export function fulfillPaidMarketerHire(
+  data: StoreData,
+  userId: string,
+  marketerId: string,
+  quantity: number,
+  billing: MarketerBilling,
+) {
+  const unpaid = data.marketerJobs.find(
+    (j) =>
+      j.userId === userId &&
+      j.marketerId === marketerId &&
+      j.quantity === quantity &&
+      j.billing === "postpaid" &&
+      !j.paidAt,
+  );
+  if (unpaid) {
+    unpaid.paidAt = new Date().toISOString();
+    return "settled" as const;
+  }
+  startMarketerJob(data, userId, marketerId, quantity, billing);
+  return "started" as const;
 }

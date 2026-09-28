@@ -55,7 +55,9 @@ export function AppShell({
                 key={item.href}
                 href={item.href}
                 className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                  pathname === item.href ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-300"
+                  pathname === item.href || (item.href !== "/app" && pathname.startsWith(item.href))
+                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                    : "text-gray-600 hover:bg-gray-50 dark:text-gray-300"
                 }`}
               >
                 {item.label}
@@ -99,7 +101,9 @@ export function AppShell({
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={`block rounded-lg px-3 py-3 text-sm font-medium ${
-                  pathname === item.href ? "bg-indigo-50 text-indigo-700" : "text-gray-700 dark:text-gray-200"
+                  pathname === item.href || (item.href !== "/app" && pathname.startsWith(item.href))
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "text-gray-700 dark:text-gray-200"
                 }`}
               >
                 {item.label}

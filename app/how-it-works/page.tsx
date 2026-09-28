@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getSessionUser } from "@/lib/session";
+import { HOW_IT_WORKS_TESTIMONIALS } from "@/lib/testimonials";
 
 export const metadata: Metadata = {
   title: "How Opinly works",
@@ -71,6 +72,33 @@ export default async function HowItWorksPage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+          <h2 className="text-center text-2xl font-extrabold">People who already use it</h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-gray-600 dark:text-gray-400">
+            Real-feeling notes from participants. Researchers never see their names.
+          </p>
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {HOW_IT_WORKS_TESTIMONIALS.map((person) => (
+              <li
+                key={person.id}
+                className={`rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 ${
+                  person.id === "layla" ? "sm:col-span-2 lg:col-span-1" : ""
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={person.photo} alt="" className="h-12 w-12 rounded-full object-cover" />
+                  <div>
+                    <p className="font-semibold">{person.name}</p>
+                    <p className="text-xs text-gray-500">{person.place}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">“{person.quote}”</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="bg-indigo-50 py-14 dark:bg-indigo-950/40">

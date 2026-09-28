@@ -9,7 +9,7 @@ import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL } from "@/lib/money";
 import { applyWithdrawal } from "@/lib/withdraw";
 import { submitStudyInStore } from "@/lib/submit-study";
 import { findMarketer, marketerQuote } from "@/lib/marketers";
-import { paymentMethodLabel, startMarketerJob } from "@/lib/deposit-requests";
+import { paymentMethodLabel } from "@/lib/deposit-requests";
 import { canAccessStudyTier, countsFromStore, hitWalletCap } from "@/lib/referrals";
 import type { MarketerBilling } from "@/lib/types";
 
@@ -94,17 +94,18 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
       }
       if (current.walletActivated) return { error: "This wallet is already activated." };
     }
-    if (hire && billing === "postpaid") {
-      const invoice = data.marketerJobs.find(
+    if (hire) {
+      const unpaidInvoice = data.marketerJobs.find(
         (j) =>
           j.userId === current.id &&
           j.marketerId === hire.id &&
+          j.quantity === quantity &&
           j.billing === "postpaid" &&
-          !j.paidAt &&
-          j.status === "complete",
+          !j.paidAt,
       );
-      if (!invoice) {
-        return { error: "Pay-after invoices open once the referrals have landed. Hire with Pay after first, then come back to pay." };
+      const busy = data.marketerJobs.some((j) => j.userId === current.id && j.status === "processing");
+      if (!unpaidInvoice && busy) {
+        return { error: "Wait for your current hire to finish before booking another marketer." };
       }
     }
     const pendingSame = data.deposits.some(
@@ -128,7 +129,9 @@ export async function submitDepositRequestAction(_prev: WalletState, formData: F
       adminEmail: null,
     });
     return {
-      ok: `Payment submitted. An admin will match ${hire ? paymentMethodLabel(method) : "your transfer"} and approve it before funds or referrals are released.`,
+      ok: hire
+        ? `Thanks. We recorded ${paymentMethodLabel(method)} for ${hire.name} — $${amount.toFixed(2)}. An admin will match it, then the hire starts.`
+        : `Payment submitted. An admin will match your transfer and approve it before funds are released.`,
     };
   });
   revalidatePath("/app/deposit");
@@ -156,32 +159,3 @@ export async function sendDepositChatAction(_prev: WalletState, formData: FormDa
   return { ok: "Sent. An admin will reply in this thread." };
 }
 
-export async function hireMarketerPayAfterAction(_prev: WalletState, formData: FormData): Promise<WalletState> {
-  const user = await requireCompleteUser();
-  const marketerId = String(formData.get("marketerId") ?? "").trim();
-  const quantity = Number(formData.get("quantity"));
-  const hire = findMarketer(marketerId);
-  if (!hire) return { error: "That marketer is not available." };
-  if (!Number.isInteger(quantity) || quantity < hire.minOrder || quantity > hire.maxOrder) {
-    return { error: `Order between ${hire.minOrder} and ${hire.maxOrder} referrals.` };
-  }
-  const result = await mutateStore((data) => {
-    const current = data.users.find((u) => u.id === user.id);
-    if (!current) return { error: "Account missing." };
-    if (!hitWalletCap(current)) {
-      return { error: "Marketer hires open after you finish Beginner surveys and are ready to upgrade." };
-    }
-    const busy = data.marketerJobs.some(
-      (j) => j.userId === current.id && (j.status === "processing" || (j.billing === "postpaid" && !j.paidAt)),
-    );
-    if (busy) return { error: "Finish or pay your current hire before starting another pay-after order." };
-    startMarketerJob(data, current.id, hire.id, quantity, "postpaid");
-    const due = marketerQuote(hire.priceEach, quantity, "postpaid").amount;
-    return {
-      ok: `${hire.name} is filling ${quantity} referrals. Pay $${due.toFixed(2)} (10% extra) after they land.`,
-    };
-  });
-  revalidatePath("/app/marketers");
-  revalidatePath("/app");
-  return result;
-}

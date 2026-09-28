@@ -6,6 +6,7 @@ import { ACTIVATION_DEPOSIT } from "@/lib/money";
 import { formatMoney, type CountryProfile, NOWPAYMENTS } from "@/lib/geo";
 import { money } from "@/lib/utils";
 import type { DepositRail } from "@/lib/deposit-rails";
+import { CopyLine } from "@/components/copy-line";
 
 type ChatItem = { id: string; from: "user" | "support"; body: string; createdAt: string; adminName: string | null };
 type HireInfo = { id: string; name: string; quantity: number; cost: number; billing: "prepaid" | "postpaid" };
@@ -36,6 +37,7 @@ export function DepositDesk({
   const selected = method === NOWPAYMENTS.id ? cryptoRail : localRail;
   const usdAmount = hire ? hire.cost : ACTIVATION_DEPOSIT;
   const localAmount = formatMoney(usdAmount, country);
+  const waiting = Boolean(pending) || Boolean(payState?.ok);
 
   useEffect(() => {
     if (chatState?.ok && chatInput.current) chatInput.current.value = "";
@@ -44,14 +46,22 @@ export function DepositDesk({
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <div>
-        <h1 className="text-2xl font-extrabold">Deposit funds</h1>
+        <h1 className="text-2xl font-extrabold">{hire ? "Pay for your hire" : "Deposit funds"}</h1>
         {hire ? (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            {hire.billing === "postpaid"
-              ? `Settle ${money(hire.cost)} for ${hire.name} (${hire.quantity} referrals, 10% extra because you chose pay after).`
-              : `Pay ${money(hire.cost)} now to hire ${hire.name} for ${hire.quantity} active referrals. They start after an admin matches the payment.`}{" "}
-            Location: <strong>{country.name}</strong>.
-          </p>
+          <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950">
+            <p className="font-semibold">Order summary</p>
+            <ul className="mt-2 space-y-1 text-gray-800 dark:text-gray-200">
+              <li>Marketer: {hire.name}</li>
+              <li>Referrals: {hire.quantity}</li>
+              <li>Plan: {hire.billing === "postpaid" ? "Pay after pricing (+10%)" : "Pay before"}</li>
+              <li>
+                Total due: <strong>{money(hire.cost)}</strong> ({localAmount} in {country.name})
+              </li>
+            </ul>
+            <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+              Send the exact total, then tap that you have paid. The hire starts after an admin matches this transfer.
+            </p>
+          </div>
         ) : (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
             Activate your wallet with ${ACTIVATION_DEPOSIT}. That amount is added to your available balance after an
@@ -59,15 +69,22 @@ export function DepositDesk({
             {formatMoney(availableUsd, country)} available.
           </p>
         )}
-        {pending ? (
-          <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-            Your {money(pending.amount)} {pending.methodLabel} payment is waiting for admin approval
-            {pending.purpose === "marketer" ? " (marketer hire)" : " (wallet activation)"}.
-          </p>
+        {waiting ? (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="font-semibold">Waiting on a match</p>
+            <p className="mt-1">
+              {pending
+                ? `Your ${money(pending.amount)} ${pending.methodLabel} payment is with an admin${
+                    pending.purpose === "marketer" ? " (marketer hire)" : " (wallet activation)"
+                  }. Keep this page open and use chat if the pay-to details changed.`
+                : payState?.ok}
+            </p>
+            <p className="mt-2 text-xs">Do not send a second payment until this one is approved or rejected.</p>
+          </div>
         ) : null}
-        {!hire && activated && !pending ? (
+        {!hire && activated && !waiting ? (
           <p className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm">This wallet is already activated.</p>
-        ) : (
+        ) : waiting ? null : (
           <form action={payAction} className="mt-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
             {hire ? (
               <>
@@ -96,7 +113,7 @@ export function DepositDesk({
               </p>
             ) : null}
             <div>
-              <p className="text-sm font-semibold">{selected.methodName} — steps</p>
+              <p className="text-sm font-semibold">How to pay with {selected.methodName}</p>
               <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-gray-800 dark:text-gray-200">
                 {selected.steps.map((step) => (
                   <li key={step} className="leading-relaxed">
@@ -107,18 +124,15 @@ export function DepositDesk({
             </div>
             <div className="rounded-xl bg-gray-50 p-4 text-sm dark:bg-gray-950">
               <p>
-                Amount: <strong>${usdAmount.toFixed(2)} USD</strong> ({localAmount})
+                Send exactly: <strong>${usdAmount.toFixed(2)} USD</strong> ({localAmount})
               </p>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-gray-600 dark:text-gray-400">
+              <ul className="mt-2 space-y-2">
                 {selected.payTo.map((line) => (
-                  <li key={line} className="font-mono">
-                    {line}
-                  </li>
+                  <CopyLine key={line} text={line} />
                 ))}
               </ul>
             </div>
             {payState?.error ? <p className="text-sm text-red-600">{payState.error}</p> : null}
-            {payState?.ok ? <p className="text-sm text-indigo-700">{payState.ok}</p> : null}
             <button disabled={paying} className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white">
               {paying ? "Recording…" : "I have sent the payment"}
             </button>
@@ -147,7 +161,7 @@ export function DepositDesk({
             ref={chatInput}
             name="body"
             required
-            placeholder="Type your question…"
+            placeholder="Ask about pay-to details…"
             className="flex-1 rounded-xl border px-3 py-2 text-sm dark:bg-gray-950"
           />
           <button disabled={chatting} className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white">
