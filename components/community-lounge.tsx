@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import {
@@ -14,6 +13,7 @@ import {
   pickLoungeEvent,
   repliesForThread,
   seedLoungePosts,
+  TELEGRAM_CHANNEL_URL,
   typingMs,
   type LoungePersona,
   type LoungePost,
@@ -27,6 +27,20 @@ type Line = {
 
 function toLine(post: LoungePost, id: string): Line {
   return { id, persona: personaById(post.speaker), text: post.text };
+}
+
+function TelegramJoinButton({ onClick }: { onClick?: () => void }) {
+  return (
+    <a
+      href={TELEGRAM_CHANNEL_URL}
+      target="_blank"
+      rel="noreferrer"
+      onClick={onClick}
+      className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
+    >
+      Join telegram instead
+    </a>
+  );
 }
 
 export function CommunityLounge({ walletActivated, cashoutReady }: { walletActivated: boolean; cashoutReady: boolean }) {
@@ -223,39 +237,32 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
               <>
                 <h2 className="text-lg font-bold">Congratulations</h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  You meet the requirements. Activate your account to join the chat.
+                  You meet the requirements. You can also join the Telegram channel while you finish setup.
                 </p>
                 <div className="mt-5 flex justify-end">
-                  <Link
-                    href="/app/deposit?activate=1"
+                  <TelegramJoinButton
                     onClick={() => {
                       setOpen(false);
                       setJoinOpen(false);
                       setTyping(null);
                     }}
-                    className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
-                  >
-                    Apply
-                  </Link>
+                  />
                 </div>
               </>
             ) : (
               <>
                 <h2 className="text-lg font-bold">Not quite yet</h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  You do not meet the minimum requirements to enter the chat yet. Keep taking studies, then try again.
+                  You do not meet the minimum requirements to enter the chat yet. Keep taking studies, or join the Telegram
+                  channel in the meantime.
                 </p>
                 <div className="mt-5 flex justify-end">
-                  <Link
-                    href="/app"
+                  <TelegramJoinButton
                     onClick={() => {
                       setJoinOpen(false);
                       setOpen(false);
                     }}
-                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Apply
-                  </Link>
+                  />
                 </div>
               </>
             )}

@@ -8,6 +8,9 @@ export const LOUNGE_ADMINS: LoungePersona[] = [
 ];
 
 export const LOUNGE_ADMIN = LOUNGE_ADMINS[0]!;
+/** Public Telegram channel. Override with NEXT_PUBLIC_TELEGRAM_CHANNEL. */
+export const TELEGRAM_CHANNEL_URL =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL?.trim()) || "https://t.me/opinly";
 export const LOUNGE_MEMBERS = loungeCrowd();
 export const LOUNGE_PERSONAS: LoungePersona[] = [...LOUNGE_ADMINS, ...LOUNGE_MEMBERS];
 
@@ -70,6 +73,19 @@ export const LOUNGE_CHATTER: string[] = [
   "I told a coworker and they thought it was a raffle. It is not. You get paid for answers.",
   "Closed the app last night mid-study. Came back, it remembered where I was.",
   "Got a usability one about a grocery app. Felt like I was helping, not filling boxes.",
+  "Opened Wallet, pasted my own TRC20 address, requested $500. It only goes to that wallet — nobody else’s.",
+  "Minimum withdrawal is $500 available. I am still climbing. Not rushing junk studies for it.",
+  "I almost used a BEP20 USDT address. Friend said no — has to be TRC20, starts with T. That would have been gone.",
+  "First cash-out sat on processing, then sent. Landed in the Trust Wallet I control the same evening.",
+  "Picked Litecoin once because the network fee was tiny. Arrived in my LTC wallet, not a bank app.",
+  "Someone asked me to withdraw to their address. I said no. Support: it only sends to the wallet on your account.",
+  "The quote showed the 5% and the network fee before I confirmed. No surprise on the amount that arrived.",
+  "Saved the receive address on Wallet and left it. Changing it later holds payouts, so I double-checked first.",
+  "USDT on TRON is what most people here use. I sent a tiny test from another app to that T-address before my first cash-out.",
+  "Network was slow one night. Support said wait it out. It showed sent and the crypto showed up in my wallet.",
+  "Gas on TRC20 was about a dollar. I still had to be at $500 available before the button even worked.",
+  "I keep USDT in the same wallet I withdraw to. No middleman, no cash pickup, just the address I pasted.",
+  "Wrong chain cannot be recovered. I read that twice. Now I screenshot the network name before I tap confirm.",
 ];
 
 export const LOUNGE_THREADS: LoungeThread[] = [
@@ -124,7 +140,63 @@ export const LOUNGE_THREADS: LoungeThread[] = [
     id: "payout",
     question: "When I cash out, is it gift cards or actual money?",
     answerer: "admin",
-    adminText: "Withdrawals are crypto to a wallet you control. You always see the fees before you confirm.",
+    adminText:
+      "Crypto only, to a wallet you control. Open Wallet, pick USDT (TRC20) or Litecoin, paste your receive address, and request at least $500. You see the fees before you confirm.",
+    peerText: "It showed up in my own Trust Wallet. Not a bank, not someone else’s address.",
+  },
+  {
+    id: "how-withdraw",
+    question: "Walk me through a withdrawal. I have never done crypto before.",
+    answerer: "admin",
+    adminText:
+      "Install a wallet that supports the network. For USDT use a TRC20 address starting with T. For Litecoin, L, M, or ltc1. Save that address on Wallet, enter $500 or more, confirm. We send to that address only.",
+    peerText:
+      "I used Trust Wallet, copied the TRC20 receive address, and double-checked the T at the front. First one took a few hours in processing, then it was in my wallet.",
+  },
+  {
+    id: "min-withdraw",
+    question: "What is the minimum I can actually withdraw?",
+    answerer: "admin",
+    adminText: "Available balance has to reach $500 before you can request a cash-out. Smaller amounts stay in Wallet until then.",
+    peerText: "I waited until I cleared $500. The button did nothing before that.",
+  },
+  {
+    id: "own-wallet",
+    question: "Can you send my withdrawal to my cousin’s wallet? I do not have one yet.",
+    answerer: "admin",
+    adminText:
+      "No. Withdrawals only go to the crypto address saved on your own account. Make a wallet you control, paste that address, and we send there. We will not pay a third party.",
+    peerText: "Someone asked me to use their address too. I made my own. Glad I did.",
+  },
+  {
+    id: "wrong-network",
+    question: "I almost pasted a BSC USDT address. Would that have arrived?",
+    answerer: "peer",
+    peerText:
+      "Same scare here. Support said wrong network cannot be recovered. I switched to TRC20 and sent a $1 test to that T-address from another app first.",
+    adminText: "Use the network you picked on Wallet. USDT is TRC20 only. Litecoin is Litecoin. A mismatch does not bounce back.",
+  },
+  {
+    id: "withdraw-stuck",
+    question: "My withdrawal still says processing. Did I lose it?",
+    answerer: "peer",
+    peerText:
+      "Mine sat there a while then flipped to sent. The USDT showed up in the wallet I saved. I stopped refreshing every minute.",
+    adminText: "Processing means an admin is sending it to your saved address. When it is sent, check that same wallet. Status lives under Recent withdrawals.",
+  },
+  {
+    id: "trc20-or-ltc",
+    question: "USDT or Litecoin — which do people actually use?",
+    answerer: "peer",
+    peerText: "Most folks here use USDT on TRON. I used Litecoin once because the network fee was smaller. Both went to wallets I own.",
+    adminText: "Either is fine. Pick the network your wallet supports, paste that receive address, and we send only there.",
+  },
+  {
+    id: "fees-quote",
+    question: "Do fees come off after I confirm, or do I see them first?",
+    answerer: "admin",
+    adminText: "You see the 5% platform fee and the network fee on Wallet before you confirm. The amount that arrives is the quote, sent to your wallet.",
+    peerText: "The number that landed matched the quote. No extra cut later.",
   },
   {
     id: "english",

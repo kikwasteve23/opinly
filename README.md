@@ -74,7 +74,7 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 - Completed studies stay in pending while we review responses (approvals also run in the background)
 - Withdraw from $500 after a $30 activation deposit that an admin must match and approve (added to available, not a fee). Deposit methods follow the participant’s country plus NOWPayments
 - Hire marketers ($5–$10 per referral). Pay before or pay after (+10%) both open a thank-you popup, then a real deposit for the calculated total. The hire starts after an admin matches the payment. Each marketer has a profile with a photo.
-- After onboarding, a lounge chat icon sits at the bottom right (it hides on the deposit page so phone users can see the steps). Support answers questions. Join the chat asks you to activate with $30, which is credited and withdrawn with your first cash-out.
+- After onboarding, a lounge chat icon sits at the bottom right (it hides on the deposit page so phone users can see the steps). Support answers questions. If you cannot join the lounge yet, **Join telegram instead** opens the public channel (`NEXT_PUBLIC_TELEGRAM_CHANNEL`, default `https://t.me/opinly`).
 - **Deposit chat is live.** Participants send a message on `/app/deposit`. Staff reply from **Admin → Deposit chat**. There is no auto-reply. The first line is always “Having trouble with deposits? Send us your message.”
 
 ## Live payment details (required before launch)

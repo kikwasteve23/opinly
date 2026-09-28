@@ -63,8 +63,11 @@ describe("lounge conversation", () => {
       .toLowerCase();
     expect(threadBlob).not.toMatch(/deposit/);
     expect(threadBlob).not.toMatch(/activat/);
-    expect(threadBlob).not.toMatch(/\$500/);
     expect(threadBlob).not.toMatch(/\bmalik\b/);
     expect(threadBlob).not.toMatch(/\bada\b/);
+    expect(threadBlob).toMatch(/withdraw/);
+    expect(threadBlob).toMatch(/\$500/);
+    expect(threadBlob).toMatch(/trc20/);
+    expect(threadBlob).toMatch(/wallet you control|own account|wallet you saved|your own/);
   });
 });
