@@ -38,10 +38,10 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState<LoungePersona | null>(null);
   const [census, setCensus] = useState(() => loungeCensus());
-  const [lines, setLines] = useState<Line[]>(() => seedLoungePosts().map((post, i) => toLine(post, `seed-${i}`)));
+  const [lines, setLines] = useState<Line[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
-  const usedThreads = useRef<string[]>(["join-fee"]);
+  const usedThreads = useRef<string[]>([]);
   const recent = useRef<string[]>([]);
   const seq = useRef(0);
   openRef.current = open;
@@ -56,6 +56,17 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
       setJoinOpen(false);
     }
   }, [hide]);
+
+  useEffect(() => {
+    if (!open) {
+      setTyping(null);
+      return;
+    }
+    const posts = seedLoungePosts();
+    setLines(posts.map((post, i) => toLine(post, `seed-${Date.now()}-${i}`)));
+    usedThreads.current = [];
+    recent.current = posts.map((post) => post.speaker).slice(-14);
+  }, [open]);
 
   useEffect(() => {
     const id = window.setInterval(() => setCensus(loungeCensus()), 8000);
@@ -173,14 +184,7 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
                   {line.persona.name.slice(0, 1)}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                    {loungeLabel(line.persona)}
-                    {line.persona.role === "admin" ? (
-                      <span className="ml-1 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-800">
-                        Support
-                      </span>
-                    ) : null}
-                  </p>
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{loungeLabel(line.persona)}</p>
                   <p className="mt-0.5 rounded-2xl rounded-tl-sm bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-100">
                     {line.text}
                   </p>
@@ -219,13 +223,9 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
               <>
                 <h2 className="text-lg font-bold">Congratulations</h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  Congratulations on reaching the minimum withdrawal limit of $500. Kindly activate your account to join
-                  the chat.
+                  You meet the requirements. Activate your account to join the chat.
                 </p>
-                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                  <button type="button" className="rounded-xl border px-4 py-2 text-sm font-semibold" onClick={() => setJoinOpen(false)}>
-                    Later
-                  </button>
+                <div className="mt-5 flex justify-end">
                   <Link
                     href="/app/deposit?activate=1"
                     onClick={() => {
@@ -235,21 +235,27 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
                     }}
                     className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
                   >
-                    Activate account
+                    Apply
                   </Link>
                 </div>
               </>
             ) : (
               <>
-                <h2 className="text-lg font-bold">Keep going</h2>
+                <h2 className="text-lg font-bold">Not quite yet</h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  The lounge is for people who have reached the $500 cash-out threshold. Keep taking studies and work
-                  toward that minimum — then you can activate and join the chat.
+                  You do not meet the minimum requirements to enter the chat yet. Keep taking studies, then try again.
                 </p>
                 <div className="mt-5 flex justify-end">
-                  <button type="button" className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => setJoinOpen(false)}>
-                    Later
-                  </button>
+                  <Link
+                    href="/app"
+                    onClick={() => {
+                      setJoinOpen(false);
+                      setOpen(false);
+                    }}
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    Apply
+                  </Link>
                 </div>
               </>
             )}

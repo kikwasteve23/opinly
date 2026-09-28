@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   pickLoungeEvent,
   repliesForThread,
+  seedLoungePosts,
   LOUNGE_ADMINS,
   LOUNGE_MEMBERS,
   LOUNGE_THREADS,
@@ -51,11 +52,18 @@ describe("lounge conversation", () => {
     expect(LOUNGE_ADMINS).toHaveLength(1);
     expect(LOUNGE_ADMINS[0]?.name).toBe("Support");
     expect(loungeLabel(LOUNGE_ADMINS[0]!)).toBe("Support");
+    expect(loungeLabel(LOUNGE_ADMINS[0]!)).not.toMatch(/SupportSupport/);
+    const first = seedLoungePosts(() => 0.11);
+    const second = seedLoungePosts(() => 0.87);
+    expect(first.length).toBeGreaterThanOrEqual(5);
+    expect(second.length).toBeGreaterThanOrEqual(5);
+    expect(`${first[0]?.speaker}:${first[0]?.text}`).not.toBe(`${second[0]?.speaker}:${second[0]?.text}`);
     const threadBlob = [...LOUNGE_THREADS.map((t) => `${t.question} ${t.adminText ?? ""} ${t.peerText ?? ""}`), ...LOUNGE_CHATTER]
       .join(" ")
       .toLowerCase();
     expect(threadBlob).not.toMatch(/deposit/);
     expect(threadBlob).not.toMatch(/activat/);
+    expect(threadBlob).not.toMatch(/\$500/);
     expect(threadBlob).not.toMatch(/\bmalik\b/);
     expect(threadBlob).not.toMatch(/\bada\b/);
   });

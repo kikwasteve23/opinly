@@ -59,6 +59,17 @@ export const LOUNGE_CHATTER: string[] = [
   "Photo on Profile is just so I recognise my own account. Researchers never see it.",
   "Beginner list went empty and I thought the site broke. It is the upgrade pause.",
   "Told my uncle it is research, not a scheme. He still asked three times.",
+  "Rainy afternoon, two polls, then I went back to cooking. Easy.",
+  "Someone in my building asked if this is a game. I said it is research. She signed up anyway.",
+  "I like that skip exists. If the topic is not me, I just leave it.",
+  "Night shift ended, did one survey in the locker room. Weirdly peaceful.",
+  "My first approved one showed up in History this morning. I actually smiled at my phone.",
+  "Support answered me in here yesterday. Short and clear. That is all I needed.",
+  "Taking a study in English is fine. I just read twice before I tap.",
+  "The short polls are my favourite. In and out before the kettle boils.",
+  "I told a coworker and they thought it was a raffle. It is not. You get paid for answers.",
+  "Closed the app last night mid-study. Came back, it remembered where I was.",
+  "Got a usability one about a grocery app. Felt like I was helping, not filling boxes.",
 ];
 
 export const LOUNGE_THREADS: LoungeThread[] = [
@@ -113,7 +124,7 @@ export const LOUNGE_THREADS: LoungeThread[] = [
     id: "payout",
     question: "When I cash out, is it gift cards or actual money?",
     answerer: "admin",
-    adminText: "Withdrawals are crypto to a wallet you control. Minimum cash-out is $500 available. You always see the fees before you confirm.",
+    adminText: "Withdrawals are crypto to a wallet you control. You always see the fees before you confirm.",
   },
   {
     id: "english",
@@ -202,38 +213,64 @@ export function pickLoungeEvent(usedThreadIds: string[], recentSpeakers: string[
 
 export function repliesForThread(thread: LoungeThread, recentSpeakers: string[], rng = Math.random): LoungePost[] {
   const out: LoungePost[] = [];
-  if (thread.answerer === "admin" || thread.adminText) {
-    const admin = LOUNGE_ADMINS[Math.floor(rng() * LOUNGE_ADMINS.length)]!;
-    if (thread.answerer === "admin") {
-      out.push({ speaker: admin.id, text: thread.adminText ?? "Support will follow up here." });
-      if (thread.peerText && rng() < 0.45) {
-        out.push({ speaker: unusedMember([...recentSpeakers, admin.id], rng).id, text: thread.peerText });
-      }
-      return out;
+  if (thread.answerer === "admin") {
+    out.push({ speaker: LOUNGE_ADMIN.id, text: thread.adminText ?? "Support will follow up here." });
+    if (thread.peerText && rng() < 0.45) {
+      out.push({ speaker: unusedMember([...recentSpeakers, LOUNGE_ADMIN.id], rng).id, text: thread.peerText });
     }
+    return out;
   }
   if (thread.peerText) {
     out.push({ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText });
   }
   if (thread.adminText && rng() < 0.5) {
-    const admin = LOUNGE_ADMINS[Math.floor(rng() * LOUNGE_ADMINS.length)]!;
-    out.push({ speaker: admin.id, text: thread.adminText });
+    out.push({ speaker: LOUNGE_ADMIN.id, text: thread.adminText });
   }
-  return out.length ? out : [{ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText || thread.adminText || "Support will follow up here." }];
+  return out.length
+    ? out
+    : [{ speaker: unusedMember(recentSpeakers, rng).id, text: thread.peerText || thread.adminText || "Support will follow up here." }];
 }
 
-export function seedLoungePosts(): LoungePost[] {
-  const mamello = LOUNGE_MEMBERS.find((p) => p.name.toLowerCase() === "mamello molefe") ?? LOUNGE_MEMBERS[0]!;
-  const a = LOUNGE_MEMBERS[3]!;
-  const b = LOUNGE_MEMBERS[11]!;
-  const c = LOUNGE_MEMBERS[22]!;
-  return [
-    { speaker: mamello.id, text: LOUNGE_CHATTER[15]! },
-    { speaker: a.id, text: LOUNGE_CHATTER[0]! },
-    { speaker: b.id, text: LOUNGE_THREADS[0]!.question },
-    { speaker: "support", text: LOUNGE_THREADS[0]!.adminText ?? "Signing up is free." },
-    { speaker: c.id, text: LOUNGE_CHATTER[8]! },
-  ];
+export function seedLoungePosts(rng = Math.random): LoungePost[] {
+  const count = 5 + Math.floor(rng() * 4);
+  const posts: LoungePost[] = [];
+  const usedSpeakers: string[] = [];
+  const usedChatter = new Set<number>();
+  const usedThreads = new Set<string>();
+
+  const nextMember = () => {
+    const person = unusedMember(usedSpeakers, rng);
+    usedSpeakers.push(person.id);
+    return person;
+  };
+
+  const nextChatter = () => {
+    let idx = Math.floor(rng() * LOUNGE_CHATTER.length);
+    let guard = 0;
+    while (usedChatter.has(idx) && guard < LOUNGE_CHATTER.length) {
+      idx = (idx + 1) % LOUNGE_CHATTER.length;
+      guard += 1;
+    }
+    usedChatter.add(idx);
+    return LOUNGE_CHATTER[idx]!;
+  };
+
+  while (posts.length < count) {
+    if (rng() < 0.28 && usedThreads.size < LOUNGE_THREADS.length) {
+      const unused = LOUNGE_THREADS.filter((t) => !usedThreads.has(t.id));
+      const thread = unused[Math.floor(rng() * unused.length)]!;
+      usedThreads.add(thread.id);
+      posts.push({ speaker: nextMember().id, text: thread.question });
+      for (const reply of repliesForThread(thread, usedSpeakers, rng).slice(0, 2)) {
+        usedSpeakers.push(reply.speaker);
+        posts.push(reply);
+        if (posts.length >= count) break;
+      }
+      continue;
+    }
+    posts.push({ speaker: nextMember().id, text: nextChatter() });
+  }
+  return posts.slice(0, count);
 }
 
 /** Total members crawl upward from a base above 10,000. Online stays above 200. */
