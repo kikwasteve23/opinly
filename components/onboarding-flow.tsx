@@ -91,17 +91,17 @@ export function OnboardingFlow({ user }: { user: Omit<User, "passwordHash"> }) {
               Studies are written in English. You need two of the three questions right, plus a short writing sample.
             </p>
             {ENGLISH_QUESTIONS.map((q) => (
-              <fieldset key={q.id}>
-                <legend className="text-sm font-medium">{q.prompt}</legend>
+              <div key={q.id} className="text-gray-900 dark:text-gray-100">
+                <p className="text-sm font-medium">{q.prompt}</p>
                 <div className="mt-2 space-y-2">
                   {q.options.map((opt) => (
-                    <label key={opt} className="flex items-center gap-2 text-sm">
-                      <input type="radio" name={q.id} value={opt} required />
+                    <label key={opt} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100">
+                      <input type="radio" name={q.id} value={opt} required className="h-4 w-4 accent-indigo-600" />
                       {opt}
                     </label>
                   ))}
                 </div>
-              </fieldset>
+              </div>
             ))}
             <label className="block text-sm font-medium">
               In a few sentences, describe a recent product or service you used and what you thought of it.

@@ -139,13 +139,13 @@ function QuestionCard({
   onChange: (value: string | string[]) => void;
 }) {
   return (
-    <fieldset className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-      <legend className="font-semibold">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100">
+      <p className="font-semibold">
         {index + 1}. {question.prompt}
-      </legend>
+      </p>
       {question.type === "text" || (question.type === "attention" && !question.options) ? (
         <textarea
-          className="mt-3 w-full rounded-xl border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-950"
+          className="mt-3 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           rows={4}
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
@@ -155,9 +155,10 @@ function QuestionCard({
           {question.options?.map((opt) => {
             const selected = Array.isArray(value) ? value.includes(opt) : false;
             return (
-              <label key={opt} className="flex items-center gap-2 text-sm">
+              <label key={opt} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100">
                 <input
                   type="checkbox"
+                  className="h-4 w-4 accent-indigo-600"
                   checked={selected}
                   onChange={() => {
                     const current = Array.isArray(value) ? value : [];
@@ -172,13 +173,19 @@ function QuestionCard({
       ) : (
         <div className="mt-3 space-y-2">
           {question.options?.map((opt) => (
-            <label key={opt} className="flex items-center gap-2 text-sm">
-              <input type="radio" name={question.id} checked={value === opt} onChange={() => onChange(opt)} />
+            <label key={opt} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100">
+              <input
+                type="radio"
+                className="h-4 w-4 accent-indigo-600"
+                name={question.id}
+                checked={value === opt}
+                onChange={() => onChange(opt)}
+              />
               {opt}
             </label>
           ))}
         </div>
       )}
-    </fieldset>
+    </div>
   );
 }
