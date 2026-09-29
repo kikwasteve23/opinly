@@ -331,6 +331,33 @@ export async function replyDepositChatAction(_prev: AdminFormState, formData: Fo
   return { ok: result.ok };
 }
 
+export async function saveChatShortcutAction(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  if (title.length < 2) return { error: "Give the shortcut a short name." };
+  if (body.length < 2) return { error: "Write the reply to save." };
+  const result = await mutateStore((data) => {
+    data.chatShortcuts.unshift({
+      id: newId("sc"),
+      title: title.slice(0, 40),
+      body,
+    });
+    return { ok: "Shortcut saved." };
+  });
+  revalidatePath("/admin/support");
+  return result;
+}
+
+export async function deleteChatShortcutAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  await mutateStore((data) => {
+    data.chatShortcuts = data.chatShortcuts.filter((s) => s.id !== id);
+  });
+  revalidatePath("/admin/support");
+}
+
 export async function deleteSurveyAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");

@@ -20,7 +20,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AdminNav({ waitingChats = 0 }: { waitingChats?: number }) {
+export function AdminNav({ waitingChats = 0, onNavigate }: { waitingChats?: number; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-1 flex-col gap-1">
@@ -31,6 +31,7 @@ export function AdminNav({ waitingChats = 0 }: { waitingChats?: number }) {
           <Link
             key={link.href}
             href={link.href}
+            onClick={onNavigate}
             className={cn(
               "rounded-lg px-3 py-2.5 text-sm font-medium",
               active

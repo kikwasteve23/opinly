@@ -123,6 +123,7 @@ describe("attention checks", () => {
       marketerJobs: [],
       chat: [],
       deposits: [],
+      chatShortcuts: [],
     };
     const result = submitStudyInStore(data, "u1", "s1");
     expect(result).toEqual({ error: ATTENTION_RETRY });

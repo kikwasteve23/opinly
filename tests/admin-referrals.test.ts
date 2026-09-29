@@ -58,6 +58,7 @@ function empty(users: User[]): StoreData {
     marketerJobs: [],
     chat: [],
     deposits: [],
+    chatShortcuts: [],
   };
 }
 

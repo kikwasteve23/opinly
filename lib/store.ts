@@ -5,6 +5,7 @@ import { databaseUrl, loadPostgresStore, savePostgresStore } from "./db/postgres
 import type { StoreData, Study, StudyTier, Submission, User } from "./types";
 import { DEMO_RECOVERY_CODES, hashRecoveryCode } from "./recovery";
 import { DEFAULT_STUDIES } from "./studies-data";
+import { DEFAULT_CHAT_SHORTCUTS } from "./chat-shortcuts";
 import { newId } from "./ids";
 import { normalizeUser } from "./normalize-user";
 import { processDueWork } from "./progression";
@@ -19,7 +20,7 @@ let queue: Promise<unknown> = Promise.resolve();
 let catalogReady = false;
 
 function emptyStore(): StoreData {
-  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [] };
 }
 
 function inferTier(study: Study): StudyTier {
@@ -67,6 +68,7 @@ function normalizeStore(data: StoreData): StoreData {
       ...d,
       billing: d.billing ?? (d.purpose === "marketer" ? "prepaid" : null),
     })),
+    chatShortcuts: Array.isArray(data.chatShortcuts) ? data.chatShortcuts : DEFAULT_CHAT_SHORTCUTS,
   };
 }
 
@@ -101,6 +103,10 @@ async function seedIfNeeded(data: StoreData): Promise<{ data: StoreData; seeded:
   if (catalogReady) return { data, seeded: false };
   data = normalizeStore(data);
   let seeded = false;
+  if (data.chatShortcuts.length === 0) {
+    data.chatShortcuts = DEFAULT_CHAT_SHORTCUTS.map((s) => ({ ...s }));
+    seeded = true;
+  }
   if (data.studies.length === 0) {
     data.studies = DEFAULT_STUDIES.map((study) => ({ ...study }));
     seeded = true;

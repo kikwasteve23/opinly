@@ -42,3 +42,12 @@ describe("deposit rails and live chat", () => {
     expect(n).toBe(1);
   });
 });
+
+describe("chat shortcuts", () => {
+  it("ships named replies staff can save over", async () => {
+    const { DEFAULT_CHAT_SHORTCUTS, shortcutPreview } = await import("../lib/chat-shortcuts");
+    expect(DEFAULT_CHAT_SHORTCUTS.length).toBeGreaterThanOrEqual(4);
+    expect(DEFAULT_CHAT_SHORTCUTS.every((s) => s.title && s.body.length > 10)).toBe(true);
+    expect(shortcutPreview("a".repeat(80), 20).endsWith("…")).toBe(true);
+  });
+});

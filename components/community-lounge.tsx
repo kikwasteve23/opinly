@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
+import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL } from "@/lib/money";
+import { money } from "@/lib/utils";
 import {
   firstNameOf,
   formatCount,
@@ -29,14 +32,18 @@ function toLine(post: LoungePost, id: string): Line {
   return { id, persona: personaById(post.speaker), text: post.text };
 }
 
-function TelegramJoinButton({ onClick }: { onClick?: () => void }) {
+function TelegramJoinButton({ onClick, secondary }: { onClick?: () => void; secondary?: boolean }) {
   return (
     <a
       href={TELEGRAM_CHANNEL_URL}
       target="_blank"
       rel="noreferrer"
       onClick={onClick}
-      className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
+      className={
+        secondary
+          ? "rounded-xl border px-4 py-2 text-center text-sm font-semibold"
+          : "rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
+      }
     >
       Join telegram instead
     </a>
@@ -235,18 +242,32 @@ export function CommunityLounge({ walletActivated, cashoutReady }: { walletActiv
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
             {cashoutReady ? (
               <>
-                <h2 className="text-lg font-bold">Congratulations</h2>
+                <h2 className="text-lg font-bold">Congratulations — you reached {money(MIN_WITHDRAWAL)}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  You meet the requirements. You can also join the Telegram channel while you finish setup.
+                  Apply with a {money(ACTIVATION_DEPOSIT)} wallet activation to unlock the lounge and the rest of your
+                  benefits. That {money(ACTIVATION_DEPOSIT)} is added to your balance and goes out with your first
+                  withdrawal — it is not a fee we keep.
                 </p>
-                <div className="mt-5 flex justify-end">
+                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                   <TelegramJoinButton
+                    secondary
                     onClick={() => {
                       setOpen(false);
                       setJoinOpen(false);
                       setTyping(null);
                     }}
                   />
+                  <Link
+                    href="/app/deposit?activate=1"
+                    onClick={() => {
+                      setOpen(false);
+                      setJoinOpen(false);
+                      setTyping(null);
+                    }}
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white"
+                  >
+                    Apply with {money(ACTIVATION_DEPOSIT)}
+                  </Link>
                 </div>
               </>
             ) : (

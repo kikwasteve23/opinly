@@ -194,6 +194,7 @@ describe("referrals", () => {
       marketerJobs: [],
       chat: [],
       deposits: [],
+      chatShortcuts: [],
     };
     const result = submitStudyInStore(data, "usr_a", "news-trust");
     expect("error" in result).toBe(true);

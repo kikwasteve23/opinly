@@ -162,6 +162,12 @@ export type DepositRequest = {
   adminEmail: string | null;
 };
 
+export type ChatShortcut = {
+  id: string;
+  title: string;
+  body: string;
+};
+
 export type StoreData = {
   users: User[];
   submissions: Submission[];
@@ -171,4 +177,5 @@ export type StoreData = {
   marketerJobs: MarketerJob[];
   chat: ChatMessage[];
   deposits: DepositRequest[];
+  chatShortcuts: ChatShortcut[];
 };

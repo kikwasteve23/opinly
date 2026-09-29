@@ -35,7 +35,7 @@ function user(partial: Partial<User> = {}): User {
 }
 
 function store(u: User): StoreData {
-  return { users: [u], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [] };
+  return { users: [u], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [] };
 }
 
 describe("onboarding", () => {
