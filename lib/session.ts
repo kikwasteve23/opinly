@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { readStoreSnapshot } from "./store";
 import type { User } from "./types";
 
@@ -45,7 +45,13 @@ export async function clearSessionCookie() {
 
 export async function getSessionUser(request?: Request): Promise<User | null> {
   const jar = await cookies();
-  const token = jar.get(COOKIE)?.value ?? tokenFromCookieHeader(request?.headers.get("cookie"));
+  let headerCookie: string | null = null;
+  try {
+    headerCookie = request?.headers.get("cookie") ?? (await headers()).get("cookie");
+  } catch {
+    headerCookie = request?.headers.get("cookie") ?? null;
+  }
+  const token = tokenFromCookieHeader(headerCookie) ?? jar.get(COOKIE)?.value ?? null;
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret());

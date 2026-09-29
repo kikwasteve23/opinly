@@ -11,6 +11,8 @@ import { countsFromStore, hitWalletCap } from "@/lib/referrals";
 import { readStoreSnapshot } from "@/lib/store";
 import { visibleMilestone } from "@/lib/milestones";
 
+export const dynamic = "force-dynamic";
+
 export default async function LoggedInLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
