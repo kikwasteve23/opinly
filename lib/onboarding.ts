@@ -89,5 +89,12 @@ export function saveEnglishInStore(
   current.englishPassed = true;
   current.englishWriting = input.writing.trim();
   current.onboardingStep = "complete";
+  current.shareInvitePending = true;
   return { user: current };
+}
+
+export function dismissShareInviteInStore(data: StoreData, userId: string) {
+  const current = data.users.find((u) => u.id === userId);
+  if (!current) return;
+  current.shareInvitePending = false;
 }

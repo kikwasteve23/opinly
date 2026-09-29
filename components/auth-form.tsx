@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -8,7 +8,6 @@ import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
 import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 import { DeviceTokenField } from "@/components/device-token";
 import { RecoveryCodesPanel } from "@/components/recovery-codes-panel";
-import { ShareReferralPrompt } from "@/components/share-referral-prompt";
 
 export function AuthForm({
   mode,
@@ -21,7 +20,6 @@ export function AuthForm({
 }) {
   const action = mode === "login" ? loginAction : registerAction;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, null);
-  const [offerShare, setOfferShare] = useState(false);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -45,14 +43,7 @@ export function AuthForm({
         </div>
         {state?.codes?.length ? (
           <div className="mx-auto my-auto w-full max-w-md py-10">
-            {offerShare && state.referralCode ? (
-              <ShareReferralPrompt referralCode={state.referralCode} />
-            ) : (
-              <RecoveryCodesPanel
-                codes={state.codes}
-                onContinue={state.referralCode ? () => setOfferShare(true) : undefined}
-              />
-            )}
+            <RecoveryCodesPanel codes={state.codes} />
           </div>
         ) : (
           <form action={formAction} className="mx-auto my-auto w-full max-w-md py-10">

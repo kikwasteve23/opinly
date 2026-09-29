@@ -56,6 +56,7 @@ describe("auto-approve", () => {
       recoveryCodeHashes: [],
       deviceIds: [],
       welcomeBonusAt: null,
+      shareInvitePending: false,
     });
     data.submissions.push({
       id: "sub1",

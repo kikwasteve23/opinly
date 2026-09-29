@@ -35,6 +35,7 @@ function user(partial: Partial<User> = {}): User {
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
     welcomeBonusAt: partial.welcomeBonusAt ?? null,
+    shareInvitePending: partial.shareInvitePending ?? false,
   };
 }
 

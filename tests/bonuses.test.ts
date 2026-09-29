@@ -48,6 +48,7 @@ function person(id: string, extra: Partial<User> = {}): User {
     recoveryCodeHashes: [],
     deviceIds: [],
     welcomeBonusAt: extra.welcomeBonusAt ?? null,
+    shareInvitePending: extra.shareInvitePending ?? false,
     ...extra,
   };
 }

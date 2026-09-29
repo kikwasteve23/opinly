@@ -45,6 +45,7 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
     welcomeBonusAt: partial.welcomeBonusAt ?? null,
+    shareInvitePending: partial.shareInvitePending ?? false,
   };
 }
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { MilestonePopup } from "@/components/milestone-popup";
 import { DepositNoticePopup } from "@/components/deposit-notice-popup";
+import { ShareReferralPrompt } from "@/components/share-referral-prompt";
 import { LiveRefresh } from "@/components/live-refresh";
 import { getSessionUser } from "@/lib/session";
 import { MIN_WITHDRAWAL } from "@/lib/money";
@@ -33,6 +34,7 @@ export default async function LoggedInLayout({ children }: { children: React.Rea
       cashoutReady={cashoutReady}
     >
       <LiveRefresh ms={4000} />
+      {user.shareInvitePending ? <ShareReferralPrompt referralCode={user.referralCode} /> : null}
       <DepositNoticePopup notice={notice} />
       <MilestonePopup milestone={milestone} />
       {children}

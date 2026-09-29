@@ -31,5 +31,6 @@ export function normalizeUser(raw: Partial<User> & Pick<User, "id" | "email" | "
     recoveryCodeHashes: raw.recoveryCodeHashes ?? [],
     deviceIds: raw.deviceIds ?? [],
     welcomeBonusAt: raw.welcomeBonusAt ?? null,
+    shareInvitePending: raw.shareInvitePending ?? false,
   };
 }

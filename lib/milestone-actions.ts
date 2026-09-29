@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireCompleteUser } from "@/lib/auth-actions";
+import { dismissShareInviteInStore } from "@/lib/onboarding";
 import { mutateStore } from "@/lib/store";
 
 export async function dismissMilestoneAction(id: string) {
@@ -29,4 +30,12 @@ export async function dismissNoticeAction(id: string) {
   revalidatePath("/app/wallet");
   revalidatePath("/app/marketers");
   revalidatePath("/app/deposit");
+}
+
+export async function dismissShareInviteAction() {
+  const user = await requireCompleteUser();
+  await mutateStore((data) => {
+    dismissShareInviteInStore(data, user.id);
+  });
+  revalidatePath("/app");
 }

@@ -57,6 +57,7 @@ export type User = {
   recoveryCodeHashes: string[];
   deviceIds: string[];
   welcomeBonusAt: string | null;
+  shareInvitePending: boolean;
 };
 
 export type Question = {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseDateOfBirth, saveEnglishInStore, saveProfileInStore } from "../lib/onboarding";
+import { dismissShareInviteInStore, parseDateOfBirth, saveEnglishInStore, saveProfileInStore } from "../lib/onboarding";
+import { normalizeUser } from "../lib/normalize-user";
 import type { StoreData, User } from "../lib/types";
 
 function user(partial: Partial<User> = {}): User {
@@ -32,6 +33,7 @@ function user(partial: Partial<User> = {}): User {
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
     welcomeBonusAt: partial.welcomeBonusAt ?? null,
+    shareInvitePending: partial.shareInvitePending ?? false,
   };
 }
 
@@ -67,6 +69,31 @@ describe("onboarding", () => {
     expect("user" in english).toBe(true);
     expect(data.users[0]?.onboardingStep).toBe("complete");
     expect(data.users[0]?.englishPassed).toBe(true);
+    expect(data.users[0]?.shareInvitePending).toBe(true);
+    dismissShareInviteInStore(data, "u1");
+    expect(data.users[0]?.shareInvitePending).toBe(false);
+  });
+
+  it("does not offer the share invite after a failed English attempt", () => {
+    const data = store(user({ onboardingStep: "english" }));
+    const english = saveEnglishInStore(data, "u1", {
+      answers: { e1: "wrong", e2: "wrong", e3: "wrong" },
+      writing: "I used a grocery delivery app last week and the driver was on time which made the evening easier.",
+    });
+    expect("error" in english).toBe(true);
+    expect(data.users[0]?.shareInvitePending).toBe(false);
+    expect(data.users[0]?.englishPassed).toBe(false);
+  });
+
+  it("does not show the share invite to people who already finished onboarding", () => {
+    const existing = normalizeUser({
+      id: "old",
+      email: "old@opinly.local",
+      passwordHash: "x",
+      englishPassed: true,
+      onboardingStep: "complete",
+    });
+    expect(existing.shareInvitePending).toBe(false);
   });
 
   it("accepts a slash date of birth", () => {
