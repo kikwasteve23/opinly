@@ -4,12 +4,11 @@ import { readStoreSnapshot } from "@/lib/store";
 import { money } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import {
-  BRONZE_REFERRALS,
   canAccessStudyTier,
   countsFromStore,
   dashboardTrack,
-  hitWalletCap,
   levelName,
+  nextLevelProgress,
   needsBronzeReferrals,
   studyLockReason,
   studyVisibleOnDashboard,
@@ -28,8 +27,8 @@ export default async function DashboardPage() {
   const submissions = store.submissions.filter((s) => s.userId === user.id);
   const { qualified, level } = countsFromStore(store, user.id);
   const track = dashboardTrack(user, level);
+  const progress = nextLevelProgress(qualified, track);
   const country = await resolveCountry(user);
-  const showReferralTrack = hitWalletCap(user);
   const inviteLink = await referralInviteUrl(user.referralCode);
 
   const openStudies = store.studies
@@ -55,12 +54,8 @@ export default async function DashboardPage() {
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <p className="text-sm text-gray-500">Your level</p>
-          <p className="mt-1 text-3xl font-bold">{levelName(track)}</p>
-          <p className="mt-1 text-xs text-gray-500">
-            {showReferralTrack
-              ? `${qualified} active referrals · ${BRONZE_REFERRALS} unlocks Bronze surveys`
-              : "Beginner studies are open."}
-          </p>
+          <p className="mt-1 text-3xl font-bold">{progress.title}</p>
+          <p className="mt-1 text-xs text-gray-500">{progress.detail}</p>
         </div>
       </div>
 

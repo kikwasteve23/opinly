@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { MilestonePopup } from "@/components/milestone-popup";
+import { DepositNoticePopup } from "@/components/deposit-notice-popup";
+import { LiveRefresh } from "@/components/live-refresh";
 import { getSessionUser } from "@/lib/session";
 import { MIN_WITHDRAWAL } from "@/lib/money";
 import { resolveCountry } from "@/lib/resolve-geo";
@@ -18,6 +20,7 @@ export default async function LoggedInLayout({ children }: { children: React.Rea
   const { qualified } = countsFromStore(store, user.id);
   const approvedStudies = store.submissions.filter((s) => s.userId === user.id && s.status === "approved").length;
   const milestone = visibleMilestone({ user, qualified, approvedStudies });
+  const notice = store.notices.find((n) => n.userId === user.id && !n.dismissedAt) ?? null;
   const cashoutReady = user.available >= MIN_WITHDRAWAL;
   return (
     <AppShell
@@ -29,6 +32,8 @@ export default async function LoggedInLayout({ children }: { children: React.Rea
       walletActivated={user.walletActivated}
       cashoutReady={cashoutReady}
     >
+      <LiveRefresh ms={4000} />
+      <DepositNoticePopup notice={notice} />
       <MilestonePopup milestone={milestone} />
       {children}
     </AppShell>

@@ -8,8 +8,9 @@ import { setSessionCookie, clearSessionCookie, getSessionUser } from "@/lib/sess
 import { makeReferralCode, mutateStore, newId, normalizeUser, readStoreSnapshot } from "@/lib/store";
 import { accountsOnDevice, DEVICE_LIMIT_MESSAGE, ensureDeviceCookie, MAX_ACCOUNTS_PER_DEVICE, readDeviceIds } from "@/lib/device";
 import { generateRecoveryCodes, matchRecoveryCode } from "@/lib/recovery";
+import { grantReferralJoinBonus, grantSignupBonus } from "@/lib/bonuses";
 
-export type AuthState = { error?: string; codes?: string[]; ok?: string } | null;
+export type AuthState = { error?: string; codes?: string[]; ok?: string; referralCode?: string } | null;
 
 function afterLoginPath(user: { role: string; onboardingStep: string }) {
   if (user.role === "admin") return "/admin";
@@ -86,6 +87,8 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
       deviceIds,
     });
     data.users.push(user);
+    grantSignupBonus(data, user.id);
+    if (referredBy) grantReferralJoinBonus(data, user.id);
     return { user };
   });
   if ("error" in created) {
@@ -94,7 +97,7 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
     return { error: "That referral code is not recognised." };
   }
   await setSessionCookie(created.user.id);
-  return { codes: recovery.codes };
+  return { codes: recovery.codes, referralCode: created.user.referralCode };
 }
 
 export async function resetPasswordAction(_prev: AuthState, formData: FormData): Promise<AuthState> {

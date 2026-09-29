@@ -7,10 +7,12 @@ export function RecoveryCodesPanel({
   codes,
   continueHref = "/onboarding",
   continueLabel = "I saved these codes — continue",
+  onContinue,
 }: {
   codes: string[];
   continueHref?: string;
   continueLabel?: string;
+  onContinue?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -46,9 +48,15 @@ export function RecoveryCodesPanel({
           {copied ? "Copied" : "Copy all codes"}
         </button>
         {saved ? (
-          <Link href={continueHref} className="rounded-xl border border-amber-300 px-4 py-2.5 text-center text-sm font-semibold">
-            {continueLabel}
-          </Link>
+          onContinue ? (
+            <button type="button" onClick={onContinue} className="rounded-xl border border-amber-300 px-4 py-2.5 text-center text-sm font-semibold">
+              {continueLabel}
+            </button>
+          ) : (
+            <Link href={continueHref} className="rounded-xl border border-amber-300 px-4 py-2.5 text-center text-sm font-semibold">
+              {continueLabel}
+            </Link>
+          )
         ) : (
           <span className="rounded-xl border border-amber-200 px-4 py-2.5 text-center text-sm text-amber-800/70">
             Tick the box below to continue

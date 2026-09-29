@@ -69,17 +69,18 @@ export default async function AdminDepositsPage() {
                     <td className="px-4 py-4 text-xs text-gray-500">{new Date(item.createdAt).toLocaleString()}</td>
                     <td className="px-4 py-4">
                       <div className="flex flex-col gap-2">
-                        <form action={reviewDepositAction}>
+                        <form action={reviewDepositAction} className="flex flex-col gap-2">
                           <input type="hidden" name="depositId" value={item.id} />
                           <input type="hidden" name="decision" value="approve" />
+                          <input name="note" placeholder="Note for the participant (optional)" className="rounded-lg border px-3 py-2 text-sm" />
                           <button className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white">
                             Approve
                           </button>
                         </form>
-                        <form action={reviewDepositAction} className="flex flex-wrap gap-2">
+                        <form action={reviewDepositAction} className="flex flex-col gap-2">
                           <input type="hidden" name="depositId" value={item.id} />
                           <input type="hidden" name="decision" value="reject" />
-                          <input name="note" placeholder="Reason" className="min-w-[8rem] flex-1 rounded-lg border px-3 py-2 text-sm" />
+                          <input name="note" required placeholder="Reason (shown to them)" className="rounded-lg border px-3 py-2 text-sm" />
                           <button className="rounded-lg border px-3 py-2 text-sm font-semibold">Reject</button>
                         </form>
                       </div>

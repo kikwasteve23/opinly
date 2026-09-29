@@ -44,6 +44,7 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
     ...partial,
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
+    welcomeBonusAt: partial.welcomeBonusAt ?? null,
   };
 }
 
@@ -195,6 +196,7 @@ describe("referrals", () => {
       chat: [],
       deposits: [],
       chatShortcuts: [],
+      notices: [],
     };
     const result = submitStudyInStore(data, "usr_a", "news-trust");
     expect("error" in result).toBe(true);

@@ -34,6 +34,7 @@ function user(partial: Partial<User> = {}): User {
     ...partial,
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
+    welcomeBonusAt: partial.welcomeBonusAt ?? null,
   };
 }
 
@@ -124,6 +125,7 @@ describe("attention checks", () => {
       chat: [],
       deposits: [],
       chatShortcuts: [],
+      notices: [],
     };
     const result = submitStudyInStore(data, "u1", "s1");
     expect(result).toEqual({ error: ATTENTION_RETRY });

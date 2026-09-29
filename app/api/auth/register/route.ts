@@ -7,6 +7,7 @@ import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
 import { countryFromName } from "@/lib/geo";
 import { accountsOnDevice, DEVICE_LIMIT_MESSAGE, ensureDeviceCookie, MAX_ACCOUNTS_PER_DEVICE, readDeviceIds } from "@/lib/device";
 import { generateRecoveryCodes } from "@/lib/recovery";
+import { grantReferralJoinBonus, grantSignupBonus } from "@/lib/bonuses";
 
 const schema = z.object({
   email: z.email(),
@@ -55,10 +56,12 @@ export async function POST(request: Request) {
         deviceIds,
       });
       data.users.push(created);
+      grantSignupBonus(data, created.id);
+      if (referredBy) grantReferralJoinBonus(data, created.id);
       return created;
     });
     await setSessionCookie(user.id);
-    return NextResponse.json({ ok: true, codes: recovery.codes });
+    return NextResponse.json({ ok: true, codes: recovery.codes, referralCode: user.referralCode });
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
     if (message === "exists") {

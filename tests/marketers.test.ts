@@ -11,7 +11,7 @@ import { HOW_IT_WORKS_TESTIMONIALS } from "../lib/testimonials";
 import type { StoreData } from "../lib/types";
 
 function emptyStore(): StoreData {
-  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [], notices: [] };
 }
 
 describe("marketer profiles and checkout math", () => {

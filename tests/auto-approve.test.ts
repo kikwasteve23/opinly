@@ -17,7 +17,7 @@ const study: Study = {
 };
 
 function empty(): StoreData {
-  return { users: [], submissions: [], withdrawals: [], studies: [study], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [study], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [], notices: [] };
 }
 
 describe("auto-approve", () => {
@@ -55,6 +55,7 @@ describe("auto-approve", () => {
       dismissedMilestones: [],
       recoveryCodeHashes: [],
       deviceIds: [],
+      welcomeBonusAt: null,
     });
     data.submissions.push({
       id: "sub1",

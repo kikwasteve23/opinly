@@ -63,6 +63,24 @@ export function refsNeededForLevel(level: number) {
   return PLATINUM_REFERRALS;
 }
 
+/** Copy for the dashboard level card: beginner is a count only; otherwise current vs next level. */
+export function nextLevelProgress(qualified: number, track: number) {
+  if (track <= 1) {
+    const n = qualified === 1 ? "1 referral" : `${qualified} referrals`;
+    return { title: levelName(1), detail: `${n} · Beginner` };
+  }
+  if (qualified < BRONZE_REFERRALS) {
+    return { title: levelName(track), detail: `${qualified}/${BRONZE_REFERRALS} toward Bronze` };
+  }
+  if (qualified < GOLD_REFERRALS) {
+    return { title: levelName(Math.max(track, 2)), detail: `${qualified}/${GOLD_REFERRALS} toward Gold` };
+  }
+  if (qualified < PLATINUM_REFERRALS) {
+    return { title: levelName(Math.max(track, 3)), detail: `${qualified}/${PLATINUM_REFERRALS} toward Platinum` };
+  }
+  return { title: levelName(4), detail: `${qualified} referrals · Platinum` };
+}
+
 export function canWithdrawByReferrals(users: User[], submissions: Submission[], referrerId: string) {
   return qualifiedReferralCount(users, submissions, referrerId) >= BRONZE_REFERRALS;
 }
@@ -147,6 +165,10 @@ export function needsBronzeReferrals(user: Pick<User, "available" | "pending">, 
 export function countsFromStore(data: Pick<StoreData, "users" | "submissions">, referrerId: string) {
   const qualified = qualifiedReferralCount(data.users, data.submissions, referrerId);
   return { qualified, level: referralLevel(qualified) };
+}
+
+export function shareJoinBonusMessage(link: string) {
+  return `Join me on Opinly. Studies pay real money, and new accounts get a $20 welcome bonus. Use my link — I earn $3 when you join: ${link}`;
 }
 
 export function shareReferralMessage(availableUsd: number, link: string) {

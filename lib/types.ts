@@ -56,6 +56,7 @@ export type User = {
   dismissedMilestones: string[];
   recoveryCodeHashes: string[];
   deviceIds: string[];
+  welcomeBonusAt: string | null;
 };
 
 export type Question = {
@@ -168,6 +169,18 @@ export type ChatShortcut = {
   body: string;
 };
 
+export type UserNotice = {
+  id: string;
+  userId: string;
+  kind: "deposit_decision";
+  title: string;
+  body: string;
+  nextSteps: string;
+  tone: "ok" | "warn";
+  createdAt: string;
+  dismissedAt: string | null;
+};
+
 export type StoreData = {
   users: User[];
   submissions: Submission[];
@@ -178,4 +191,5 @@ export type StoreData = {
   chat: ChatMessage[];
   deposits: DepositRequest[];
   chatShortcuts: ChatShortcut[];
+  notices: UserNotice[];
 };

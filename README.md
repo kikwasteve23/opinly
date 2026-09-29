@@ -68,7 +68,7 @@ If staff login fails after you later changed `DEMO_ADMIN_PASSWORD`, the hash in 
 
 ## What you can do
 
-- Create an account and **copy the 8 emergency recovery codes** (XXXX-XXXX). There is no email reset. Use one unused code on `/forgot-password`. Issue a fresh set from Profile. A browser may register at most **3** accounts (cookie + local device token); a fourth attempt shows “This device cannot be used to register more than three accounts.”
+- Create an account and **copy the 8 emergency recovery codes** (XXXX-XXXX). New accounts receive a **$20 welcome bonus**. Share your invite after signup to earn **$3** when someone joins with your link. There is no email reset. Use one unused code on `/forgot-password`. Issue a fresh set from Profile. A browser may register at most **3** accounts (cookie + local device token); a fourth attempt shows “This device cannot be used to register more than three accounts.”
 - Join with a referral code, finish profile and English (ID is optional later; add a profile photo from Profile)
 - Take Beginner studies until your **wallet** (available plus pending) reaches $400, then Beginner work pauses. Share referrals or hire a marketer. Bronze / Gold / Platinum work then appears locked until you have 20 / 50 / 100 active referrals
 - Completed studies stay in pending while we review responses (approvals also run in the background)

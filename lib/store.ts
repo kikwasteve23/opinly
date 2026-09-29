@@ -20,7 +20,7 @@ let queue: Promise<unknown> = Promise.resolve();
 let catalogReady = false;
 
 function emptyStore(): StoreData {
-  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [] };
+  return { users: [], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [], notices: [] };
 }
 
 function inferTier(study: Study): StudyTier {
@@ -69,6 +69,10 @@ function normalizeStore(data: StoreData): StoreData {
       billing: d.billing ?? (d.purpose === "marketer" ? "prepaid" : null),
     })),
     chatShortcuts: Array.isArray(data.chatShortcuts) ? data.chatShortcuts : DEFAULT_CHAT_SHORTCUTS,
+    notices: (data.notices ?? []).map((n) => ({
+      ...n,
+      dismissedAt: n.dismissedAt ?? null,
+    })),
   };
 }
 

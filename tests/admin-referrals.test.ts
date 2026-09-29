@@ -31,6 +31,7 @@ function person(partial: Partial<User> & Pick<User, "id">): User {
     ...partial,
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
+    welcomeBonusAt: partial.welcomeBonusAt ?? null,
   };
 }
 
@@ -59,6 +60,7 @@ function empty(users: User[]): StoreData {
     chat: [],
     deposits: [],
     chatShortcuts: [],
+    notices: [],
   };
 }
 

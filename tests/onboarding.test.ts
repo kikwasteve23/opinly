@@ -31,11 +31,12 @@ function user(partial: Partial<User> = {}): User {
     ...partial,
     recoveryCodeHashes: partial.recoveryCodeHashes ?? [],
     deviceIds: partial.deviceIds ?? [],
+    welcomeBonusAt: partial.welcomeBonusAt ?? null,
   };
 }
 
 function store(u: User): StoreData {
-  return { users: [u], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [] };
+  return { users: [u], submissions: [], withdrawals: [], studies: [], ledger: [], marketerJobs: [], chat: [], deposits: [], chatShortcuts: [], notices: [] };
 }
 
 describe("onboarding", () => {

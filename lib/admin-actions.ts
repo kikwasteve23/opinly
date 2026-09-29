@@ -7,6 +7,7 @@ import { findStudy } from "@/lib/studies-data";
 import type { IdentityStatus, Question, Study, StudyKind, WithdrawalStatus } from "@/lib/types";
 import { generateSurveyDraft } from "@/lib/ai-survey";
 import { fulfillPaidMarketerHire } from "@/lib/deposit-requests";
+import { buildDepositDecisionNotice } from "@/lib/deposit-notices";
 import { addQualifiedReferrals, attachExistingReferral, unlinkReferral } from "@/lib/admin-referrals";
 
 export type AdminFormState = { error?: string; ok?: string } | null;
@@ -63,6 +64,7 @@ export async function reviewDepositAction(formData: FormData) {
   const depositId = String(formData.get("depositId") ?? "");
   const decision = String(formData.get("decision") ?? "");
   const note = String(formData.get("note") ?? "").trim();
+  if (decision !== "approve" && !note) return;
   await mutateStore((data) => {
     const deposit = data.deposits.find((d) => d.id === depositId);
     if (!deposit || deposit.status !== "pending") return;
@@ -73,6 +75,14 @@ export async function reviewDepositAction(formData: FormData) {
     deposit.adminNote = note || null;
     if (decision !== "approve") {
       deposit.status = "rejected";
+      const copy = buildDepositDecisionNotice(deposit, "reject", note);
+      data.notices.unshift({
+        id: newId("ntc"),
+        userId: user.id,
+        ...copy,
+        createdAt: new Date().toISOString(),
+        dismissedAt: null,
+      });
       return;
     }
     deposit.status = "approved";
@@ -106,12 +116,21 @@ export async function reviewDepositAction(formData: FormData) {
         adminEmail: admin.email,
       });
     }
+    const copy = buildDepositDecisionNotice(deposit, "approve", note);
+    data.notices.unshift({
+      id: newId("ntc"),
+      userId: user.id,
+      ...copy,
+      createdAt: new Date().toISOString(),
+      dismissedAt: null,
+    });
   });
   revalidatePath("/admin");
   revalidatePath("/admin/deposits");
   revalidatePath("/app/deposit");
   revalidatePath("/app/wallet");
   revalidatePath("/app/marketers");
+  revalidatePath("/app");
 }
 
 export async function adjustWalletAction(formData: FormData) {

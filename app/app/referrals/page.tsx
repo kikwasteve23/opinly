@@ -8,6 +8,7 @@ import {
   dashboardTrack,
   hitWalletCap,
   levelName,
+  nextLevelProgress,
   PLATINUM_REFERRALS,
   shareReferralMessage,
 } from "@/lib/referrals";
@@ -41,9 +42,7 @@ export default async function ReferralsPage() {
         <a href={link} className="mt-1 block break-all text-sm font-medium text-indigo-700 underline">
           {link}
         </a>
-        <p className="mt-6 text-lg font-semibold">
-          {qualified} active · {BRONZE_REFERRALS} Bronze · {GOLD_REFERRALS} Gold · {PLATINUM_REFERRALS} Platinum
-        </p>
+        <p className="mt-6 text-lg font-semibold">{nextLevelProgress(qualified, track).detail}</p>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
           <div className="h-full bg-indigo-600" style={{ width: `${Math.min(100, (qualified / PLATINUM_REFERRALS) * 100)}%` }} />
         </div>

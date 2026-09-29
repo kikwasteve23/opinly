@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -8,6 +8,7 @@ import { OPEN_COUNTRIES } from "@/lib/onboarding-data";
 import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 import { DeviceTokenField } from "@/components/device-token";
 import { RecoveryCodesPanel } from "@/components/recovery-codes-panel";
+import { ShareReferralPrompt } from "@/components/share-referral-prompt";
 
 export function AuthForm({
   mode,
@@ -20,6 +21,7 @@ export function AuthForm({
 }) {
   const action = mode === "login" ? loginAction : registerAction;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, null);
+  const [offerShare, setOfferShare] = useState(false);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -43,7 +45,14 @@ export function AuthForm({
         </div>
         {state?.codes?.length ? (
           <div className="mx-auto my-auto w-full max-w-md py-10">
-            <RecoveryCodesPanel codes={state.codes} />
+            {offerShare && state.referralCode ? (
+              <ShareReferralPrompt referralCode={state.referralCode} />
+            ) : (
+              <RecoveryCodesPanel
+                codes={state.codes}
+                onContinue={state.referralCode ? () => setOfferShare(true) : undefined}
+              />
+            )}
           </div>
         ) : (
           <form action={formAction} className="mx-auto my-auto w-full max-w-md py-10">
@@ -52,7 +61,7 @@ export function AuthForm({
             </h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               {mode === "register"
-                ? "Free to join. No card, no deposit. You will get emergency recovery codes to copy and save."
+                ? "Free to join. New accounts get a $20 welcome bonus. You will also get emergency recovery codes to copy and save."
                 : staff
                   ? "This is the operations desk. After login you land on /admin."
                   : "Welcome back. Pick up where you left off."}

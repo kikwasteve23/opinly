@@ -5,7 +5,7 @@ import { useActionState, useMemo, useState } from "react";
 import { ACTIVATION_DEPOSIT, MIN_WITHDRAWAL, quoteWithdrawal, type PayoutNetwork } from "@/lib/money";
 import { money } from "@/lib/utils";
 import { withdrawAction, type WalletState } from "@/lib/wallet-actions";
-import { BRONZE_REFERRALS, levelName } from "@/lib/referrals";
+import { BRONZE_REFERRALS, dashboardTrack, nextLevelProgress } from "@/lib/referrals";
 
 type UserWallet = {
   available: number;
@@ -53,6 +53,7 @@ export function WalletPanel({
   const [state, formAction, pending] = useActionState<WalletState, FormData>(withdrawAction, null);
   const quote = useMemo(() => quoteWithdrawal(Number(amount) || 0, network), [amount, network]);
   const needRefs = showReferralTools && referrals.qualified < BRONZE_REFERRALS;
+  const progress = nextLevelProgress(referrals.qualified, dashboardTrack(initialUser, referrals.level));
   const needBalance = initialUser.available < MIN_WITHDRAWAL;
   const needActivation = cashoutReady && !initialUser.walletActivated;
   const canRequest = !needRefs && !needBalance && !needActivation;
@@ -72,7 +73,7 @@ export function WalletPanel({
         {showReferralTools ? (
           <div className="mt-4 space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
             <p>
-              {levelName(referrals.level)} · {referrals.qualified}/{BRONZE_REFERRALS} active referrals for cash-out. Code{" "}
+              {progress.title} · {progress.detail}. Code{" "}
               <span className="font-mono font-semibold">{referrals.code}</span>.
             </p>
             <p>Minimum withdrawal is {money(MIN_WITHDRAWAL)}.</p>
